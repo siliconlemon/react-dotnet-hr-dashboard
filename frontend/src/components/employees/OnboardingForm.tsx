@@ -8,7 +8,6 @@ import {
   MenuItem,
   Paper,
   Select,
-  Stack,
   TextField,
   Typography,
 } from '@mui/material';
@@ -121,7 +120,15 @@ export function OnboardingForm({ onCreated }: OnboardingFormProps) {
   });
 
   return (
-    <Paper sx={{ p: 2, maxWidth: 560 }} variant="outlined">
+    <Paper
+      sx={{
+        p: 2,
+        width: '100%',
+        maxWidth: 880,
+        alignSelf: { xs: 'stretch', md: 'flex-start' },
+      }}
+      variant="outlined"
+    >
       <Typography variant="h2" gutterBottom>
         {strings.onboard.title}
       </Typography>
@@ -138,118 +145,127 @@ export function OnboardingForm({ onCreated }: OnboardingFormProps) {
           {submitError}
         </Alert>
       )}
-      <Box component="form" onSubmit={onSubmit} noValidate>
-        <Stack spacing={2}>
-          <TextField
-            label={strings.onboard.fieldFirstName}
-            fullWidth
-            required
-            error={!!errors.firstName}
-            helperText={errors.firstName?.message}
-            {...register('firstName', {
-              required: strings.onboard.required,
-              maxLength: { value: 100, message: strings.onboard.maxLength100 },
-            })}
-            slotProps={{ htmlInput: { maxLength: 100 } }}
-          />
-          <TextField
-            label={strings.onboard.fieldLastName}
-            fullWidth
-            required
-            error={!!errors.lastName}
-            helperText={errors.lastName?.message}
-            {...register('lastName', {
-              required: strings.onboard.required,
-              maxLength: { value: 100, message: strings.onboard.maxLength100 },
-            })}
-            slotProps={{ htmlInput: { maxLength: 100 } }}
-          />
-          <TextField
-            label={strings.onboard.fieldEmail}
-            type="email"
-            fullWidth
-            required
-            autoComplete="email"
-            error={!!errors.email}
-            helperText={errors.email?.message}
-            {...register('email', {
-              required: strings.onboard.required,
-              maxLength: { value: 256, message: strings.onboard.maxLength256 },
-              pattern: {
-                value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                message: strings.onboard.emailInvalid,
-              },
-            })}
-            slotProps={{ htmlInput: { maxLength: 256 } }}
-          />
-          <TextField
-            label={strings.onboard.fieldJobTitle}
-            fullWidth
-            required
-            error={!!errors.jobTitle}
-            helperText={errors.jobTitle?.message}
-            {...register('jobTitle', {
-              required: strings.onboard.required,
-              maxLength: { value: 128, message: strings.onboard.maxLength128 },
-            })}
-            slotProps={{ htmlInput: { maxLength: 128 } }}
-          />
-          <TextField
-            label={strings.onboard.fieldHireDate}
-            type="date"
-            fullWidth
-            required
-            error={!!errors.hireDate}
-            helperText={errors.hireDate?.message}
-            {...register('hireDate', { required: strings.onboard.required })}
-            slotProps={{ inputLabel: { shrink: true } }}
-          />
-          <Controller
-            name="departmentId"
-            control={control}
-            rules={{
-              validate: (v: number | '') => v !== '' || strings.onboard.departmentRequired,
-            }}
-            render={({ field }) => (
-              <FormControl fullWidth required error={!!errors.departmentId} disabled={deptLoading}>
-                <InputLabel id="onboard-department-label">{strings.onboard.fieldDepartment}</InputLabel>
-                <Select
-                  labelId="onboard-department-label"
-                  label={strings.onboard.fieldDepartment}
-                  value={field.value === '' ? '' : field.value}
-                  onChange={(e) => {
-                    const raw = e.target.value;
-                    const s = String(raw);
-                    field.onChange(s === '' ? '' : Number(s));
-                  }}
-                >
-                  <MenuItem value="">
-                    <em>{strings.onboard.departmentPlaceholder}</em>
+      <Box
+        component="form"
+        onSubmit={onSubmit}
+        noValidate
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
+          gap: 2,
+          columnGap: 2,
+          alignItems: 'start',
+        }}
+      >
+        <TextField
+          label={strings.onboard.fieldFirstName}
+          fullWidth
+          required
+          error={!!errors.firstName}
+          helperText={errors.firstName?.message}
+          {...register('firstName', {
+            required: strings.onboard.required,
+            maxLength: { value: 100, message: strings.onboard.maxLength100 },
+          })}
+          slotProps={{ htmlInput: { maxLength: 100 } }}
+        />
+        <TextField
+          label={strings.onboard.fieldLastName}
+          fullWidth
+          required
+          error={!!errors.lastName}
+          helperText={errors.lastName?.message}
+          {...register('lastName', {
+            required: strings.onboard.required,
+            maxLength: { value: 100, message: strings.onboard.maxLength100 },
+          })}
+          slotProps={{ htmlInput: { maxLength: 100 } }}
+        />
+        <TextField
+          label={strings.onboard.fieldEmail}
+          type="email"
+          fullWidth
+          required
+          autoComplete="email"
+          error={!!errors.email}
+          helperText={errors.email?.message}
+          sx={{ gridColumn: { xs: '1', md: 'auto' } }}
+          {...register('email', {
+            required: strings.onboard.required,
+            maxLength: { value: 256, message: strings.onboard.maxLength256 },
+            pattern: {
+              value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+              message: strings.onboard.emailInvalid,
+            },
+          })}
+          slotProps={{ htmlInput: { maxLength: 256 } }}
+        />
+        <TextField
+          label={strings.onboard.fieldJobTitle}
+          fullWidth
+          required
+          error={!!errors.jobTitle}
+          helperText={errors.jobTitle?.message}
+          sx={{ gridColumn: { xs: '1', md: 'auto' } }}
+          {...register('jobTitle', {
+            required: strings.onboard.required,
+            maxLength: { value: 128, message: strings.onboard.maxLength128 },
+          })}
+          slotProps={{ htmlInput: { maxLength: 128 } }}
+        />
+        <TextField
+          label={strings.onboard.fieldHireDate}
+          type="date"
+          fullWidth
+          required
+          error={!!errors.hireDate}
+          helperText={errors.hireDate?.message}
+          {...register('hireDate', { required: strings.onboard.required })}
+          slotProps={{ inputLabel: { shrink: true } }}
+        />
+        <Controller
+          name="departmentId"
+          control={control}
+          rules={{
+            validate: (v: number | '') => v !== '' || strings.onboard.departmentRequired,
+          }}
+          render={({ field }) => (
+            <FormControl fullWidth required error={!!errors.departmentId} disabled={deptLoading}>
+              <InputLabel id="onboard-department-label">{strings.onboard.fieldDepartment}</InputLabel>
+              <Select
+                labelId="onboard-department-label"
+                label={strings.onboard.fieldDepartment}
+                value={field.value === '' ? '' : field.value}
+                onChange={(e) => {
+                  const raw = e.target.value;
+                  const s = String(raw);
+                  field.onChange(s === '' ? '' : Number(s));
+                }}
+              >
+                <MenuItem value="">
+                  <em>{strings.onboard.departmentPlaceholder}</em>
+                </MenuItem>
+                {departments.map((d) => (
+                  <MenuItem key={d.id} value={d.id}>
+                    {d.name}
                   </MenuItem>
-                  {departments.map((d) => (
-                    <MenuItem key={d.id} value={d.id}>
-                      {d.name}
-                    </MenuItem>
-                  ))}
-                </Select>
-                {errors.departmentId && (
-                  <FormHelperText>{errors.departmentId.message}</FormHelperText>
-                )}
-              </FormControl>
-            )}
-          />
-          <Box sx={{ pt: 1 }}>
-            <Button
-              type="submit"
-              variant="contained"
-              disabled={
-                isSubmitting || !!deptError || deptLoading || departments.length === 0
-              }
-            >
-              {isSubmitting ? strings.onboard.saving : strings.onboard.submit}
-            </Button>
-          </Box>
-        </Stack>
+                ))}
+              </Select>
+              {errors.departmentId && (
+                <FormHelperText>{errors.departmentId.message}</FormHelperText>
+              )}
+            </FormControl>
+          )}
+        />
+        <Box sx={{ gridColumn: { xs: '1', md: '1 / -1' }, pt: 1 }}>
+          <Button
+            type="submit"
+            variant="contained"
+            disabled={isSubmitting || !!deptError || deptLoading || departments.length === 0}
+          >
+            {isSubmitting ? strings.onboard.saving : strings.onboard.submit}
+          </Button>
+        </Box>
       </Box>
     </Paper>
   );

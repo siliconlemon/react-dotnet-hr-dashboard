@@ -1,4 +1,5 @@
 import { createTheme } from '@mui/material/styles';
+import { EMPLOYEE_CARD_ACCENTS } from './employeeCardPalette';
 
 const paperShadow = '0 1px 2px rgba(15, 31, 53, 0.08)';
 const paperShadowRaised = '0 2px 8px rgba(15, 31, 53, 0.1)';
@@ -7,6 +8,9 @@ const paperShadowRaised = '0 2px 8px rgba(15, 31, 53, 0.1)';
  * Compact enterprise theme: restrained elevation, navy primary, cool neutrals.
  */
 export const enterpriseTheme = createTheme({
+  employeeCard: {
+    accents: EMPLOYEE_CARD_ACCENTS,
+  },
   palette: {
     mode: 'light',
     primary: {

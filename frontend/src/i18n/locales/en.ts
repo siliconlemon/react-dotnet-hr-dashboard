@@ -51,7 +51,8 @@ export const en = {
     title: 'Employees',
     tabDirectory: 'Directory',
     tabOnboard: 'Onboard',
-    subtitle: 'Select a row to view profile and PTO. Sort columns and use the grid footer for pagination.',
+    subtitle:
+      'Select one or more rows to compare profiles and PTO in the panel below. Drag the resize bar between the grid and details to change the split. Sort columns and paginate with the grid footer.',
     listError: 'Could not load employees. Is the API running?',
     colName: 'Name',
     colEmail: 'Email',
@@ -74,7 +75,7 @@ export const en = {
     ptoError: 'Could not load PTO balance.',
     ptoYear: 'Calendar year',
     ptoAsOf: 'As of',
-    ptoAnnual: 'Annual entitlement (days)',
+    ptoAnnual: 'Annual entitlement',
     ptoAccrued: 'Accrued (days)',
     ptoUsed: 'Used (days)',
     ptoPending: 'Pending (days)',
