@@ -1,8 +1,9 @@
-# HR Dashboard — setup (backend)
+# HR Dashboard — setup
 
 ## Prerequisites
 
 - [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0) (verify with `dotnet --version`).
+- [Node.js](https://nodejs.org/) LTS (includes `npm`; verify with `node --version`).
 
 ## Run the API
 
@@ -68,3 +69,29 @@ This creates or updates `app.db` to match the latest migration. The running app 
 ## Optional: inspect SQLite data
 
 Use any SQLite client (for example [DB Browser for SQLite](https://sqlitebrowser.org/)) and open `backend/HrDashboard.Api/app.db`.
+
+---
+
+## Run the web UI (Vite + React + MUI)
+
+1. In a separate terminal, go to the frontend app:
+
+   ```bash
+   cd frontend
+   ```
+
+2. Install packages (first time or after `package.json` changes):
+
+   ```bash
+   npm install
+   ```
+
+3. Start the dev server:
+
+   ```bash
+   npm run dev
+   ```
+
+4. Open the URL shown in the console (Vite defaults to `http://localhost:5173/`).
+
+The shell uses a compact MUI theme, top **AppBar**, and a **collapsible** side navigation (full labels or icon rail on wide screens; menu drawer on narrow screens). Routing and API calls are added in later phases.
