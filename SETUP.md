@@ -28,6 +28,21 @@
 
 4. Open Swagger UI at the URL shown in the console (default HTTP profile: `http://localhost:5228/swagger`).
 
+## HTTP API (employees)
+
+Base path: `/api/employees` (JSON, camelCase). Typical routes:
+
+| Method | Path | Description |
+|--------|------|---------------|
+| `GET` | `/api/employees` | List employees (sorted by last name, first name), includes `departmentName`. |
+| `GET` | `/api/employees/{id}` | Get one employee. |
+| `POST` | `/api/employees` | Create; body: `firstName`, `lastName`, `email`, `jobTitle`, `hireDate`, `departmentId`. Unique email required. |
+| `PUT` | `/api/employees/{id}` | Full update; same body shape as create. |
+| `DELETE` | `/api/employees/{id}` | Delete employee (cascades leave requests). |
+| `GET` | `/api/employees/{id}/pto-balance?asOf=YYYY-MM-DD` | PTO snapshot for the calendar year of `asOf` (optional; defaults to today’s UTC date). |
+
+**PTO rules (portfolio defaults):** Amounts are **Czech workdays** (Monday–Friday, excluding **Czech public holidays** loaded from the free [Nager Public Holiday API](https://date.nager.at) (`GET /api/v3/PublicHolidays/{year}/CZ`), cached in memory. If that service is unreachable, the app **falls back to weekdays only** (still excludes Sat/Sun) until the cache expires. **15 workdays** per year accrue linearly over Czech workdays from Jan 1 (or hire date if later in that year) through Dec 31, measured through the as-of date. Approved and pending leave overlapping that calendar year consume workdays in the request range (weekends and public holidays in that range do not). Rejected leave does not count. `availableDays` is accrued minus used and pending, not below zero.
+
 ## Database file
 
 - The SQLite database is **`app.db`** in `backend/HrDashboard.Api` (same folder as the `.csproj`).

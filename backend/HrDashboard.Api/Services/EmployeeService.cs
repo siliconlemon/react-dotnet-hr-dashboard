@@ -1,0 +1,261 @@
+using HrDashboard.Api.Contracts;
+using HrDashboard.Api.Data;
+using HrDashboard.Api.Entities;
+using Microsoft.EntityFrameworkCore;
+
+namespace HrDashboard.Api.Services;
+
+/// <summary>
+/// EF-backed employee CRUD and PTO accrual for the current calendar year.
+/// </summary>
+public sealed class EmployeeService : IEmployeeService
+{
+    private const decimal DefaultAnnualPtoDays = 15m;
+
+    private readonly HrDashboardDbContext _db;
+
+    private readonly ICzechWorkdayCalculator _czechWorkdays;
+
+    public EmployeeService(HrDashboardDbContext db, ICzechWorkdayCalculator czechWorkdays)
+    {
+        _db = db;
+        _czechWorkdays = czechWorkdays;
+    }
+
+    /// <inheritdoc />
+    public async Task<IReadOnlyList<EmployeeReadDto>> GetAllAsync(CancellationToken cancellationToken = default)
+    {
+        return await _db.Employees
+            .AsNoTracking()
+            .OrderBy(e => e.LastName)
+            .ThenBy(e => e.FirstName)
+            .Select(e => new EmployeeReadDto
+            {
+                Id = e.Id,
+                FirstName = e.FirstName,
+                LastName = e.LastName,
+                Email = e.Email,
+                JobTitle = e.JobTitle,
+                HireDate = e.HireDate,
+                DepartmentId = e.DepartmentId,
+                DepartmentName = e.Department != null ? e.Department.Name : string.Empty
+            })
+            .ToListAsync(cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public async Task<EmployeeReadDto?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
+    {
+        var entity = await _db.Employees
+            .AsNoTracking()
+            .Include(e => e.Department)
+            .FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
+
+        return entity is null ? null : ToReadDto(entity);
+    }
+
+    /// <inheritdoc />
+    public async Task<(EmployeeReadDto? Employee, string? Error)> CreateAsync(
+        EmployeeCreateDto dto,
+        CancellationToken cancellationToken = default)
+    {
+        if (!await _db.Departments.AnyAsync(d => d.Id == dto.DepartmentId, cancellationToken))
+            return (null, "department_not_found");
+
+        var email = dto.Email.Trim();
+        if (await _db.Employees.AnyAsync(e => e.Email == email, cancellationToken))
+            return (null, "duplicate_email");
+
+        var entity = new Employee
+        {
+            FirstName = dto.FirstName.Trim(),
+            LastName = dto.LastName.Trim(),
+            Email = email,
+            JobTitle = dto.JobTitle.Trim(),
+            HireDate = dto.HireDate,
+            DepartmentId = dto.DepartmentId
+        };
+
+        _db.Employees.Add(entity);
+        await _db.SaveChangesAsync(cancellationToken);
+
+        var created = await _db.Employees
+            .AsNoTracking()
+            .Include(e => e.Department)
+            .FirstAsync(e => e.Id == entity.Id, cancellationToken);
+
+        return (ToReadDto(created), null);
+    }
+
+    /// <inheritdoc />
+    public async Task<(EmployeeReadDto? Employee, string? Error)> UpdateAsync(
+        int id,
+        EmployeeUpdateDto dto,
+        CancellationToken cancellationToken = default)
+    {
+        var entity = await _db.Employees.FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
+        if (entity is null)
+            return (null, "not_found");
+
+        if (!await _db.Departments.AnyAsync(d => d.Id == dto.DepartmentId, cancellationToken))
+            return (null, "department_not_found");
+
+        var email = dto.Email.Trim();
+        if (await _db.Employees.AnyAsync(e => e.Email == email && e.Id != id, cancellationToken))
+            return (null, "duplicate_email");
+
+        entity.FirstName = dto.FirstName.Trim();
+        entity.LastName = dto.LastName.Trim();
+        entity.Email = email;
+        entity.JobTitle = dto.JobTitle.Trim();
+        entity.HireDate = dto.HireDate;
+        entity.DepartmentId = dto.DepartmentId;
+
+        await _db.SaveChangesAsync(cancellationToken);
+
+        var updated = await _db.Employees
+            .AsNoTracking()
+            .Include(e => e.Department)
+            .FirstAsync(e => e.Id == id, cancellationToken);
+
+        return (ToReadDto(updated), null);
+    }
+
+    /// <inheritdoc />
+    public async Task<bool> DeleteAsync(int id, CancellationToken cancellationToken = default)
+    {
+        var entity = await _db.Employees.FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
+        if (entity is null)
+            return false;
+
+        _db.Employees.Remove(entity);
+        await _db.SaveChangesAsync(cancellationToken);
+        return true;
+    }
+
+    /// <inheritdoc />
+    public async Task<PtoBalanceDto?> GetPtoBalanceAsync(
+        int id,
+        DateOnly? asOfDate,
+        CancellationToken cancellationToken = default)
+    {
+        var employee = await _db.Employees
+            .AsNoTracking()
+            .Include(e => e.LeaveRequests)
+            .FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
+
+        if (employee is null)
+            return null;
+
+        var asOf = asOfDate ?? DateOnly.FromDateTime(DateTime.UtcNow.Date);
+        var year = asOf.Year;
+        var yearStart = new DateOnly(year, 1, 1);
+        var yearEnd = new DateOnly(year, 12, 31);
+
+        var used = await SumLeaveWorkdaysInYearAsync(
+                employee.LeaveRequests,
+                year,
+                LeaveRequestStatus.Approved,
+                cancellationToken)
+            .ConfigureAwait(false);
+        var pending = await SumLeaveWorkdaysInYearAsync(
+                employee.LeaveRequests,
+                year,
+                LeaveRequestStatus.Pending,
+                cancellationToken)
+            .ConfigureAwait(false);
+        var accrued = await CalculateAccruedPtoWorkdaysAsync(
+                employee.HireDate,
+                asOf,
+                yearStart,
+                yearEnd,
+                DefaultAnnualPtoDays,
+                cancellationToken)
+            .ConfigureAwait(false);
+        var available = Math.Max(0m, accrued - used - pending);
+
+        return new PtoBalanceDto
+        {
+            EmployeeId = employee.Id,
+            CalendarYear = year,
+            AsOfDate = asOf,
+            AnnualEntitlementDays = DefaultAnnualPtoDays,
+            AccruedDays = RoundPto(accrued),
+            UsedDays = RoundPto(used),
+            PendingDays = RoundPto(pending),
+            AvailableDays = RoundPto(available)
+        };
+    }
+
+    private static EmployeeReadDto ToReadDto(Employee e)
+    {
+        return new EmployeeReadDto
+        {
+            Id = e.Id,
+            FirstName = e.FirstName,
+            LastName = e.LastName,
+            Email = e.Email,
+            JobTitle = e.JobTitle,
+            HireDate = e.HireDate,
+            DepartmentId = e.DepartmentId,
+            DepartmentName = e.Department?.Name ?? string.Empty
+        };
+    }
+
+    /// <summary>
+    /// Linear accrual in Czech workdays from the later of hire date or Jan 1 through <paramref name="asOfDate"/>,
+    /// scaled to workdays from that start through Dec 31 of the same year.
+    /// </summary>
+    private async Task<decimal> CalculateAccruedPtoWorkdaysAsync(
+        DateOnly hireDate,
+        DateOnly asOf,
+        DateOnly yearStart,
+        DateOnly yearEnd,
+        decimal annualWorkdays,
+        CancellationToken cancellationToken)
+    {
+        if (asOf < hireDate)
+            return 0m;
+
+        var accrualStart = hireDate > yearStart ? hireDate : yearStart;
+        if (asOf < accrualStart)
+            return 0m;
+
+        var workdaysInWindow = await _czechWorkdays
+            .CountWorkdaysAsync(accrualStart, yearEnd, cancellationToken)
+            .ConfigureAwait(false);
+        if (workdaysInWindow <= 0m)
+            return 0m;
+
+        var workdaysElapsed = await _czechWorkdays
+            .CountWorkdaysAsync(accrualStart, asOf, cancellationToken)
+            .ConfigureAwait(false);
+        return annualWorkdays * workdaysElapsed / workdaysInWindow;
+    }
+
+    private async Task<decimal> SumLeaveWorkdaysInYearAsync(
+        IEnumerable<LeaveRequest> requests,
+        int year,
+        LeaveRequestStatus status,
+        CancellationToken cancellationToken)
+    {
+        var yearStart = new DateOnly(year, 1, 1);
+        var yearEnd = new DateOnly(year, 12, 31);
+        decimal total = 0;
+        foreach (var req in requests.Where(r => r.Status == status))
+        {
+            var overlapStart = req.StartDate > yearStart ? req.StartDate : yearStart;
+            var overlapEnd = req.EndDate < yearEnd ? req.EndDate : yearEnd;
+            if (overlapStart <= overlapEnd)
+            {
+                total += await _czechWorkdays
+                    .CountWorkdaysAsync(overlapStart, overlapEnd, cancellationToken)
+                    .ConfigureAwait(false);
+            }
+        }
+
+        return total;
+    }
+
+    private static decimal RoundPto(decimal value) => Math.Round(value, 2, MidpointRounding.AwayFromZero);
+}
