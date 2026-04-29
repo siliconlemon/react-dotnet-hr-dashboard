@@ -1,0 +1,84 @@
+# --- Cursor / local-only (keep offline) ---
+.cursor/
+.cursorrules
+cursorrules
+plans/
+
+# --- Dependencies ---
+node_modules/
+**/node_modules/
+
+# --- Build outputs ---
+dist/
+build/
+out/
+**/bin/
+**/obj/
+*.dll
+*.exe
+*.pdb
+*.cache
+project.lock.json
+project.fragment.lock.json
+artifacts/
+**/wwwroot/dist/
+
+# --- .NET ---
+*.user
+*.userosscache
+*.suo
+*.sln.docstates
+*.userprefs
+.vs/
+*.rsuser
+*.DotSettings.user
+TestResults/
+[Bb]uild[Ll]og.*
+*.log
+*.nupkg
+*.snupkg
+packages/
+.nuget/
+*.pfx
+*.publishsettings
+orleans.codegen.cs
+
+# --- React / Vite / frontend tooling ---
+*.tsbuildinfo
+.npm
+.eslintcache
+.stylelintcache
+.parcel-cache
+.next/
+.nuxt/
+.svelte-kit/
+coverage/
+*.local
+.env
+.env.*
+!.env.example
+
+# --- MSSQL / local DB (if you add data or dumps) ---
+*.mdf
+*.ldf
+*.ndf
+*.bak
+*.bacpac
+
+# --- OS ---
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# --- IDE (optional extras beyond Cursor) ---
+.idea/
+*.swp
+*.swo
+*~
+
+# --- Logs & temp ---
+logs/
+*.log
+tmp/
+temp/
+*.tmp
