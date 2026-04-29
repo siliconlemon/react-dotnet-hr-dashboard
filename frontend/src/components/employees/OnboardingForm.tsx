@@ -134,7 +134,7 @@ export function OnboardingForm({ onCreated }: OnboardingFormProps) {
         </Alert>
       )}
       {submitError && (
-        <Alert severity="error" sx={{ mb: 2}} onClose={() => setSubmitError(null)}>
+        <Alert severity="error" sx={{ mb: 2 }} onClose={() => setSubmitError(null)}>
           {submitError}
         </Alert>
       )}
