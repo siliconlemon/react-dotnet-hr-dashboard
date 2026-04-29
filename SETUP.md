@@ -94,4 +94,6 @@ Use any SQLite client (for example [DB Browser for SQLite](https://sqlitebrowser
 
 4. Open the URL shown in the console (Vite defaults to `http://localhost:5173/`).
 
-The shell uses a compact MUI theme, top **AppBar**, and a **collapsible** side navigation (full labels or icon rail on wide screens; menu drawer on narrow screens). Routing and API calls are added in later phases.
+5. **Employees list (Phase 4):** Start the API in another terminal (`dotnet run` from `backend/HrDashboard.Api` on `http://localhost:5228`). The Vite dev server proxies `/api` to that URL, so the **Employees** page can load the grid without CORS setup. If the API is not running, the grid shows an error.
+
+The shell uses a compact MUI theme, top **AppBar**, and a **collapsible** side navigation (full labels or icon rail on wide screens; menu drawer on narrow screens). The **Employees** view uses MUI **DataGrid** (client-side sort/pagination) and a tabbed detail panel (profile + PTO balance).

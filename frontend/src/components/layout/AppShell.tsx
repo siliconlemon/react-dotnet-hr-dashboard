@@ -27,7 +27,9 @@ import { strings } from '../../i18n';
 const DRAWER_EXPANDED_PX = 240;
 const DRAWER_COLLAPSED_PX = 64;
 
-const NAV_ITEMS: Array<{ key: string; label: string; icon: React.ReactElement }> = [
+export type NavKey = 'dashboard' | 'employees' | 'departments';
+
+const NAV_ITEMS: Array<{ key: NavKey; label: string; icon: React.ReactElement }> = [
   { key: 'dashboard', label: strings.nav.dashboard, icon: <DashboardOutlined fontSize="small" /> },
   { key: 'employees', label: strings.nav.employees, icon: <PeopleOutlined fontSize="small" /> },
   { key: 'departments', label: strings.nav.departments, icon: <BusinessOutlined fontSize="small" /> },
@@ -35,13 +37,15 @@ const NAV_ITEMS: Array<{ key: string; label: string; icon: React.ReactElement }>
 
 type AppShellProps = {
   children: React.ReactNode;
+  activeNavKey: NavKey;
+  onNavKeyChange: (key: NavKey) => void;
 };
 
 /**
  * Top AppBar plus collapsible navigation: mini rail when collapsed on desktop,
  * temporary drawer on small screens.
  */
-export function AppShell({ children }: AppShellProps) {
+export function AppShell({ children, activeNavKey, onNavKeyChange }: AppShellProps) {
   const theme = useTheme();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
@@ -67,8 +71,11 @@ export function AppShell({ children }: AppShellProps) {
         {NAV_ITEMS.map((item) => {
           const button = (
             <ListItemButton
-              selected={item.key === 'dashboard'}
-              onClick={mobile ? () => setMobileOpen(false) : undefined}
+              selected={item.key === activeNavKey}
+              onClick={() => {
+                onNavKeyChange(item.key);
+                if (mobile) setMobileOpen(false);
+              }}
               sx={{
                 borderRadius: 1,
                 justifyContent: iconOnly ? 'center' : 'flex-start',
