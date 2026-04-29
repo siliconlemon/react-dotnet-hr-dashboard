@@ -1,4 +1,24 @@
 /**
+ * Mirrors {@link HrDashboard.Api.Contracts.DepartmentReadDto}.
+ */
+export type DepartmentReadDto = {
+  id: number;
+  name: string;
+};
+
+/**
+ * Mirrors {@link HrDashboard.Api.Contracts.EmployeeCreateDto}; JSON uses camelCase.
+ */
+export type EmployeeCreateDto = {
+  firstName: string;
+  lastName: string;
+  email: string;
+  jobTitle: string;
+  hireDate: string;
+  departmentId: number;
+};
+
+/**
  * Mirrors {@link HrDashboard.Api.Contracts.EmployeeReadDto}; JSON uses camelCase.
  */
 export type EmployeeReadDto = {

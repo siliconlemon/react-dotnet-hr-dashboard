@@ -9,6 +9,7 @@ import { useCallback, useEffect, useMemo, useState, type SyntheticEvent } from '
 import { fetchEmployees, fetchPtoBalance } from '../../api/employeesApi';
 import type { EmployeeReadDto, PtoBalanceDto } from '../../api/types';
 import { strings } from '../../i18n';
+import { OnboardingForm } from './OnboardingForm';
 
 function formatDateOnly(iso: string): string {
   const d = new Date(iso + 'T12:00:00');
@@ -21,10 +22,13 @@ function formatDays(n: number): string {
 
 type DetailTab = 'profile' | 'pto';
 
+type EmployeesViewTab = 'directory' | 'onboard';
+
 /**
- * Employee directory: sortable/paginated grid plus tabbed detail (profile + PTO).
+ * Employees area: directory (grid + profile/PTO) or onboard form (create employee).
  */
 export function EmployeesView() {
+  const [viewTab, setViewTab] = useState<EmployeesViewTab>('directory');
   const [rows, setRows] = useState<EmployeeReadDto[]>([]);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -41,23 +45,39 @@ export function EmployeesView() {
     pageSize: 10,
   });
 
+  const reloadEmployees = useCallback(async (signal?: AbortSignal) => {
+    setLoading(true);
+    setLoadError(null);
+    try {
+      const data = await fetchEmployees(signal);
+      setRows(data);
+    } catch (e: unknown) {
+      if ((e as Error).name === 'AbortError') return;
+      setLoadError(strings.employees.listError);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     const ac = new AbortController();
     void (async () => {
       await Promise.resolve();
-      try {
-        const data = await fetchEmployees(ac.signal);
-        setRows(data);
-        setLoadError(null);
-      } catch (e: unknown) {
-        if ((e as Error).name === 'AbortError') return;
-        setLoadError(strings.employees.listError);
-      } finally {
-        setLoading(false);
-      }
+      await reloadEmployees(ac.signal);
     })();
     return () => ac.abort();
-  }, []);
+  }, [reloadEmployees]);
+
+  const handleEmployeeCreated = useCallback(
+    (created: EmployeeReadDto) => {
+      void (async () => {
+        await reloadEmployees();
+        setViewTab('directory');
+        setSelectionModel({ type: 'include', ids: new Set([created.id]) });
+      })();
+    },
+    [reloadEmployees],
+  );
 
   const selectedId = useMemo(() => {
     const first = selectionModel.ids.values().next().value;
@@ -101,6 +121,10 @@ export function EmployeesView() {
     },
     [],
   );
+
+  const handleViewTabChange = useCallback((_: SyntheticEvent, value: EmployeesViewTab) => {
+    setViewTab(value);
+  }, []);
 
   const onSelectionChange = useCallback((model: GridRowSelectionModel) => {
     setSelectionModel(model);
@@ -152,12 +176,29 @@ export function EmployeesView() {
         display: 'flex',
         flexDirection: 'column',
         gap: 2,
-        height: 'calc(100vh - 96px)',
-        minHeight: 420,
         minWidth: 0,
-        overflow: 'hidden',
+        ...(viewTab === 'directory'
+          ? {
+              height: 'calc(100vh - 96px)',
+              minHeight: 420,
+              overflow: 'hidden',
+            }
+          : { overflow: 'visible' }),
       }}
     >
+      <Tabs
+        value={viewTab}
+        onChange={handleViewTabChange}
+        sx={{ borderBottom: 1, borderColor: 'divider', flexShrink: 0 }}
+      >
+        <Tab value="directory" label={strings.employees.tabDirectory} />
+        <Tab value="onboard" label={strings.employees.tabOnboard} />
+      </Tabs>
+
+      {viewTab === 'onboard' ? (
+        <OnboardingForm onCreated={handleEmployeeCreated} />
+      ) : (
+        <>
       <Paper
         sx={{
           p: 2,
@@ -338,6 +379,8 @@ export function EmployeesView() {
           </>
         )}
       </Paper>
+        </>
+      )}
     </Box>
   );
 }

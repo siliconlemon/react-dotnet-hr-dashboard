@@ -1,4 +1,4 @@
-import type { EmployeeReadDto, PtoBalanceDto } from './types';
+import type { EmployeeCreateDto, EmployeeReadDto, PtoBalanceDto } from './types';
 
 const jsonHeaders = { Accept: 'application/json' } as const;
 
@@ -11,6 +11,28 @@ export async function fetchEmployees(signal?: AbortSignal): Promise<EmployeeRead
     throw new Error('employees_fetch_failed');
   }
   return res.json() as Promise<EmployeeReadDto[]>;
+}
+
+/**
+ * Creates an employee; returns the persisted row. Throws on validation or conflict (see message).
+ */
+export async function createEmployee(
+  body: EmployeeCreateDto,
+  signal?: AbortSignal,
+): Promise<EmployeeReadDto> {
+  const res = await fetch('/api/employees', {
+    method: 'POST',
+    headers: { ...jsonHeaders, 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+    signal,
+  });
+  if (res.status === 201) {
+    return res.json() as Promise<EmployeeReadDto>;
+  }
+  const text = (await res.text()).trim();
+  const err = new Error(text || 'employee_create_failed') as Error & { status: number };
+  err.status = res.status;
+  throw err;
 }
 
 /**

@@ -29,9 +29,19 @@
 
 4. Open Swagger UI at the URL shown in the console (default HTTP profile: `http://localhost:5228/swagger`).
 
-## HTTP API (employees)
+## HTTP API
 
-Base path: `/api/employees` (JSON, camelCase). Typical routes:
+JSON uses **camelCase**. Typical routes:
+
+### Departments
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/api/departments` | List departments (sorted by name), for dropdowns. |
+
+### Employees
+
+Base path: `/api/employees`.
 
 | Method | Path | Description |
 |--------|------|---------------|
@@ -94,6 +104,6 @@ Use any SQLite client (for example [DB Browser for SQLite](https://sqlitebrowser
 
 4. Open the URL shown in the console (Vite defaults to `http://localhost:5173/`).
 
-5. **Employees list (Phase 4):** Start the API in another terminal (`dotnet run` from `backend/HrDashboard.Api` on `http://localhost:5228`). The Vite dev server proxies `/api` to that URL, so the **Employees** page can load the grid without CORS setup. If the API is not running, the grid shows an error.
+5. **Employees (Phases 4–5):** Start the API in another terminal (`dotnet run` from `backend/HrDashboard.Api` on `http://localhost:5228`). The Vite dev server proxies `/api` to that URL, so the **Employees** page can load data without CORS setup. If the API is not running, the grid and forms show an error.
 
-The shell uses a compact MUI theme, top **AppBar**, and a **collapsible** side navigation (full labels or icon rail on wide screens; menu drawer on narrow screens). The **Employees** view uses MUI **DataGrid** (client-side sort/pagination) and a tabbed detail panel (profile + PTO balance).
+The shell uses a compact MUI theme, top **AppBar**, and a **collapsible** side navigation (full labels or icon rail on wide screens; menu drawer on narrow screens). The **Employees** view has **Directory** (MUI **DataGrid** with client-side sort/pagination, tabbed detail for profile + PTO balance) and **Onboard** (**react-hook-form** + MUI fields, `POST /api/employees`).
