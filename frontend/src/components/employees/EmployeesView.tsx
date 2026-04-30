@@ -19,6 +19,21 @@ type DetailTab = 'profile' | 'pto';
 
 type EmployeesViewTab = 'directory' | 'onboard' | 'edit' | 'remove';
 
+/** Resolves MUI Data Grid row ids (include / exclude selection semantics). */
+function effectiveSelectedRowIds(
+  rows: EmployeeReadDto[],
+  model: GridRowSelectionModel,
+): number[] {
+  const rowIds = rows.map((r) => r.id);
+  if (model.type === 'exclude') {
+    const excluded = new Set(
+      Array.from(model.ids, (id) => Number(id)).filter((n) => !Number.isNaN(n)),
+    );
+    return rowIds.filter((id) => !excluded.has(id));
+  }
+  return Array.from(model.ids, (id) => Number(id)).filter((n) => !Number.isNaN(n));
+}
+
 const SPLIT_MIN = 0.2;
 const SPLIT_MAX = 0.78;
 const SPLIT_DEFAULT = 0.48;
@@ -55,9 +70,11 @@ export function EmployeesView() {
     try {
       const data = await fetchEmployees(signal);
       setRows(data);
+      return data;
     } catch (e: unknown) {
-      if ((e as Error).name === 'AbortError') return;
+      if ((e as Error).name === 'AbortError') return undefined;
       setLoadError(strings.employees.listError);
+      return undefined;
     } finally {
       setLoading(false);
     }
@@ -92,11 +109,11 @@ export function EmployeesView() {
   const handleEmployeeRemoved = useCallback(
     (removedId: number) => {
       void (async () => {
-        await reloadEmployees();
+        const data = await reloadEmployees();
+        if (!data) return;
         setSelectionModel((prev) => {
-          const nextIds = new Set(prev.ids);
-          nextIds.delete(removedId);
-          return { type: 'include' as const, ids: nextIds };
+          const effective = effectiveSelectedRowIds(data, prev).filter((id) => id !== removedId);
+          return { type: 'include' as const, ids: new Set(effective) };
         });
       })();
     },
@@ -104,12 +121,10 @@ export function EmployeesView() {
   );
 
   const selectedIdsSorted = useMemo(() => {
-    const arr = Array.from(selectionModel.ids, (id) => Number(id)).filter(
-      (n) => !Number.isNaN(n),
-    );
+    const arr = effectiveSelectedRowIds(rows, selectionModel);
     arr.sort((a, b) => a - b);
     return arr;
-  }, [selectionModel]);
+  }, [rows, selectionModel]);
 
   const preferredSingleEmployeeId =
     selectedIdsSorted.length === 1 ? selectedIdsSorted[0]! : null;
