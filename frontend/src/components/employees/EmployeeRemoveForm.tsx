@@ -29,7 +29,7 @@ const selectAttachedHelperSpacerSx = (theme: { spacing: (n: number) => string })
 
 const HELPER_PLACEHOLDER = '\u00a0';
 
-type EmployeeRemovePaneProps = {
+type EmployeeRemoveFormProps = {
   employees: EmployeeReadDto[];
   /** Set when exactly one row is selected in Directory; otherwise picker stays empty. */
   preferredEmployeeId: number | null;
@@ -43,11 +43,11 @@ function displayName(e: EmployeeReadDto) {
 /**
  * Select an employee and confirm permanent deletion (DELETE /api/employees/:id).
  */
-export function EmployeeRemovePane({
+export function EmployeeRemoveForm({
   employees,
   preferredEmployeeId,
   onRemoved,
-}: EmployeeRemovePaneProps) {
+}: EmployeeRemoveFormProps) {
   const [selectedId, setSelectedId] = useState<number | ''>('');
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [confirmNameInput, setConfirmNameInput] = useState('');

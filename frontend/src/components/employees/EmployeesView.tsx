@@ -12,7 +12,7 @@ import { strings } from '../../i18n';
 import { formatDateOnly } from '../../utils/formatDate';
 import { EmployeeDetailCards } from './EmployeeDetailCards';
 import { EmployeeEditForm } from './EmployeeEditForm';
-import { EmployeeRemovePane } from './EmployeeRemovePane';
+import { EmployeeRemoveForm } from './EmployeeRemoveForm';
 import { OnboardingForm } from './OnboardingForm';
 
 type DetailTab = 'profile' | 'pto';
@@ -561,7 +561,7 @@ export function EmployeesView() {
               theme.transitions.create(['opacity', 'visibility'], { duration: 120 }),
           }}
         >
-          <EmployeeRemovePane
+          <EmployeeRemoveForm
             employees={rows}
             preferredEmployeeId={preferredSingleEmployeeId}
             onRemoved={handleEmployeeRemoved}
