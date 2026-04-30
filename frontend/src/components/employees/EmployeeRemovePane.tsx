@@ -5,9 +5,10 @@ import {
   Dialog,
   DialogActions,
   DialogContent,
-  DialogContentText,
   DialogTitle,
   Paper,
+  Stack,
+  TextField,
   Typography,
 } from '@mui/material';
 import { EmployeePickerField, getEmployeeById } from './EmployeePickerField';
@@ -49,6 +50,7 @@ export function EmployeeRemovePane({
 }: EmployeeRemovePaneProps) {
   const [selectedId, setSelectedId] = useState<number | ''>('');
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [confirmNameInput, setConfirmNameInput] = useState('');
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [removing, setRemoving] = useState(false);
 
@@ -56,6 +58,10 @@ export function EmployeeRemovePane({
     () => getEmployeeById(employees, selectedId),
     [employees, selectedId],
   );
+
+  useEffect(() => {
+    if (confirmOpen) setConfirmNameInput('');
+  }, [confirmOpen]);
 
   useEffect(() => {
     if (employees.length === 0) {
@@ -89,6 +95,9 @@ export function EmployeeRemovePane({
   };
 
   const noEmployees = employees.length === 0;
+  const expectedConfirmName = selectedRow ? displayName(selectedRow) : '';
+  const nameConfirmMatches =
+    expectedConfirmName !== '' && confirmNameInput.trim() === expectedConfirmName;
 
   return (
     <>
@@ -146,19 +155,52 @@ export function EmployeeRemovePane({
       </Paper>
 
       <Dialog open={confirmOpen} onClose={() => !removing && setConfirmOpen(false)} maxWidth="xs" fullWidth>
-        <DialogTitle>{strings.employees.removeConfirmTitle}</DialogTitle>
+        <DialogTitle>{strings.employees.removeConfirmTitle(expectedConfirmName)}</DialogTitle>
         <DialogContent>
-          <DialogContentText>
-            {selectedRow
-              ? strings.employees.removeConfirmBody(displayName(selectedRow))
-              : ''}
-          </DialogContentText>
+          <Stack spacing={2} sx={{ pt: 0.5 }}>
+            {selectedRow && (
+              <>
+                <Stack spacing={1}>
+                  <Typography variant="body2" color="text.secondary">
+                    {strings.employees.removeConfirmBody(expectedConfirmName)}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {strings.employees.removeConfirmWriteBefore}{' '}
+                    <Box
+                      component="span"
+                      sx={{ fontStyle: 'italic', color: 'text.primary' }}
+                    >
+                      {expectedConfirmName}
+                    </Box>{' '}
+                    {strings.employees.removeConfirmWriteAfter}
+                  </Typography>
+                </Stack>
+                <TextField
+                  autoFocus
+                  size="small"
+                  fullWidth
+                  autoComplete="off"
+                  spellCheck={false}
+                  label={strings.employees.removeConfirmNameLabel}
+                  value={confirmNameInput}
+                  onChange={(e) => setConfirmNameInput(e.target.value)}
+                  disabled={removing}
+                  error={confirmNameInput.length > 0 && !nameConfirmMatches}
+                />
+              </>
+            )}
+          </Stack>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setConfirmOpen(false)} disabled={removing}>
             {strings.employees.removeConfirmCancel}
           </Button>
-          <Button onClick={handleConfirmRemove} color="error" variant="contained" disabled={removing}>
+          <Button
+            onClick={handleConfirmRemove}
+            color="error"
+            variant="contained"
+            disabled={removing || !nameConfirmMatches}
+          >
             {removing ? strings.employees.removing : strings.employees.removeConfirmAction}
           </Button>
         </DialogActions>

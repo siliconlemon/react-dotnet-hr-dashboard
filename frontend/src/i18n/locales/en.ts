@@ -109,9 +109,13 @@ export const en = {
       'Permanently deletes the employee record and related leave data. This cannot be undone.',
     removePickEmployee: 'Employee',
     removeButton: 'Remove employee',
-    removeConfirmTitle: 'Remove this employee?',
+    removeConfirmTitle: (name: string) =>
+      name.trim() ? `Remove ${name}?` : 'Remove employee?',
     removeConfirmBody: (name: string) =>
-      `${name} will be deleted along with their leave requests. Continue?`,
+      `${name} will be permanently deleted along with their leave requests. This cannot be undone.`,
+    removeConfirmWriteBefore: 'Write',
+    removeConfirmWriteAfter: 'to confirm.',
+    removeConfirmNameLabel: 'Type full name to confirm',
     removeConfirmCancel: 'Cancel',
     removeConfirmAction: 'Remove',
     removing: 'Removing…',

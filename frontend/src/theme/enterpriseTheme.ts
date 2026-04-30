@@ -127,6 +127,25 @@ export const enterpriseTheme = createTheme({
         },
       },
     },
+    /** Dialog body gutters stay 24px; tuck actions closer to content and align button row with content inset. */
+    MuiDialogContent: {
+      styleOverrides: {
+        root: ({ theme }) => ({
+          paddingBottom: theme.spacing(1.75),
+        }),
+      },
+    },
+    MuiDialogActions: {
+      styleOverrides: {
+        root: ({ theme }) => ({
+          paddingTop: theme.spacing(0.5),
+          /** Slightly under side inset — full symmetry reads heavy at the bottom edge. */
+          paddingBottom: theme.spacing(2.5),
+          paddingLeft: theme.spacing(3),
+          paddingRight: theme.spacing(3),
+        }),
+      },
+    },
     // MUI X Date Pickers — align popups with enterprise Paper/shape and primary palette.
     /** Popper surface wrapping the layout; round this so the outer shell matches `shape` (not just the inner layout). */
     MuiPickerPopper: {
