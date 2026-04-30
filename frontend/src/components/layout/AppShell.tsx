@@ -205,7 +205,14 @@ export function AppShell({ children, activeNavKey, onNavKeyChange }: AppShellPro
   );
 
   return (
-    <Box sx={{ display: 'flex', minHeight: '100vh' }}>
+    <Box
+      sx={{
+        display: 'flex',
+        flex: 1,
+        minHeight: 0,
+        width: '100%',
+      }}
+    >
       <AppBar
         position="fixed"
         sx={{
@@ -260,14 +267,30 @@ export function AppShell({ children, activeNavKey, onNavKeyChange }: AppShellPro
         component="main"
         sx={{
           flexGrow: 1,
-          p: 2,
+          display: 'flex',
+          flexDirection: 'column',
+          minWidth: 0,
+          minHeight: 0,
+          px: 2,
+          pt: 1,
+          pb: 1,
           width: { md: `calc(100% - ${drawerWidth}px)` },
-          minHeight: '100vh',
           bgcolor: 'background.default',
+          boxSizing: 'border-box',
         }}
       >
         <Toolbar />
-        {children}
+        <Box
+          sx={{
+            flex: 1,
+            minHeight: 0,
+            display: 'flex',
+            flexDirection: 'column',
+            overflow: 'hidden',
+          }}
+        >
+          {children}
+        </Box>
       </Box>
     </Box>
   );

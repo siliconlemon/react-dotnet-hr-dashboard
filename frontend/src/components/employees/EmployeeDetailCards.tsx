@@ -1,10 +1,16 @@
 import { Alert, Box, Paper, Skeleton, Typography } from '@mui/material';
-import type { Theme } from '@mui/material/styles';
+import type { SxProps, Theme } from '@mui/material/styles';
+import { Fragment, type ReactNode } from 'react';
 import type { EmployeeReadDto, PtoBalanceDto } from '../../api/types';
 import { strings } from '../../i18n';
 import { getDepartmentAccent } from '../../theme/employeeCardPalette';
 import { formatDateOnly } from '../../utils/formatDate';
 import { formatPtoDays } from '../../utils/formatPto';
+import {
+  DEFAULT_EMPLOYEE_DETAIL_FIELD_VISIBILITY,
+  type EmployeeProfileFieldId,
+  type EmployeePtoFieldId,
+} from './employeeDetailFields';
 
 const detailGridSx = {
   display: 'grid',
@@ -31,6 +37,8 @@ export type EmployeeDetailCardsProps = {
   ptoErrorByEmployeeId: Partial<Record<number, boolean>>;
   /** When on PTO tab, hide real cards until balances have finished loading (avoids layout jump). */
   ptoLoading?: boolean;
+  profileFieldVisibility?: Record<EmployeeProfileFieldId, boolean>;
+  ptoFieldVisibility?: Record<EmployeePtoFieldId, boolean>;
 };
 
 const cardsGridBaseSx = {
@@ -48,6 +56,129 @@ const cardsGridSx = (theme: Theme) => ({
   width: '100%',
   maxWidth: theme.spacing(125),
 });
+
+function ProfileFieldsGrid({
+  row,
+  visibility,
+}: {
+  row: EmployeeReadDto;
+  visibility: Record<EmployeeProfileFieldId, boolean>;
+}) {
+  const rows: {
+    id: EmployeeProfileFieldId;
+    label: string;
+    value: ReactNode;
+    valueColor?: 'text.secondary' | 'text.primary';
+  }[] = [
+    { id: 'email', label: strings.employees.fieldEmail, value: row.email },
+    { id: 'jobTitle', label: strings.employees.fieldJobTitle, value: row.jobTitle },
+    { id: 'department', label: strings.employees.fieldDepartment, value: row.departmentName },
+    {
+      id: 'hireDate',
+      label: strings.employees.fieldHireDate,
+      value: formatDateOnly(row.hireDate),
+    },
+    {
+      id: 'identifiers',
+      label: strings.employees.fieldIds,
+      value: (
+        <>
+          {strings.employees.idLinePrefix}
+          {row.id}
+          {strings.employees.idLineMid}
+          {row.departmentId}
+        </>
+      ),
+      valueColor: 'text.secondary',
+    },
+  ];
+
+  const visible = rows.filter((r) => visibility[r.id]);
+
+  return (
+    <Box sx={detailGridSx}>
+      {visible.map((r) => (
+        <Fragment key={r.id}>
+          <Typography variant="caption" color="text.secondary">
+            {r.label}
+          </Typography>
+          <Typography variant="body2" color={r.valueColor ?? 'text.primary'}>
+            {r.value}
+          </Typography>
+        </Fragment>
+      ))}
+    </Box>
+  );
+}
+
+function PtoFieldsGrid({
+  pto,
+  visibility,
+}: {
+  pto: PtoBalanceDto;
+  visibility: Record<EmployeePtoFieldId, boolean>;
+}) {
+  const rows: {
+    id: EmployeePtoFieldId;
+    label: string;
+    value: ReactNode;
+    valueSx?: SxProps<Theme>;
+  }[] = [
+    {
+      id: 'calendarYear',
+      label: strings.employees.ptoYear,
+      value: pto.calendarYear,
+    },
+    {
+      id: 'asOf',
+      label: strings.employees.ptoAsOf,
+      value: formatDateOnly(pto.asOfDate),
+    },
+    {
+      id: 'annualEntitlement',
+      label: strings.employees.ptoAnnual,
+      value: formatPtoDays(pto.annualEntitlementDays),
+    },
+    {
+      id: 'accrued',
+      label: strings.employees.ptoAccrued,
+      value: formatPtoDays(pto.accruedDays),
+    },
+    {
+      id: 'used',
+      label: strings.employees.ptoUsed,
+      value: formatPtoDays(pto.usedDays),
+    },
+    {
+      id: 'pending',
+      label: strings.employees.ptoPending,
+      value: formatPtoDays(pto.pendingDays),
+    },
+    {
+      id: 'available',
+      label: strings.employees.ptoAvailable,
+      value: formatPtoDays(pto.availableDays),
+      valueSx: { fontWeight: 600 },
+    },
+  ];
+
+  const visible = rows.filter((r) => visibility[r.id]);
+
+  return (
+    <Box sx={ptoGridSx}>
+      {visible.map((r) => (
+        <Fragment key={r.id}>
+          <Typography variant="caption" color="text.secondary">
+            {r.label}
+          </Typography>
+          <Typography variant="body2" sx={r.valueSx}>
+            {r.value}
+          </Typography>
+        </Fragment>
+      ))}
+    </Box>
+  );
+}
 
 function EmployeeDetailCardsSkeleton({ count }: { count: number }) {
   return (
@@ -90,6 +221,8 @@ export function EmployeeDetailCards({
   ptoByEmployeeId,
   ptoErrorByEmployeeId,
   ptoLoading = false,
+  profileFieldVisibility = DEFAULT_EMPLOYEE_DETAIL_FIELD_VISIBILITY.profile,
+  ptoFieldVisibility = DEFAULT_EMPLOYEE_DETAIL_FIELD_VISIBILITY.pto,
 }: EmployeeDetailCardsProps) {
   if (detailTab === 'pto' && ptoLoading && employees.length > 0) {
     return <EmployeeDetailCardsSkeleton count={employees.length} />;
@@ -132,39 +265,10 @@ export function EmployeeDetailCards({
             </Box>
             <Box sx={{ px: 1.75, pt: 1.25, pb: 1.75, flex: 1, minHeight: 0 }}>
               {detailTab === 'profile' && (
-                <Box sx={detailGridSx}>
-                  <Typography variant="caption" color="text.secondary">
-                    {strings.employees.fieldName}
-                  </Typography>
-                  <Typography variant="body2">
-                    {row.firstName} {row.lastName}
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    {strings.employees.fieldEmail}
-                  </Typography>
-                  <Typography variant="body2">{row.email}</Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    {strings.employees.fieldJobTitle}
-                  </Typography>
-                  <Typography variant="body2">{row.jobTitle}</Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    {strings.employees.fieldDepartment}
-                  </Typography>
-                  <Typography variant="body2">{row.departmentName}</Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    {strings.employees.fieldHireDate}
-                  </Typography>
-                  <Typography variant="body2">{formatDateOnly(row.hireDate)}</Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    {strings.employees.fieldIds}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {strings.employees.idLinePrefix}
-                    {row.id}
-                    {strings.employees.idLineMid}
-                    {row.departmentId}
-                  </Typography>
-                </Box>
+                <ProfileFieldsGrid
+                  row={row}
+                  visibility={profileFieldVisibility}
+                />
               )}
               {detailTab === 'pto' && (
                 <Box>
@@ -174,38 +278,7 @@ export function EmployeeDetailCards({
                     </Alert>
                   )}
                   {!ptoErr && pto && (
-                    <Box sx={ptoGridSx}>
-                      <Typography variant="caption" color="text.secondary">
-                        {strings.employees.ptoYear}
-                      </Typography>
-                      <Typography variant="body2">{pto.calendarYear}</Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        {strings.employees.ptoAsOf}
-                      </Typography>
-                      <Typography variant="body2">{formatDateOnly(pto.asOfDate)}</Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        {strings.employees.ptoAnnual}
-                      </Typography>
-                      <Typography variant="body2">{formatPtoDays(pto.annualEntitlementDays)}</Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        {strings.employees.ptoAccrued}
-                      </Typography>
-                      <Typography variant="body2">{formatPtoDays(pto.accruedDays)}</Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        {strings.employees.ptoUsed}
-                      </Typography>
-                      <Typography variant="body2">{formatPtoDays(pto.usedDays)}</Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        {strings.employees.ptoPending}
-                      </Typography>
-                      <Typography variant="body2">{formatPtoDays(pto.pendingDays)}</Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        {strings.employees.ptoAvailable}
-                      </Typography>
-                      <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                        {formatPtoDays(pto.availableDays)}
-                      </Typography>
-                    </Box>
+                    <PtoFieldsGrid pto={pto} visibility={ptoFieldVisibility} />
                   )}
                 </Box>
               )}

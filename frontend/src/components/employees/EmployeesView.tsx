@@ -11,6 +11,8 @@ import type { EmployeeReadDto, PtoBalanceDto } from '../../api/types';
 import { strings } from '../../i18n';
 import { formatDateOnly } from '../../utils/formatDate';
 import { EmployeeDetailCards } from './EmployeeDetailCards';
+import { EmployeeDetailFieldsPicker } from './EmployeeDetailFieldsPicker';
+import { useEmployeeDetailFieldVisibility } from './useEmployeeDetailFieldVisibility';
 import { EmployeeEditForm } from './EmployeeEditForm';
 import { EmployeeRemoveForm } from './EmployeeRemoveForm';
 import { OnboardingForm } from './OnboardingForm';
@@ -63,6 +65,13 @@ export function EmployeesView() {
   const [splitFraction, setSplitFraction] = useState(SPLIT_DEFAULT);
   const [splitDragging, setSplitDragging] = useState(false);
   const splitContainerRef = useRef<HTMLDivElement | null>(null);
+  const {
+    visibility: detailFieldVisibility,
+    setProfileVisibility,
+    setPtoVisibility,
+    resetProfile: resetDetailProfileFields,
+    resetPto: resetDetailPtoFields,
+  } = useEmployeeDetailFieldVisibility();
 
   const reloadEmployees = useCallback(async (signal?: AbortSignal) => {
     setLoading(true);
@@ -270,7 +279,6 @@ export function EmployeesView() {
         minWidth: 0,
         flex: 1,
         minHeight: 0,
-        height: 'calc(100vh - 96px)',
         overflow: 'hidden',
       }}
     >
@@ -466,6 +474,7 @@ export function EmployeesView() {
                 overflow: 'hidden',
                 width: '100%',
                 boxSizing: 'border-box',
+                mb: 1,
               }}
               variant="outlined"
             >
@@ -489,27 +498,58 @@ export function EmployeesView() {
                 </Box>
               ) : (
                 <>
-                  <Tabs
-                    value={detailTab}
-                    onChange={handleDetailTabChange}
+                  <Box
                     sx={{
-                      px: 2,
+                      display: 'flex',
+                      alignItems: 'center',
                       borderBottom: 1,
                       borderColor: 'divider',
                       mb: 2,
                       flexShrink: 0,
                     }}
                   >
-                    <Tab value="profile" label={strings.employees.tabProfile} />
-                    <Tab value="pto" label={strings.employees.tabPto} />
-                  </Tabs>
-                  <Box sx={{ flex: 1, minHeight: 0, overflowY: 'auto', pl: 2, pr: 0.5, pb: 2 }}>
+                    <Tabs
+                      value={detailTab}
+                      onChange={handleDetailTabChange}
+                      sx={{
+                        flex: 1,
+                        minWidth: 0,
+                        px: 2,
+                        borderBottom: 0,
+                      }}
+                    >
+                      <Tab value="profile" label={strings.employees.tabProfile} />
+                      <Tab value="pto" label={strings.employees.tabPto} />
+                    </Tabs>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        alignSelf: 'stretch',
+                        width: 48,
+                        pr: 1,
+                      }}
+                    >
+                      <EmployeeDetailFieldsPicker
+                        detailTab={detailTab}
+                        profileVisibility={detailFieldVisibility.profile}
+                        ptoVisibility={detailFieldVisibility.pto}
+                        onProfileVisibilityChange={setProfileVisibility}
+                        onPtoVisibilityChange={setPtoVisibility}
+                        onResetProfile={resetDetailProfileFields}
+                        onResetPto={resetDetailPtoFields}
+                      />
+                    </Box>
+                  </Box>
+                  <Box sx={{ flex: 1, minHeight: 0, overflowY: 'auto', pl: 2, pr: 2, pb: 2 }}>
                     <EmployeeDetailCards
                       employees={selectedRows}
                       detailTab={detailTab}
                       ptoByEmployeeId={ptoByEmployeeId}
                       ptoErrorByEmployeeId={ptoErrorByEmployeeId}
                       ptoLoading={detailTab === 'pto' && ptoLoading}
+                      profileFieldVisibility={detailFieldVisibility.profile}
+                      ptoFieldVisibility={detailFieldVisibility.pto}
                     />
                   </Box>
                 </>

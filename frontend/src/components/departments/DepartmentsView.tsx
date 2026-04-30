@@ -468,7 +468,7 @@ export function DepartmentsView() {
         boxSizing: 'border-box',
         display: 'flex',
         flexDirection: 'column',
-        height: 'calc(100vh - 96px)',
+        flex: 1,
         minHeight: 0,
         overflow: 'hidden',
       }}

@@ -11,8 +11,9 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import { EmployeePickerField, getEmployeeById } from './EmployeePickerField';
-import { useEffect, useMemo, useState } from 'react';
+import { EmployeePickerField } from './EmployeePickerField';
+import { getEmployeeById } from './getEmployeeById';
+import { useMemo, useState } from 'react';
 import { deleteEmployee } from '../../api/employeesApi';
 import type { EmployeeReadDto } from '../../api/types';
 import { strings } from '../../i18n';
@@ -48,7 +49,29 @@ export function EmployeeRemoveForm({
   preferredEmployeeId,
   onRemoved,
 }: EmployeeRemoveFormProps) {
-  const [selectedId, setSelectedId] = useState<number | ''>('');
+  const directorySyncKey = useMemo(
+    () =>
+      JSON.stringify({
+        pref: preferredEmployeeId,
+        ids: employees.map((e) => e.id),
+      }),
+    [employees, preferredEmployeeId],
+  );
+
+  const autoSelectedId = useMemo((): number | '' => {
+    if (employees.length === 0) return '';
+    if (preferredEmployeeId != null) {
+      const row = getEmployeeById(employees, preferredEmployeeId);
+      if (row) return Number(row.id);
+    }
+    return '';
+  }, [employees, preferredEmployeeId]);
+
+  const [userPick, setUserPick] = useState<{ key: string; id: number | '' } | null>(null);
+
+  const selectedId =
+    userPick?.key === directorySyncKey ? userPick.id : autoSelectedId;
+
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [confirmNameInput, setConfirmNameInput] = useState('');
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -59,25 +82,6 @@ export function EmployeeRemoveForm({
     [employees, selectedId],
   );
 
-  useEffect(() => {
-    if (confirmOpen) setConfirmNameInput('');
-  }, [confirmOpen]);
-
-  useEffect(() => {
-    if (employees.length === 0) {
-      setSelectedId('');
-      return;
-    }
-    if (preferredEmployeeId != null) {
-      const row = getEmployeeById(employees, preferredEmployeeId);
-      if (row) {
-        setSelectedId(Number(row.id));
-        return;
-      }
-    }
-    setSelectedId('');
-  }, [employees, preferredEmployeeId]);
-
   const handleConfirmRemove = async () => {
     if (selectedId === '') return;
     setSubmitError(null);
@@ -86,7 +90,7 @@ export function EmployeeRemoveForm({
       await deleteEmployee(selectedId);
       setConfirmOpen(false);
       onRemoved(selectedId);
-      setSelectedId('');
+      setUserPick(null);
     } catch {
       setSubmitError(strings.employees.removeFailed);
     } finally {
@@ -127,7 +131,7 @@ export function EmployeeRemoveForm({
               employees={employees}
               valueId={selectedId}
               onChangeId={(id) => {
-                setSelectedId(id);
+                setUserPick({ key: directorySyncKey, id });
                 setSubmitError(null);
               }}
               label={strings.employees.removePickEmployee}
@@ -145,7 +149,10 @@ export function EmployeeRemoveForm({
                 variant="contained"
                 color="error"
                 disabled={selectedId === '' || removing}
-                onClick={() => setConfirmOpen(true)}
+                onClick={() => {
+                  setConfirmNameInput('');
+                  setConfirmOpen(true);
+                }}
               >
                 {strings.employees.removeButton}
               </Button>

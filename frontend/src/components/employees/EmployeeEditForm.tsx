@@ -16,7 +16,8 @@ import {
   EmployeeEditChangesDialog,
   type EmployeeEditChangeRow,
 } from './EmployeeEditChangesDialog';
-import { EmployeePickerField, getEmployeeById } from './EmployeePickerField';
+import { EmployeePickerField } from './EmployeePickerField';
+import { getEmployeeById } from './getEmployeeById';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import dayjs from 'dayjs';
 import { useEffect, useMemo, useState } from 'react';
@@ -156,7 +157,28 @@ export function EmployeeEditForm({
   const [pendingValues, setPendingValues] = useState<EditFormValues | null>(null);
   const [changeRows, setChangeRows] = useState<EmployeeEditChangeRow[]>([]);
   const [confirmSubmitting, setConfirmSubmitting] = useState(false);
-  const [selectedId, setSelectedId] = useState<number | ''>('');
+  const directorySyncKey = useMemo(
+    () =>
+      JSON.stringify({
+        pref: preferredEmployeeId,
+        ids: employees.map((e) => e.id),
+      }),
+    [employees, preferredEmployeeId],
+  );
+
+  const autoSelectedId = useMemo((): number | '' => {
+    if (employees.length === 0) return '';
+    if (preferredEmployeeId != null) {
+      const row = getEmployeeById(employees, preferredEmployeeId);
+      if (row) return Number(row.id);
+    }
+    return '';
+  }, [employees, preferredEmployeeId]);
+
+  const [userPick, setUserPick] = useState<{ key: string; id: number | '' } | null>(null);
+
+  const selectedId =
+    userPick?.key === directorySyncKey ? userPick.id : autoSelectedId;
 
   const selectedRow = useMemo(
     () => getEmployeeById(employees, selectedId),
@@ -204,21 +226,6 @@ export function EmployeeEditForm({
     })();
     return () => ac.abort();
   }, []);
-
-  useEffect(() => {
-    if (employees.length === 0) {
-      setSelectedId('');
-      return;
-    }
-    if (preferredEmployeeId != null) {
-      const row = getEmployeeById(employees, preferredEmployeeId);
-      if (row) {
-        setSelectedId(Number(row.id));
-        return;
-      }
-    }
-    setSelectedId('');
-  }, [employees, preferredEmployeeId]);
 
   useEffect(() => {
     if (!selectedRow) {
@@ -341,7 +348,7 @@ export function EmployeeEditForm({
         employees={employees}
         valueId={selectedId}
         onChangeId={(id) => {
-          setSelectedId(id);
+          setUserPick({ key: directorySyncKey, id });
           setSubmitError(null);
           setInfoMessage(null);
         }}

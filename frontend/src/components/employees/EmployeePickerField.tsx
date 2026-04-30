@@ -4,6 +4,7 @@ import FormHelperText from '@mui/material/FormHelperText';
 import TextField from '@mui/material/TextField';
 import type { Theme } from '@mui/material/styles';
 import type { EmployeeReadDto } from '../../api/types';
+import { getEmployeeById } from './getEmployeeById';
 
 const filterEmployees = createFilterOptions<EmployeeReadDto>({
   matchFrom: 'any',
@@ -20,17 +21,6 @@ const filterEmployees = createFilterOptions<EmployeeReadDto>({
 
 function fullName(e: EmployeeReadDto) {
   return `${e.firstName} ${e.lastName}`.trim();
-}
-
-/** Resolves a row from the list; uses numeric id comparison so grid / JSON id types stay in sync. */
-export function getEmployeeById(
-  employees: EmployeeReadDto[],
-  id: number | '',
-): EmployeeReadDto | undefined {
-  if (id === '') return undefined;
-  const n = Number(id);
-  if (Number.isNaN(n)) return undefined;
-  return employees.find((e) => Number(e.id) === n);
 }
 
 /** Single-line label: `Name (email)`; falls back to email if name is empty. */
