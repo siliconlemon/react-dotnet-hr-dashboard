@@ -65,6 +65,8 @@ export const en = {
     title: 'Employees',
     tabDirectory: 'Directory',
     tabOnboard: 'Onboard',
+    tabEdit: 'Edit',
+    tabRemove: 'Remove',
     subtitle:
       'Select one or more rows to compare profiles and PTO in the panel below. Drag the resize bar between the grid and details to change the split. Sort columns and paginate with the grid footer.',
     listError: 'Could not load employees. Is the API running?',
@@ -94,6 +96,28 @@ export const en = {
     ptoUsed: 'Used (days)',
     ptoPending: 'Pending (days)',
     ptoAvailable: 'Available (days)',
+    editTitle: 'Edit employee',
+    editSubtitle: 'Update profile fields. Email must stay unique. Changes apply when you save.',
+    editPickEmployee: 'Employee',
+    editSave: 'Save changes',
+    editSaving: 'Saving…',
+    editNoEmployees: 'No employees to edit. Add someone from Onboard first.',
+    editSelectPrompt: 'Choose an employee above or select exactly one row in Directory.',
+    updateFailed: 'Could not save changes. Try again.',
+    removeTitle: 'Remove employee',
+    removeSubtitle:
+      'Permanently deletes the employee record and related leave data. This cannot be undone.',
+    removePickEmployee: 'Employee',
+    removeButton: 'Remove employee',
+    removeConfirmTitle: 'Remove this employee?',
+    removeConfirmBody: (name: string) =>
+      `${name} will be deleted along with their leave requests. Continue?`,
+    removeConfirmCancel: 'Cancel',
+    removeConfirmAction: 'Remove',
+    removing: 'Removing…',
+    removeFailed: 'Could not remove employee. Try again.',
+    removeNoEmployees: 'No employees on file.',
+    removeSelectPrompt: 'Choose an employee to remove, or select one row in Directory.',
   },
 } as const;
 

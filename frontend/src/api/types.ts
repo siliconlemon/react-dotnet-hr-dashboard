@@ -19,6 +19,11 @@ export type EmployeeCreateDto = {
 };
 
 /**
+ * Mirrors {@link HrDashboard.Api.Contracts.EmployeeUpdateDto}; same shape as create (full replace).
+ */
+export type EmployeeUpdateDto = EmployeeCreateDto;
+
+/**
  * Mirrors {@link HrDashboard.Api.Contracts.EmployeeReadDto}; JSON uses camelCase.
  */
 export type EmployeeReadDto = {

@@ -1,4 +1,9 @@
-import type { EmployeeCreateDto, EmployeeReadDto, PtoBalanceDto } from './types';
+import type {
+  EmployeeCreateDto,
+  EmployeeReadDto,
+  EmployeeUpdateDto,
+  PtoBalanceDto,
+} from './types';
 
 const jsonHeaders = { Accept: 'application/json' } as const;
 
@@ -31,6 +36,43 @@ export async function createEmployee(
   }
   const text = (await res.text()).trim();
   const err = new Error(text || 'employee_create_failed') as Error & { status: number };
+  err.status = res.status;
+  throw err;
+}
+
+/**
+ * Replaces an employee (PUT). Throws on validation, conflict, or missing row (see message / status).
+ */
+export async function updateEmployee(
+  id: number,
+  body: EmployeeUpdateDto,
+  signal?: AbortSignal,
+): Promise<EmployeeReadDto> {
+  const res = await fetch(`/api/employees/${id}`, {
+    method: 'PUT',
+    headers: { ...jsonHeaders, 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+    signal,
+  });
+  if (res.status === 200) {
+    return res.json() as Promise<EmployeeReadDto>;
+  }
+  const text = (await res.text()).trim();
+  const err = new Error(text || 'employee_update_failed') as Error & { status: number };
+  err.status = res.status;
+  throw err;
+}
+
+/**
+ * Deletes an employee and related leave requests. Throws if not found.
+ */
+export async function deleteEmployee(id: number, signal?: AbortSignal): Promise<void> {
+  const res = await fetch(`/api/employees/${id}`, { method: 'DELETE', signal });
+  if (res.status === 204) {
+    return;
+  }
+  const text = (await res.text()).trim();
+  const err = new Error(text || 'employee_delete_failed') as Error & { status: number };
   err.status = res.status;
   throw err;
 }

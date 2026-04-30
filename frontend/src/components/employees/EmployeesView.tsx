@@ -11,18 +11,20 @@ import type { EmployeeReadDto, PtoBalanceDto } from '../../api/types';
 import { strings } from '../../i18n';
 import { formatDateOnly } from '../../utils/formatDate';
 import { EmployeeDetailCards } from './EmployeeDetailCards';
+import { EmployeeEditForm } from './EmployeeEditForm';
+import { EmployeeRemovePane } from './EmployeeRemovePane';
 import { OnboardingForm } from './OnboardingForm';
 
 type DetailTab = 'profile' | 'pto';
 
-type EmployeesViewTab = 'directory' | 'onboard';
+type EmployeesViewTab = 'directory' | 'onboard' | 'edit' | 'remove';
 
 const SPLIT_MIN = 0.2;
 const SPLIT_MAX = 0.78;
 const SPLIT_DEFAULT = 0.48;
 
 /**
- * Employees area: directory (grid + profile/PTO) or onboard form (create employee).
+ * Employees area: directory (grid + profile/PTO), onboard, edit, or remove.
  */
 export function EmployeesView() {
   const [viewTab, setViewTab] = useState<EmployeesViewTab>('directory');
@@ -81,6 +83,26 @@ export function EmployeesView() {
     [reloadEmployees],
   );
 
+  const handleEmployeeUpdated = useCallback(() => {
+    void (async () => {
+      await reloadEmployees();
+    })();
+  }, [reloadEmployees]);
+
+  const handleEmployeeRemoved = useCallback(
+    (removedId: number) => {
+      void (async () => {
+        await reloadEmployees();
+        setSelectionModel((prev) => {
+          const nextIds = new Set(prev.ids);
+          nextIds.delete(removedId);
+          return { type: 'include' as const, ids: nextIds };
+        });
+      })();
+    },
+    [reloadEmployees],
+  );
+
   const selectedIdsSorted = useMemo(() => {
     const arr = Array.from(selectionModel.ids, (id) => Number(id)).filter(
       (n) => !Number.isNaN(n),
@@ -88,6 +110,9 @@ export function EmployeesView() {
     arr.sort((a, b) => a - b);
     return arr;
   }, [selectionModel]);
+
+  const preferredSingleEmployeeId =
+    selectedIdsSorted.length === 1 ? selectedIdsSorted[0]! : null;
 
   const selectedKey = selectedIdsSorted.join(',');
 
@@ -241,6 +266,8 @@ export function EmployeesView() {
       >
         <Tab value="directory" label={strings.employees.tabDirectory} />
         <Tab value="onboard" label={strings.employees.tabOnboard} />
+        <Tab value="edit" label={strings.employees.tabEdit} />
+        <Tab value="remove" label={strings.employees.tabRemove} />
       </Tabs>
 
       <Box
@@ -466,6 +493,52 @@ export function EmployeesView() {
           }}
         >
           <OnboardingForm onCreated={handleEmployeeCreated} />
+        </Box>
+
+        <Box
+          aria-hidden={viewTab !== 'edit'}
+          sx={{
+            position: 'absolute',
+            inset: 0,
+            display: 'flex',
+            flexDirection: 'column',
+            overflow: 'auto',
+            opacity: viewTab === 'edit' ? 1 : 0,
+            visibility: viewTab === 'edit' ? 'visible' : 'hidden',
+            pointerEvents: viewTab === 'edit' ? 'auto' : 'none',
+            zIndex: viewTab === 'edit' ? 1 : 0,
+            transition: (theme) =>
+              theme.transitions.create(['opacity', 'visibility'], { duration: 120 }),
+          }}
+        >
+          <EmployeeEditForm
+            employees={rows}
+            preferredEmployeeId={preferredSingleEmployeeId}
+            onUpdated={handleEmployeeUpdated}
+          />
+        </Box>
+
+        <Box
+          aria-hidden={viewTab !== 'remove'}
+          sx={{
+            position: 'absolute',
+            inset: 0,
+            display: 'flex',
+            flexDirection: 'column',
+            overflow: 'auto',
+            opacity: viewTab === 'remove' ? 1 : 0,
+            visibility: viewTab === 'remove' ? 'visible' : 'hidden',
+            pointerEvents: viewTab === 'remove' ? 'auto' : 'none',
+            zIndex: viewTab === 'remove' ? 1 : 0,
+            transition: (theme) =>
+              theme.transitions.create(['opacity', 'visibility'], { duration: 120 }),
+          }}
+        >
+          <EmployeeRemovePane
+            employees={rows}
+            preferredEmployeeId={preferredSingleEmployeeId}
+            onRemoved={handleEmployeeRemoved}
+          />
         </Box>
       </Box>
     </Box>
