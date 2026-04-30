@@ -26,6 +26,15 @@ function todayLocalIsoDate(): string {
   return `${y}-${m}-${day}`;
 }
 
+/** Keeps one helper-text line of vertical space so rows stay stable when errors appear. */
+const HELPER_PLACEHOLDER = '\u00a0';
+
+const compactFieldSlotProps = {
+  formHelperText: {
+    sx: { minHeight: 20, m: 0, mt: 0.5 },
+  },
+} as const;
+
 type OnboardFormValues = {
   firstName: string;
   lastName: string;
@@ -132,7 +141,7 @@ export function OnboardingForm({ onCreated }: OnboardingFormProps) {
       <Typography variant="h2" gutterBottom>
         {strings.onboard.title}
       </Typography>
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+      <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
         {strings.onboard.subtitle}
       </Typography>
       {deptError && (
@@ -152,43 +161,52 @@ export function OnboardingForm({ onCreated }: OnboardingFormProps) {
         sx={{
           display: 'grid',
           gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
-          gap: 2,
+          gap: 1.5,
           columnGap: 2,
           alignItems: 'start',
         }}
       >
         <TextField
           label={strings.onboard.fieldFirstName}
+          size="small"
           fullWidth
           required
           error={!!errors.firstName}
-          helperText={errors.firstName?.message}
+          helperText={errors.firstName?.message ?? HELPER_PLACEHOLDER}
           {...register('firstName', {
             required: strings.onboard.required,
             maxLength: { value: 100, message: strings.onboard.maxLength100 },
           })}
-          slotProps={{ htmlInput: { maxLength: 100 } }}
+          slotProps={{
+            htmlInput: { maxLength: 100 },
+            ...compactFieldSlotProps,
+          }}
         />
         <TextField
           label={strings.onboard.fieldLastName}
+          size="small"
           fullWidth
           required
           error={!!errors.lastName}
-          helperText={errors.lastName?.message}
+          helperText={errors.lastName?.message ?? HELPER_PLACEHOLDER}
           {...register('lastName', {
             required: strings.onboard.required,
             maxLength: { value: 100, message: strings.onboard.maxLength100 },
           })}
-          slotProps={{ htmlInput: { maxLength: 100 } }}
+          slotProps={{
+            htmlInput: { maxLength: 100 },
+            ...compactFieldSlotProps,
+          }}
         />
         <TextField
           label={strings.onboard.fieldEmail}
           type="email"
+          size="small"
           fullWidth
           required
           autoComplete="email"
           error={!!errors.email}
-          helperText={errors.email?.message}
+          helperText={errors.email?.message ?? HELPER_PLACEHOLDER}
           sx={{ gridColumn: { xs: '1', md: 'auto' } }}
           {...register('email', {
             required: strings.onboard.required,
@@ -198,30 +216,41 @@ export function OnboardingForm({ onCreated }: OnboardingFormProps) {
               message: strings.onboard.emailInvalid,
             },
           })}
-          slotProps={{ htmlInput: { maxLength: 256 } }}
+          slotProps={{
+            htmlInput: { maxLength: 256 },
+            ...compactFieldSlotProps,
+          }}
         />
         <TextField
           label={strings.onboard.fieldJobTitle}
+          size="small"
           fullWidth
           required
           error={!!errors.jobTitle}
-          helperText={errors.jobTitle?.message}
+          helperText={errors.jobTitle?.message ?? HELPER_PLACEHOLDER}
           sx={{ gridColumn: { xs: '1', md: 'auto' } }}
           {...register('jobTitle', {
             required: strings.onboard.required,
             maxLength: { value: 128, message: strings.onboard.maxLength128 },
           })}
-          slotProps={{ htmlInput: { maxLength: 128 } }}
+          slotProps={{
+            htmlInput: { maxLength: 128 },
+            ...compactFieldSlotProps,
+          }}
         />
         <TextField
           label={strings.onboard.fieldHireDate}
           type="date"
+          size="small"
           fullWidth
           required
           error={!!errors.hireDate}
-          helperText={errors.hireDate?.message}
+          helperText={errors.hireDate?.message ?? HELPER_PLACEHOLDER}
           {...register('hireDate', { required: strings.onboard.required })}
-          slotProps={{ inputLabel: { shrink: true } }}
+          slotProps={{
+            inputLabel: { shrink: true },
+            ...compactFieldSlotProps,
+          }}
         />
         <Controller
           name="departmentId"
@@ -230,7 +259,13 @@ export function OnboardingForm({ onCreated }: OnboardingFormProps) {
             validate: (v: number | '') => v !== '' || strings.onboard.departmentRequired,
           }}
           render={({ field }) => (
-            <FormControl fullWidth required error={!!errors.departmentId} disabled={deptLoading}>
+            <FormControl
+              fullWidth
+              required
+              size="small"
+              error={!!errors.departmentId}
+              disabled={deptLoading}
+            >
               <InputLabel id="onboard-department-label">{strings.onboard.fieldDepartment}</InputLabel>
               <Select
                 labelId="onboard-department-label"
@@ -251,13 +286,16 @@ export function OnboardingForm({ onCreated }: OnboardingFormProps) {
                   </MenuItem>
                 ))}
               </Select>
-              {errors.departmentId && (
-                <FormHelperText>{errors.departmentId.message}</FormHelperText>
-              )}
+              <FormHelperText
+                error={!!errors.departmentId}
+                sx={{ minHeight: 20, m: 0, mt: 0.5 }}
+              >
+                {errors.departmentId?.message ?? HELPER_PLACEHOLDER}
+              </FormHelperText>
             </FormControl>
           )}
         />
-        <Box sx={{ gridColumn: { xs: '1', md: '1 / -1' }, pt: 1 }}>
+        <Box sx={{ gridColumn: { xs: '1', md: '1 / -1' } }}>
           <Button
             type="submit"
             variant="contained"

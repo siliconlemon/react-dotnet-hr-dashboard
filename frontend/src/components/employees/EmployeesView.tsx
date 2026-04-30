@@ -281,6 +281,20 @@ export function EmployeesView() {
               overflow: 'hidden',
             }}
           >
+            <Box
+              sx={{
+                flex: 1,
+                minHeight: 0,
+                minWidth: 0,
+                display: 'flex',
+                flexDirection: 'column',
+                overflow: 'hidden',
+                width: '100%',
+                maxWidth: (theme) => theme.spacing(125),
+                alignSelf: 'flex-start',
+                boxSizing: 'border-box',
+              }}
+            >
             <Paper
               sx={{
                 flex: '0 0 auto',
@@ -290,6 +304,8 @@ export function EmployeesView() {
                 display: 'flex',
                 flexDirection: 'column',
                 overflow: 'hidden',
+                width: '100%',
+                boxSizing: 'border-box',
               }}
               variant="outlined"
             >
@@ -394,6 +410,8 @@ export function EmployeesView() {
                 display: 'flex',
                 flexDirection: 'column',
                 overflow: 'hidden',
+                width: '100%',
+                boxSizing: 'border-box',
               }}
               variant="outlined"
             >
@@ -431,6 +449,7 @@ export function EmployeesView() {
                 </>
               )}
             </Paper>
+            </Box>
           </Box>
         </Box>
 

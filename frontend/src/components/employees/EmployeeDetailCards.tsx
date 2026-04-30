@@ -1,4 +1,5 @@
 import { Alert, Box, Paper, Skeleton, Typography } from '@mui/material';
+import type { Theme } from '@mui/material/styles';
 import type { EmployeeReadDto, PtoBalanceDto } from '../../api/types';
 import { strings } from '../../i18n';
 import { getEmployeeCardAccent } from '../../theme/employeeCardPalette';
@@ -36,7 +37,7 @@ export type EmployeeDetailCardsProps = {
   ptoLoading?: boolean;
 };
 
-const cardsGridSx = {
+const cardsGridBaseSx = {
   display: 'grid',
   gridTemplateColumns: {
     xs: '1fr',
@@ -45,6 +46,12 @@ const cardsGridSx = {
   gap: 2,
   alignContent: 'start',
 } as const;
+
+const cardsGridSx = (theme: Theme) => ({
+  ...cardsGridBaseSx,
+  width: '100%',
+  maxWidth: theme.spacing(125),
+});
 
 function EmployeeDetailCardsSkeleton({ count }: { count: number }) {
   return (
