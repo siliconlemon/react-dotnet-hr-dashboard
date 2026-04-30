@@ -463,6 +463,8 @@ export function DepartmentsView() {
     <Paper
       sx={{
         p: 2,
+        mt: 1,
+        mb: 1,
         maxWidth: 900,
         width: '100%',
         boxSizing: 'border-box',
