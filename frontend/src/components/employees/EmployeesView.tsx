@@ -3,6 +3,8 @@ import { Alert, Box, IconButton, Paper, Tab, Tabs, Tooltip, Typography } from '@
 import {
   DataGrid,
   type GridColDef,
+  type GridFilterItem,
+  type GridFilterModel,
   type GridPaginationModel,
   type GridRowSelectionModel,
 } from '@mui/x-data-grid';
@@ -40,6 +42,45 @@ function effectiveSelectedRowIds(
     return rowIds.filter((id) => !excluded.has(id));
   }
   return Array.from(model.ids, (id) => Number(id)).filter((n) => !Number.isNaN(n));
+}
+
+const NAME_COLUMN_FIELD = 'fullName';
+
+function hasActiveQuickFilter(model: GridFilterModel): boolean {
+  const vals = model.quickFilterValues;
+  if (!vals?.length) return false;
+  return vals.some((v) => String(v ?? '').trim().length > 0);
+}
+
+function isActiveColumnFilterItem(item: GridFilterItem): boolean {
+  if (!item.field) return false;
+  const op = item.operator;
+  if (op === 'isEmpty' || op === 'isNotEmpty') return true;
+  const v = item.value;
+  if (v == null) return false;
+  if (typeof v === 'string' && v.trim() === '') return false;
+  if (Array.isArray(v) && v.length === 0) return false;
+  return true;
+}
+
+function activeColumnFilterFields(model: GridFilterModel): Set<string> {
+  const set = new Set<string>();
+  for (const item of model.items ?? []) {
+    if (isActiveColumnFilterItem(item)) set.add(item.field);
+  }
+  return set;
+}
+
+/** Name is never hideable; while quick filter is on, no column may be hidden; column filters lock their fields. */
+function employeeColumnHideable(
+  field: string,
+  hasQuickFilter: boolean,
+  filteredFields: Set<string>,
+): boolean {
+  if (field === NAME_COLUMN_FIELD) return false;
+  if (hasQuickFilter) return false;
+  if (filteredFields.has(field)) return false;
+  return true;
 }
 
 const SPLIT_MIN = 0.2;
@@ -97,6 +138,7 @@ export function EmployeesView({ onViewTabChange }: EmployeesViewProps) {
     page: 0,
     pageSize: 10,
   });
+  const [filterModel, setFilterModel] = useState<GridFilterModel>({ items: [] });
   const [splitFraction, setSplitFraction] = useState(SPLIT_DEFAULT);
   const [splitDragging, setSplitDragging] = useState(false);
   const splitContainerRef = useRef<HTMLDivElement | null>(null);
@@ -280,6 +322,12 @@ export function EmployeesView({ onViewTabChange }: EmployeesViewProps) {
     };
   }, [splitDragging]);
 
+  const hasQuickFilter = useMemo(() => hasActiveQuickFilter(filterModel), [filterModel]);
+  const columnFilterFields = useMemo(
+    () => activeColumnFilterFields(filterModel),
+    [filterModel],
+  );
+
   const columns: GridColDef<EmployeeReadDto>[] = useMemo(
     () => [
       {
@@ -288,6 +336,7 @@ export function EmployeesView({ onViewTabChange }: EmployeesViewProps) {
         flex: 1,
         minWidth: 160,
         sortable: true,
+        hideable: false,
         valueGetter: (_v, row) => `${row.firstName} ${row.lastName}`.trim(),
       },
       {
@@ -295,27 +344,31 @@ export function EmployeesView({ onViewTabChange }: EmployeesViewProps) {
         headerName: strings.employees.colEmail,
         flex: 1.2,
         minWidth: 200,
+        hideable: employeeColumnHideable('email', hasQuickFilter, columnFilterFields),
       },
       {
         field: 'jobTitle',
         headerName: strings.employees.colJobTitle,
         flex: 1,
         minWidth: 120,
+        hideable: employeeColumnHideable('jobTitle', hasQuickFilter, columnFilterFields),
       },
       {
         field: 'departmentName',
         headerName: strings.employees.colDepartment,
         flex: 0.9,
         minWidth: 130,
+        hideable: employeeColumnHideable('departmentName', hasQuickFilter, columnFilterFields),
       },
       {
         field: 'hireDate',
         headerName: strings.employees.colHireDate,
         width: 130,
         valueFormatter: (value: string) => formatDateOnly(value),
+        hideable: employeeColumnHideable('hireDate', hasQuickFilter, columnFilterFields),
       },
     ],
-    [],
+    [columnFilterFields, hasQuickFilter],
   );
 
   return (
@@ -427,6 +480,8 @@ export function EmployeesView({ onViewTabChange }: EmployeesViewProps) {
                   density="compact"
                   label={strings.employees.title}
                   showToolbar
+                  filterModel={filterModel}
+                  onFilterModelChange={setFilterModel}
                   slotProps={{
                     toolbar: {
                       showQuickFilter: true,
@@ -667,7 +722,7 @@ export function EmployeesView({ onViewTabChange }: EmployeesViewProps) {
                           sx={{
                             flex: 1,
                             minWidth: 0,
-                            px: 2,
+                            px: 1,
                             borderBottom: 0,
                           }}
                         >

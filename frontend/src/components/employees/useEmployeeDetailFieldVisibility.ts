@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   DEFAULT_EMPLOYEE_DETAIL_FIELD_VISIBILITY,
+  ensureProfileFieldsVisible,
+  ensurePtoFieldsVisible,
   mergeEmployeeDetailFieldVisibility,
   type EmployeeDetailFieldVisibility,
   type EmployeeProfileFieldId,
@@ -42,23 +44,29 @@ export function useEmployeeDetailFieldVisibility() {
   const setProfileField = useCallback((id: EmployeeProfileFieldId, value: boolean) => {
     setVisibility((prev) => ({
       ...prev,
-      profile: { ...prev.profile, [id]: value },
+      profile: ensureProfileFieldsVisible({ ...prev.profile, [id]: value }),
     }));
   }, []);
 
   const setPtoField = useCallback((id: EmployeePtoFieldId, value: boolean) => {
     setVisibility((prev) => ({
       ...prev,
-      pto: { ...prev.pto, [id]: value },
+      pto: ensurePtoFieldsVisible({ ...prev.pto, [id]: value }),
     }));
   }, []);
 
   const setProfileVisibility = useCallback((next: Record<EmployeeProfileFieldId, boolean>) => {
-    setVisibility((prev) => ({ ...prev, profile: next }));
+    setVisibility((prev) => ({
+      ...prev,
+      profile: ensureProfileFieldsVisible(next),
+    }));
   }, []);
 
   const setPtoVisibility = useCallback((next: Record<EmployeePtoFieldId, boolean>) => {
-    setVisibility((prev) => ({ ...prev, pto: next }));
+    setVisibility((prev) => ({
+      ...prev,
+      pto: ensurePtoFieldsVisible(next),
+    }));
   }, []);
 
   const resetProfile = useCallback(() => {

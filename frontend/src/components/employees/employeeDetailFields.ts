@@ -4,7 +4,6 @@ export const EMPLOYEE_PROFILE_FIELD_IDS = [
   'jobTitle',
   'department',
   'hireDate',
-  'identifiers',
 ] as const;
 
 export type EmployeeProfileFieldId = (typeof EMPLOYEE_PROFILE_FIELD_IDS)[number];
@@ -36,6 +35,20 @@ export const DEFAULT_EMPLOYEE_DETAIL_FIELD_VISIBILITY: EmployeeDetailFieldVisibi
   pto: allTrue(EMPLOYEE_PTO_FIELD_IDS),
 };
 
+/** Email is always shown on profile detail cards (picker locks it on). */
+export function ensureProfileFieldsVisible(
+  profile: Record<EmployeeProfileFieldId, boolean>,
+): Record<EmployeeProfileFieldId, boolean> {
+  return { ...profile, email: true };
+}
+
+/** Available balance is always shown on PTO detail cards (picker locks it on). */
+export function ensurePtoFieldsVisible(
+  pto: Record<EmployeePtoFieldId, boolean>,
+): Record<EmployeePtoFieldId, boolean> {
+  return { ...pto, available: true };
+}
+
 export function mergeEmployeeDetailFieldVisibility(
   partial: Partial<EmployeeDetailFieldVisibility> | null | undefined,
 ): EmployeeDetailFieldVisibility {
@@ -56,5 +69,8 @@ export function mergeEmployeeDetailFieldVisibility(
     }
   }
 
-  return { profile, pto };
+  return {
+    profile: ensureProfileFieldsVisible(profile),
+    pto: ensurePtoFieldsVisible(pto),
+  };
 }

@@ -78,19 +78,6 @@ function ProfileFieldsGrid({
       label: strings.employees.fieldHireDate,
       value: formatDateOnly(row.hireDate),
     },
-    {
-      id: 'identifiers',
-      label: strings.employees.fieldIds,
-      value: (
-        <>
-          {strings.employees.idLinePrefix}
-          {row.id}
-          {strings.employees.idLineMid}
-          {row.departmentId}
-        </>
-      ),
-      valueColor: 'text.secondary',
-    },
   ];
 
   const visible = rows.filter((r) => visibility[r.id]);

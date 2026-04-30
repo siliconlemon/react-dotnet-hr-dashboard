@@ -9,6 +9,7 @@ import {
   Paper,
   Popover,
   TextField,
+  Tooltip,
   Typography,
 } from '@mui/material';
 import { inputBaseClasses } from '@mui/material/InputBase';
@@ -22,6 +23,9 @@ import {
   type EmployeeProfileFieldId,
   type EmployeePtoFieldId,
 } from './employeeDetailFields';
+
+const LOCKED_PROFILE_FIELD: EmployeeProfileFieldId = 'email';
+const LOCKED_PTO_FIELD: EmployeePtoFieldId = 'available';
 
 type DetailTab = 'profile' | 'pto';
 
@@ -45,8 +49,6 @@ function profileLabel(id: EmployeeProfileFieldId): string {
       return strings.employees.fieldDepartment;
     case 'hireDate':
       return strings.employees.fieldHireDate;
-    case 'identifiers':
-      return strings.employees.fieldIds;
     default:
       return id;
   }
@@ -139,11 +141,13 @@ function EmployeeDetailFieldsPickerPanel({
   const toggleOne = useCallback(
     (id: EmployeeProfileFieldId | EmployeePtoFieldId, checked: boolean) => {
       if (detailTab === 'profile') {
+        if (id === LOCKED_PROFILE_FIELD) return;
         onProfileVisibilityChange({
           ...profileVisibility,
           [id as EmployeeProfileFieldId]: checked,
         });
       } else {
+        if (id === LOCKED_PTO_FIELD) return;
         onPtoVisibilityChange({
           ...ptoVisibility,
           [id as EmployeePtoFieldId]: checked,
@@ -162,17 +166,34 @@ function EmployeeDetailFieldsPickerPanel({
   const toggleShowAll = useCallback(() => {
     const show = !allVisible;
     if (detailTab === 'profile') {
-      onProfileVisibilityChange(
-        Object.fromEntries(
-          EMPLOYEE_PROFILE_FIELD_IDS.map((id) => [id, show]),
-        ) as Record<EmployeeProfileFieldId, boolean>,
-      );
-    } else {
+      if (show) {
+        onProfileVisibilityChange(
+          Object.fromEntries(
+            EMPLOYEE_PROFILE_FIELD_IDS.map((id) => [id, true]),
+          ) as Record<EmployeeProfileFieldId, boolean>,
+        );
+      } else {
+        onProfileVisibilityChange(
+          Object.fromEntries(
+            EMPLOYEE_PROFILE_FIELD_IDS.map((id) => [
+              id,
+              id === LOCKED_PROFILE_FIELD,
+            ]),
+          ) as Record<EmployeeProfileFieldId, boolean>,
+        );
+      }
+    } else if (show) {
       onPtoVisibilityChange(
-        Object.fromEntries(EMPLOYEE_PTO_FIELD_IDS.map((id) => [id, show])) as Record<
+        Object.fromEntries(EMPLOYEE_PTO_FIELD_IDS.map((id) => [id, true])) as Record<
           EmployeePtoFieldId,
           boolean
         >,
+      );
+    } else {
+      onPtoVisibilityChange(
+        Object.fromEntries(
+          EMPLOYEE_PTO_FIELD_IDS.map((id) => [id, id === LOCKED_PTO_FIELD]),
+        ) as Record<EmployeePtoFieldId, boolean>,
       );
     }
   }, [allVisible, detailTab, onProfileVisibilityChange, onPtoVisibilityChange]);
@@ -303,20 +324,34 @@ function EmployeeDetailFieldsPickerPanel({
                 </Typography>
               ) : (
                 filteredItems.map((it) => {
-                  const checked =
-                    detailTab === 'profile'
+                  const locked =
+                    (detailTab === 'profile' && it.id === LOCKED_PROFILE_FIELD) ||
+                    (detailTab === 'pto' && it.id === LOCKED_PTO_FIELD);
+                  const checked = locked
+                    ? true
+                    : detailTab === 'profile'
                       ? profileVisibility[it.id as EmployeeProfileFieldId]
                       : ptoVisibility[it.id as EmployeePtoFieldId];
+                  const checkbox = (
+                    <Checkbox
+                      checked={checked}
+                      disabled={locked}
+                      onChange={(_, v) => toggleOne(it.id, v)}
+                      sx={pickerCheckboxSx}
+                    />
+                  );
                   return (
                     <FormControlLabel
                       key={it.id}
                       sx={listRowSx}
                       control={
-                        <Checkbox
-                          checked={checked}
-                          onChange={(_, v) => toggleOne(it.id, v)}
-                          sx={pickerCheckboxSx}
-                        />
+                        locked ? (
+                          <Tooltip title={strings.employees.detailFieldsPickerAlwaysShown}>
+                            <span>{checkbox}</span>
+                          </Tooltip>
+                        ) : (
+                          checkbox
+                        )
                       }
                       label={it.label}
                     />
@@ -362,7 +397,7 @@ function EmployeeDetailFieldsPickerPanel({
                 minHeight: 32,
                 px: 1,
                 fontSize: theme.typography.pxToRem(14),
-                fontWeight: theme.typography.fontWeightBold,
+                fontWeight: theme.typography.fontWeightMedium,
               }}
             >
               {strings.employees.detailFieldsPickerReset}
