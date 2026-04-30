@@ -338,7 +338,9 @@ export function EmployeesView() {
                 flex: '0 0 auto',
                 height: `${splitFraction * 100}%`,
                 minHeight: 140,
-                p: 2,
+                px: 2,
+                pb: 2,
+                pt: 0,
                 display: 'flex',
                 flexDirection: 'column',
                 overflow: 'hidden',
@@ -347,12 +349,6 @@ export function EmployeesView() {
               }}
               variant="outlined"
             >
-              <Typography variant="h2" gutterBottom>
-                {strings.employees.title}
-              </Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                {strings.employees.subtitle}
-              </Typography>
               {loadError && (
                 <Alert severity="error" sx={{ mb: 2 }}>
                   {loadError}
@@ -365,6 +361,25 @@ export function EmployeesView() {
                   loading={loading}
                   getRowId={(row) => row.id}
                   density="compact"
+                  label={strings.employees.title}
+                  showToolbar
+                  slotProps={{
+                    toolbar: {
+                      showQuickFilter: true,
+                      showHistoryControls: false,
+                      csvOptions: { disableToolbarButton: true },
+                      printOptions: { disableToolbarButton: true },
+                      quickFilterProps: {
+                        debounceMs: 200,
+                        slotProps: {
+                          root: {
+                            placeholder: strings.employees.quickFilterPlaceholder,
+                            size: 'small',
+                          },
+                        },
+                      },
+                    },
+                  }}
                   paginationModel={paginationModel}
                   onPaginationModelChange={setPaginationModel}
                   pageSizeOptions={[5, 10, 25]}
@@ -377,6 +392,21 @@ export function EmployeesView() {
                   sx={{
                     border: 'none',
                     height: '100%',
+                    '& .MuiDataGrid-toolbarContainer': {
+                      px: 0,
+                      py: 1,
+                      gap: 1,
+                      alignItems: 'center',
+                      flexWrap: 'wrap',
+                    },
+                    '& .MuiDataGrid-toolbarLabel': {
+                      typography: 'h2',
+                    },
+                    '& .MuiDataGrid-toolbarQuickFilter': {
+                      flex: '1 1 auto',
+                      minWidth: { xs: '100%', sm: 260 },
+                      maxWidth: 400,
+                    },
                     '& .MuiDataGrid-columnHeaders': { bgcolor: 'action.hover' },
                     '& .MuiDataGrid-footerContainer': {
                       minHeight: 47,
@@ -454,7 +484,7 @@ export function EmployeesView() {
               variant="outlined"
             >
               {selectedRows.length === 0 ? (
-                <Box sx={{ p: 2 }}>
+                <Box sx={{ px: 3, py: 2 }}>
                   <Typography
                     variant="subtitle1"
                     sx={{

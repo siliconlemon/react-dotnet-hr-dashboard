@@ -67,8 +67,7 @@ export const en = {
     tabOnboard: 'Onboard',
     tabEdit: 'Edit',
     tabRemove: 'Remove',
-    subtitle:
-      'Select one or more rows to compare profiles and PTO in the panel below. Drag the resize bar between the grid and details to change the split. Sort columns and paginate with the grid footer.',
+    quickFilterPlaceholder: 'Search name, email, job title, department…',
     listError: 'Could not load employees. Is the API running?',
     colName: 'Name',
     colEmail: 'Email',
