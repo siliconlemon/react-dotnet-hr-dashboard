@@ -19,6 +19,15 @@ const PICKER_WEEKS_GRID_MIN_HEIGHT =
   (PICKER_DAY_SIZE_PX + PICKER_DAY_MARGIN_PX * 2) * 6;
 
 /**
+ * Segoe UI (Windows) does not ship a true 500 face; browsers synthesize it differently
+ * (e.g. Firefox vs Chromium). Stick to 400 / 600 / 700 so every weight maps to a real face.
+ */
+const FW = {
+  regular: 400,
+  semibold: 600,
+} as const;
+
+/**
  * Compact enterprise theme: restrained elevation, navy primary, cool neutrals.
  */
 export const enterpriseTheme = createTheme({
@@ -53,10 +62,20 @@ export const enterpriseTheme = createTheme({
     fontFamily:
       '"Segoe UI", Roboto, "Helvetica Neue", Helvetica, Arial, sans-serif',
     fontSize: 13,
-    h1: { fontSize: '1.5rem', fontWeight: 600 },
-    h2: { fontSize: '1.25rem', fontWeight: 600, textTransform: 'capitalize' },
-    h3: { fontSize: '1.1rem', fontWeight: 600 },
-    subtitle2: { fontWeight: 600 },
+    fontWeightMedium: FW.semibold,
+    body1: { fontWeight: FW.regular },
+    body2: { fontWeight: FW.regular },
+    caption: { fontWeight: FW.regular },
+    button: { fontWeight: FW.semibold },
+    h1: { fontSize: '1.5rem', fontWeight: FW.semibold },
+    h2: {
+      fontSize: '1.25rem',
+      fontWeight: FW.semibold,
+      textTransform: 'capitalize',
+    },
+    h3: { fontSize: '1.1rem', fontWeight: FW.semibold },
+    subtitle1: { fontWeight: FW.regular },
+    subtitle2: { fontWeight: FW.semibold },
   },
   components: {
     MuiCssBaseline: {
@@ -71,7 +90,7 @@ export const enterpriseTheme = createTheme({
       styleOverrides: {
         root: ({ theme }) => ({
           textTransform: 'capitalize',
-          fontWeight: theme.typography.fontWeightMedium ?? 500,
+          fontWeight: theme.typography.fontWeightMedium,
           /** Match `TextField` / `OutlinedInput` `size="small"` control height (~40px). */
           minHeight: 40,
         }),
@@ -162,7 +181,7 @@ export const enterpriseTheme = createTheme({
             color: theme.palette.text.primary,
             fontFamily: theme.typography.fontFamily,
             fontSize: calRem(13),
-            fontWeight: theme.typography.fontWeightMedium ?? 500,
+            fontWeight: theme.typography.fontWeightMedium,
             lineHeight: 1.35,
             letterSpacing: '0.01em',
           },
@@ -201,7 +220,7 @@ export const enterpriseTheme = createTheme({
           height: PICKER_DAY_SIZE_PX + 2,
           margin: `0 ${PICKER_DAY_MARGIN_PX}px`,
           fontSize: calRem(12),
-          fontWeight: theme.typography.fontWeightMedium ?? 500,
+          fontWeight: theme.typography.fontWeightMedium,
           color: theme.palette.text.secondary,
           letterSpacing: '0.04em',
         }),
@@ -218,7 +237,7 @@ export const enterpriseTheme = createTheme({
         root: ({ theme }) => ({
           '--PickerDay-size': `${PICKER_DAY_SIZE_PX}px`,
           fontSize: calRem(13),
-          fontWeight: theme.typography.fontWeightMedium ?? 500,
+          fontWeight: theme.typography.fontWeightMedium,
         }),
       },
     },
@@ -235,7 +254,7 @@ export const enterpriseTheme = createTheme({
         button: ({ theme }) => ({
           fontFamily: theme.typography.fontFamily,
           fontSize: calRem(13),
-          fontWeight: theme.typography.fontWeightMedium ?? 500,
+          fontWeight: theme.typography.fontWeightMedium,
           lineHeight: 1.2,
           height: 32,
           width: 68,
@@ -259,12 +278,19 @@ export const enterpriseTheme = createTheme({
         button: ({ theme }) => ({
           fontFamily: theme.typography.fontFamily,
           fontSize: calRem(13),
-          fontWeight: theme.typography.fontWeightMedium ?? 500,
+          fontWeight: theme.typography.fontWeightMedium,
           lineHeight: 1.2,
           height: 32,
           width: 72,
           maxWidth: '100%',
           borderRadius: Number(theme.shape.borderRadius) * 3,
+        }),
+      },
+    },
+    MuiTab: {
+      styleOverrides: {
+        root: ({ theme }) => ({
+          fontWeight: theme.typography.fontWeightMedium,
         }),
       },
     },

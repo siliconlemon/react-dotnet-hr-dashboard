@@ -137,7 +137,7 @@ export function AppShell({ children, activeNavKey, onNavKeyChange }: AppShellPro
       >
         {collapsed ? (
           <>
-            <Typography variant="subtitle2" sx={{ fontWeight: 800, letterSpacing: 0.5 }}>
+            <Typography variant="subtitle2" sx={{ fontWeight: 700, letterSpacing: 0.5 }}>
               {strings.shell.brandShort}
             </Typography>
             <IconButton
