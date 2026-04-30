@@ -62,12 +62,13 @@ function rowToValues(row: EmployeeReadDto): EditFormValues {
 
 type EmployeeEditFormProps = {
   employees: EmployeeReadDto[];
+  /** Set when exactly one row is selected in Directory; otherwise picker stays empty. */
   preferredEmployeeId: number | null;
   onUpdated: () => void;
 };
 
 /**
- * Full PUT form for an existing employee; employee chosen via dropdown (syncs from Directory when one row is selected).
+ * Full PUT form for an existing employee; dropdown stays in sync with Directory (filled only when exactly one row is selected).
  */
 export function EmployeeEditForm({
   employees,
@@ -139,10 +140,7 @@ export function EmployeeEditForm({
         return;
       }
     }
-    setSelectedId((prev) => {
-      if (prev !== '' && getEmployeeById(employees, prev) != null) return prev;
-      return '';
-    });
+    setSelectedId('');
   }, [employees, preferredEmployeeId]);
 
   useEffect(() => {

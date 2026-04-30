@@ -30,6 +30,7 @@ const HELPER_PLACEHOLDER = '\u00a0';
 
 type EmployeeRemovePaneProps = {
   employees: EmployeeReadDto[];
+  /** Set when exactly one row is selected in Directory; otherwise picker stays empty. */
   preferredEmployeeId: number | null;
   onRemoved: (id: number) => void;
 };
@@ -68,10 +69,7 @@ export function EmployeeRemovePane({
         return;
       }
     }
-    setSelectedId((prev) => {
-      if (prev !== '' && getEmployeeById(employees, prev) != null) return prev;
-      return '';
-    });
+    setSelectedId('');
   }, [employees, preferredEmployeeId]);
 
   const handleConfirmRemove = async () => {
