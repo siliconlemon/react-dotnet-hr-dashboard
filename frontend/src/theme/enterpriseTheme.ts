@@ -1,5 +1,6 @@
+import type {} from '@mui/x-data-grid/themeAugmentation';
 import type {} from '@mui/x-date-pickers/themeAugmentation';
-import { createTheme } from '@mui/material/styles';
+import { alpha, createTheme } from '@mui/material/styles';
 import { EMPLOYEE_CARD_ACCENTS } from './employeeCardPalette';
 
 const paperShadow = '0 1px 2px rgba(15, 31, 53, 0.08)';
@@ -291,6 +292,26 @@ export const enterpriseTheme = createTheme({
       styleOverrides: {
         root: ({ theme }) => ({
           fontWeight: theme.typography.fontWeightMedium,
+        }),
+      },
+    },
+    /** Softer focus than the default thick outline; keeps keyboard focus visible via primary tint. */
+    MuiDataGrid: {
+      styleOverrides: {
+        root: ({ theme }) => ({
+          '& .MuiDataGrid-cell:focus, & .MuiDataGrid-cell:focus-within': {
+            outline: 'none',
+          },
+          '& .MuiDataGrid-cell:focus-within': {
+            backgroundColor: alpha(theme.palette.primary.main, 0.1),
+          },
+          '& .MuiDataGrid-columnHeader:focus, & .MuiDataGrid-columnHeader:focus-within':
+            {
+              outline: 'none',
+            },
+          '& .MuiDataGrid-columnHeader:focus-within': {
+            backgroundColor: alpha(theme.palette.primary.main, 0.1),
+          },
         }),
       },
     },
