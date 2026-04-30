@@ -11,6 +11,8 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import dayjs from 'dayjs';
 import { useEffect, useMemo, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { fetchDepartments } from '../../api/departmentsApi';
@@ -77,6 +79,12 @@ export function OnboardingForm({ onCreated }: OnboardingFormProps) {
     reset,
     formState: { errors, isSubmitting },
   } = useForm<OnboardFormValues>({ defaultValues, mode: 'onTouched' });
+
+  const hireDateValue = (raw: string) => {
+    if (!raw?.trim()) return null;
+    const d = dayjs(raw);
+    return d.isValid() ? d : null;
+  };
 
   useEffect(() => {
     const ac = new AbortController();
@@ -238,19 +246,41 @@ export function OnboardingForm({ onCreated }: OnboardingFormProps) {
             ...compactFieldSlotProps,
           }}
         />
-        <TextField
-          label={strings.onboard.fieldHireDate}
-          type="date"
-          size="small"
-          fullWidth
-          required
-          error={!!errors.hireDate}
-          helperText={errors.hireDate?.message ?? HELPER_PLACEHOLDER}
-          {...register('hireDate', { required: strings.onboard.required })}
-          slotProps={{
-            inputLabel: { shrink: true },
-            ...compactFieldSlotProps,
-          }}
+        <Controller
+          name="hireDate"
+          control={control}
+          rules={{ required: strings.onboard.required }}
+          render={({ field, fieldState }) => (
+            <DatePicker
+              format="YYYY-MM-DD"
+              label={strings.onboard.fieldHireDate}
+              value={hireDateValue(field.value)}
+              onChange={(v) => {
+                field.onChange(v && v.isValid() ? v.format('YYYY-MM-DD') : '');
+              }}
+              slotProps={{
+                textField: {
+                  required: true,
+                  size: 'small',
+                  fullWidth: true,
+                  name: field.name,
+                  inputRef: field.ref,
+                  onBlur: field.onBlur,
+                  error: !!fieldState.error,
+                  helperText: fieldState.error?.message ?? HELPER_PLACEHOLDER,
+                  ...compactFieldSlotProps,
+                },
+                /** Stock header uses long month names (`April 2026`); keep numeric months to match the field and `formatDateOnly`. */
+                calendarHeader: {
+                  format: 'YYYY-MM',
+                } as { format: string },
+                popper: {
+                  placement: 'bottom-start',
+                  sx: { zIndex: (t) => t.zIndex.modal },
+                },
+              }}
+            />
+          )}
         />
         <Controller
           name="departmentId"

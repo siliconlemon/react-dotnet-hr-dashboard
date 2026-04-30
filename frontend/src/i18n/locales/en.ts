@@ -40,7 +40,7 @@ export const en = {
   },
   onboard: {
     title: 'Onboard employee',
-    subtitle: 'Creates a new employee record. Email must be unique.',
+    subtitle: 'Adds a new employee record. Email must be unique.',
     fieldFirstName: 'First name',
     fieldLastName: 'Last name',
     fieldEmail: 'Work email',
@@ -48,7 +48,7 @@ export const en = {
     fieldHireDate: 'Hire date',
     fieldDepartment: 'Department',
     departmentPlaceholder: 'Select department',
-    submit: 'Create employee',
+    submit: 'Add employee',
     saving: 'Saving…',
     required: 'This field is required.',
     departmentRequired: 'Select a department.',

@@ -1,8 +1,22 @@
+import type {} from '@mui/x-date-pickers/themeAugmentation';
 import { createTheme } from '@mui/material/styles';
 import { EMPLOYEE_CARD_ACCENTS } from './employeeCardPalette';
 
 const paperShadow = '0 1px 2px rgba(15, 31, 53, 0.08)';
 const paperShadowRaised = '0 2px 8px rgba(15, 31, 53, 0.1)';
+
+/** One typographic step for all in-popup calendar text (matches `typography.fontSize` 13). */
+const calRem = (px: number) => `${px / 16}rem`;
+
+/**
+ * Calendar day cell diameter (`--PickerDay-size`). MUI default is 36px.
+ * Keep in sync with week grid min-heights below.
+ */
+const PICKER_DAY_SIZE_PX = 40;
+const PICKER_DAY_MARGIN_PX = 2;
+/** Six full week rows (loading skeleton); day view sizes by actual week count via `min-content`. */
+const PICKER_WEEKS_GRID_MIN_HEIGHT =
+  (PICKER_DAY_SIZE_PX + PICKER_DAY_MARGIN_PX * 2) * 6;
 
 /**
  * Compact enterprise theme: restrained elevation, navy primary, cool neutrals.
@@ -86,6 +100,167 @@ export const enterpriseTheme = createTheme({
           borderBottom: '1px solid',
           borderColor: 'rgba(15, 31, 53, 0.1)',
         },
+      },
+    },
+    // MUI X Date Pickers — align popups with enterprise Paper/shape and primary palette.
+    /** Popper surface wrapping the layout; round this so the outer shell matches `shape` (not just the inner layout). */
+    MuiPickerPopper: {
+      styleOverrides: {
+        paper: ({ theme }) => ({
+          borderRadius: theme.shape.borderRadius,
+          boxShadow: paperShadowRaised,
+          overflow: 'hidden',
+        }),
+      },
+    },
+    MuiPickersLayout: {
+      styleOverrides: {
+        root: ({ theme }) => ({
+          borderRadius: theme.shape.borderRadius,
+          boxShadow: 'none',
+          overflow: 'hidden',
+          fontFamily: theme.typography.fontFamily,
+        }),
+      },
+    },
+    /** Picker field uses this instead of `MuiTextField`; keep defaults aligned with the rest of the app. */
+    MuiPickersTextField: {
+      defaultProps: {
+        variant: 'outlined',
+        size: 'small',
+      },
+      styleOverrides: {
+        root: {
+          /** Calendar adornment button; default `edgeEnd` is `-3px`, pull in slightly more for alignment. */
+          '& [data-mui-picker-open-button="true"]': {
+            marginRight: '-8px',
+          },
+        },
+      },
+    },
+    MuiPickersCalendarHeader: {
+      styleOverrides: {
+        root: ({ theme }) => ({
+          marginTop: theme.spacing(1),
+          marginBottom: theme.spacing(0.5),
+          /** Inset from popper edge (16px; was MUI default 24px). */
+          paddingLeft: theme.spacing(2),
+          paddingRight: theme.spacing(2),
+          '& .MuiIconButton-root': {
+            color: theme.palette.primary.main,
+          },
+          /**
+           * Default styles merge `body1` on the label container; replace with compact body scale
+           * so the header matches form typography (not oversized title text).
+           */
+          '& .MuiPickersCalendarHeader-labelContainer': {
+            color: theme.palette.text.primary,
+            fontFamily: theme.typography.fontFamily,
+            fontSize: calRem(13),
+            fontWeight: theme.typography.fontWeightMedium ?? 500,
+            lineHeight: 1.35,
+            letterSpacing: '0.01em',
+          },
+        }),
+      },
+    },
+    MuiDateCalendar: {
+      styleOverrides: {
+        root: {
+          /** Calendar panel height (matches date-picker popup layout). */
+          height: '320px',
+          minHeight: 0,
+          maxHeight: 'none',
+          paddingBottom: 0,
+          '& .MuiPickersFadeTransitionGroup-root': {
+            flex: '0 0 auto',
+          },
+        },
+      },
+    },
+    MuiDayCalendar: {
+      styleOverrides: {
+        root: {
+          paddingBottom: 0,
+        },
+        monthContainer: {
+          paddingBottom: 0,
+        },
+        /** Default `2px` top/bottom × six rows adds noticeable dead air under the grid. */
+        weekContainer: {
+          margin: '1px 0',
+        },
+        /** Single-letter row: keep close to date numerals so the grid feels one system. */
+        weekDayLabel: ({ theme }) => ({
+          width: PICKER_DAY_SIZE_PX,
+          height: PICKER_DAY_SIZE_PX + 2,
+          margin: `0 ${PICKER_DAY_MARGIN_PX}px`,
+          fontSize: calRem(12),
+          fontWeight: theme.typography.fontWeightMedium ?? 500,
+          color: theme.palette.text.secondary,
+          letterSpacing: '0.04em',
+        }),
+        slideTransition: {
+          minHeight: PICKER_WEEKS_GRID_MIN_HEIGHT,
+        },
+        loadingContainer: {
+          minHeight: PICKER_WEEKS_GRID_MIN_HEIGHT,
+        },
+      },
+    },
+    MuiPickerDay: {
+      styleOverrides: {
+        root: ({ theme }) => ({
+          '--PickerDay-size': `${PICKER_DAY_SIZE_PX}px`,
+          fontSize: calRem(13),
+          fontWeight: theme.typography.fontWeightMedium ?? 500,
+        }),
+      },
+    },
+    /**
+     * Year / month pick views default to `subtitle1` + oversized pills; align with app body scale.
+     */
+    MuiYearCalendar: {
+      styleOverrides: {
+        root: ({ theme }) => ({
+          padding: `${theme.spacing(1)} ${theme.spacing(2)}`,
+          rowGap: theme.spacing(1),
+          columnGap: theme.spacing(1),
+        }),
+        button: ({ theme }) => ({
+          fontFamily: theme.typography.fontFamily,
+          fontSize: calRem(13),
+          fontWeight: theme.typography.fontWeightMedium ?? 500,
+          lineHeight: 1.2,
+          height: 32,
+          width: 68,
+          maxWidth: '100%',
+          /** ~36px pill height 32 → rounded chip aligned with `shape` scale */
+          borderRadius: Number(theme.shape.borderRadius) * 3,
+          '@media (max-width: 340px)': {
+            width: 60,
+            fontSize: calRem(12),
+          },
+        }),
+      },
+    },
+    MuiMonthCalendar: {
+      styleOverrides: {
+        root: ({ theme }) => ({
+          padding: `${theme.spacing(1)} ${theme.spacing(2)}`,
+          rowGap: theme.spacing(1),
+          columnGap: theme.spacing(1),
+        }),
+        button: ({ theme }) => ({
+          fontFamily: theme.typography.fontFamily,
+          fontSize: calRem(13),
+          fontWeight: theme.typography.fontWeightMedium ?? 500,
+          lineHeight: 1.2,
+          height: 32,
+          width: 72,
+          maxWidth: '100%',
+          borderRadius: Number(theme.shape.borderRadius) * 3,
+        }),
       },
     },
   },

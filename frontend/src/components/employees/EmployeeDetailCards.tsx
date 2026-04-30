@@ -3,12 +3,8 @@ import type { Theme } from '@mui/material/styles';
 import type { EmployeeReadDto, PtoBalanceDto } from '../../api/types';
 import { strings } from '../../i18n';
 import { getEmployeeCardAccent } from '../../theme/employeeCardPalette';
+import { formatDateOnly } from '../../utils/formatDate';
 import { formatPtoDays } from '../../utils/formatPto';
-
-function formatDateOnly(iso: string): string {
-  const d = new Date(iso + 'T12:00:00');
-  return Number.isNaN(d.getTime()) ? iso : d.toLocaleDateString();
-}
 
 const detailGridSx = {
   display: 'grid',

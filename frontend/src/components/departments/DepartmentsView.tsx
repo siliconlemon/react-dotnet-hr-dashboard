@@ -14,6 +14,7 @@ import { fetchDepartmentPtoMatrix } from '../../api/departmentsApi';
 import type { DepartmentPtoMatrixResponseDto } from '../../api/types';
 import { strings } from '../../i18n';
 import { EMPLOYEE_CARD_ACCENTS, getDepartmentAccent, getDepartmentAccentIndex } from '../../theme/employeeCardPalette';
+import { formatDateOnly } from '../../utils/formatDate';
 import { formatPtoDays } from '../../utils/formatPto';
 
 /**
@@ -21,10 +22,6 @@ import { formatPtoDays } from '../../utils/formatPto';
  * MUI X community `DataGrid` has no `treeData`; we flatten parent/child rows and
  * show hierarchy with expand/collapse plus indentation (see SETUP.md).
  */
-function formatDateOnly(iso: string): string {
-  const d = new Date(iso + 'T12:00:00');
-  return Number.isNaN(d.getTime()) ? iso : d.toLocaleDateString();
-}
 
 type MatrixGridRow = {
   id: string;
