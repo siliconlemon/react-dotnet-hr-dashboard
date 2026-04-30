@@ -36,7 +36,7 @@ export const en = {
     departmentsPerPageDecreaseAria: 'Show fewer departments per page',
     departmentsPerPageIncreaseAria: 'Show more departments per page',
     paginationRange: (from: number, to: number, count: number) =>
-      `${from}–${to} of ${count} departments`,
+      `${from}–${to} of ${count}`,
   },
   onboard: {
     title: 'Onboard employee',

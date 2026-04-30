@@ -154,7 +154,17 @@ function DepartmentsPageSizeStepper({
             style: { textAlign: 'center' },
           },
         }}
-        sx={{ width: 64 }}
+        sx={{
+          width: 40,
+          '& .MuiOutlinedInput-root': {
+            height: 28,
+            fontSize: '0.8125rem',
+          },
+          '& .MuiOutlinedInput-input': {
+            py: 0,
+            px: 0.5,
+          },
+        }}
       />
       <IconButton
         size="small"
@@ -210,6 +220,7 @@ const DepartmentsPagination = forwardRef<HTMLDivElement, DepartmentsPaginationPr
           justifyContent: 'flex-end',
           flexWrap: 'wrap',
           gap: 2,
+          rowGap: 1,
           minHeight: 52,
           px: 2,
           py: 0.5,
@@ -232,8 +243,6 @@ const DepartmentsPagination = forwardRef<HTMLDivElement, DepartmentsPaginationPr
           />
         </Box>
 
-        <Box sx={{ flex: '1 1 24px', minWidth: 8 }} />
-
         <Typography variant="body2" color="text.secondary" sx={{ flexShrink: 0 }}>
           {displayedRowsLabel}
         </Typography>
@@ -244,8 +253,8 @@ const DepartmentsPagination = forwardRef<HTMLDivElement, DepartmentsPaginationPr
           rowsPerPage={rowsPerPage}
           onPageChange={onPageChange}
           getItemAriaLabel={getItemAriaLabel}
-          showFirstButton
-          showLastButton
+          showFirstButton={false}
+          showLastButton={false}
           disabled={disabled}
         />
       </Box>
