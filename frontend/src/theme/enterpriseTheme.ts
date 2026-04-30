@@ -138,7 +138,7 @@ export const enterpriseTheme = createTheme({
     MuiDialogActions: {
       styleOverrides: {
         root: ({ theme }) => ({
-          paddingTop: theme.spacing(0.5),
+          paddingTop: theme.spacing(1),
           /** Slightly under side inset — full symmetry reads heavy at the bottom edge. */
           paddingBottom: theme.spacing(2.5),
           paddingLeft: theme.spacing(3),

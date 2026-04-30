@@ -11,6 +11,11 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
+import { formatDateOnly } from '../../utils/formatDate';
+import {
+  EmployeeEditChangesDialog,
+  type EmployeeEditChangeRow,
+} from './EmployeeEditChangesDialog';
 import { EmployeePickerField, getEmployeeById } from './EmployeePickerField';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import dayjs from 'dayjs';
@@ -60,6 +65,73 @@ function rowToValues(row: EmployeeReadDto): EditFormValues {
   };
 }
 
+function departmentLabel(
+  departments: DepartmentReadDto[],
+  id: number,
+  fallbackName?: string,
+): string {
+  const name = departments.find((d) => d.id === id)?.name;
+  if (name) return name;
+  if (fallbackName?.trim()) return fallbackName;
+  return String(id);
+}
+
+function buildEmployeeChangeRows(
+  baseline: EmployeeReadDto,
+  values: EditFormValues,
+  departments: DepartmentReadDto[],
+): EmployeeEditChangeRow[] {
+  const rows: EmployeeEditChangeRow[] = [];
+  const fn = values.firstName.trim();
+  const ln = values.lastName.trim();
+  const em = values.email.trim();
+  const jt = values.jobTitle.trim();
+
+  if (fn !== baseline.firstName) {
+    rows.push({
+      label: strings.onboard.fieldFirstName,
+      from: baseline.firstName,
+      to: fn,
+    });
+  }
+  if (ln !== baseline.lastName) {
+    rows.push({
+      label: strings.onboard.fieldLastName,
+      from: baseline.lastName,
+      to: ln,
+    });
+  }
+  if (em !== baseline.email) {
+    rows.push({
+      label: strings.onboard.fieldEmail,
+      from: baseline.email,
+      to: em,
+    });
+  }
+  if (jt !== baseline.jobTitle) {
+    rows.push({
+      label: strings.onboard.fieldJobTitle,
+      from: baseline.jobTitle,
+      to: jt,
+    });
+  }
+  if (values.hireDate !== baseline.hireDate) {
+    rows.push({
+      label: strings.onboard.fieldHireDate,
+      from: formatDateOnly(baseline.hireDate),
+      to: formatDateOnly(values.hireDate),
+    });
+  }
+  if (values.departmentId !== '' && Number(values.departmentId) !== baseline.departmentId) {
+    rows.push({
+      label: strings.onboard.fieldDepartment,
+      from: departmentLabel(departments, baseline.departmentId, baseline.departmentName),
+      to: departmentLabel(departments, Number(values.departmentId)),
+    });
+  }
+  return rows;
+}
+
 type EmployeeEditFormProps = {
   employees: EmployeeReadDto[];
   /** Set when exactly one row is selected in Directory; otherwise picker stays empty. */
@@ -79,6 +151,11 @@ export function EmployeeEditForm({
   const [deptError, setDeptError] = useState<string | null>(null);
   const [deptLoading, setDeptLoading] = useState(true);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [infoMessage, setInfoMessage] = useState<string | null>(null);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [pendingValues, setPendingValues] = useState<EditFormValues | null>(null);
+  const [changeRows, setChangeRows] = useState<EmployeeEditChangeRow[]>([]);
+  const [confirmSubmitting, setConfirmSubmitting] = useState(false);
   const [selectedId, setSelectedId] = useState<number | ''>('');
 
   const selectedRow = useMemo(
@@ -158,9 +235,8 @@ export function EmployeeEditForm({
     reset(rowToValues(selectedRow));
   }, [selectedRow, reset]);
 
-  const onSubmit = handleSubmit(async (values) => {
+  const persistEmployee = async (values: EditFormValues) => {
     if (selectedId === '') return;
-    setSubmitError(null);
     if (values.departmentId === '') {
       setSubmitError(strings.onboard.departmentRequired);
       return;
@@ -174,6 +250,9 @@ export function EmployeeEditForm({
         hireDate: values.hireDate,
         departmentId: values.departmentId,
       });
+      setConfirmOpen(false);
+      setPendingValues(null);
+      setChangeRows([]);
       onUpdated();
     } catch (e: unknown) {
       const err = e as Error & { status?: number };
@@ -192,17 +271,63 @@ export function EmployeeEditForm({
       }
       setSubmitError(strings.employees.updateFailed);
     }
+  };
+
+  const onSubmit = handleSubmit(async (values) => {
+    if (selectedId === '') return;
+    setSubmitError(null);
+    setInfoMessage(null);
+    if (!selectedRow) return;
+    if (values.departmentId === '') {
+      setSubmitError(strings.onboard.departmentRequired);
+      return;
+    }
+    const rows = buildEmployeeChangeRows(selectedRow, values, departments);
+    if (rows.length === 0) {
+      setInfoMessage(strings.employees.editNoChanges);
+      return;
+    }
+    setPendingValues(values);
+    setChangeRows(rows);
+    setConfirmOpen(true);
   });
+
+  const handleConfirmSave = async () => {
+    if (!pendingValues || selectedId === '') return;
+    setSubmitError(null);
+    setInfoMessage(null);
+    setConfirmSubmitting(true);
+    try {
+      await persistEmployee(pendingValues);
+    } finally {
+      setConfirmSubmitting(false);
+    }
+  };
+
+  const handleCloseConfirm = () => {
+    if (confirmSubmitting) return;
+    setConfirmOpen(false);
+    setPendingValues(null);
+    setChangeRows([]);
+  };
 
   const noEmployees = employees.length === 0;
 
   return (
+    <Box
+      sx={{
+        width: '100%',
+        maxWidth: 880,
+        alignSelf: { xs: 'stretch', md: 'flex-start' },
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 1.5,
+      }}
+    >
     <Paper
       sx={{
         p: 2,
         width: '100%',
-        maxWidth: 880,
-        alignSelf: { xs: 'stretch', md: 'flex-start' },
       }}
       variant="outlined"
     >
@@ -218,6 +343,7 @@ export function EmployeeEditForm({
         onChangeId={(id) => {
           setSelectedId(id);
           setSubmitError(null);
+          setInfoMessage(null);
         }}
         label={strings.employees.editPickEmployee}
         disabled={noEmployees}
@@ -235,7 +361,7 @@ export function EmployeeEditForm({
           {deptError}
         </Alert>
       )}
-      {submitError && (
+      {submitError && !confirmOpen && (
         <Alert severity="error" sx={{ mb: 1.5 }} onClose={() => setSubmitError(null)}>
           {submitError}
         </Alert>
@@ -414,6 +540,25 @@ export function EmployeeEditForm({
           </Box>
         </Box>
       )}
+      <EmployeeEditChangesDialog
+        open={confirmOpen}
+        onClose={handleCloseConfirm}
+        title={strings.employees.editReviewTitle}
+        subtitle={strings.employees.editReviewSubtitle}
+        changes={changeRows}
+        cancelLabel={strings.employees.editReviewCancel}
+        confirmLabel={strings.employees.editReviewConfirm}
+        confirmingLabel={strings.employees.editSaving}
+        confirming={confirmSubmitting}
+        onConfirm={handleConfirmSave}
+        errorMessage={submitError}
+      />
     </Paper>
+      {infoMessage && (
+        <Alert severity="info" onClose={() => setInfoMessage(null)}>
+          {infoMessage}
+        </Alert>
+      )}
+    </Box>
   );
 }
