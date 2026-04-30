@@ -325,7 +325,13 @@ export function OnboardingForm({ onCreated }: OnboardingFormProps) {
             </FormControl>
           )}
         />
-        <Box sx={{ gridColumn: { xs: '1', md: '1 / -1' } }}>
+        <Box
+          sx={{
+            gridColumn: { xs: '1', md: '1 / -1' },
+            display: 'flex',
+            justifyContent: 'flex-start',
+          }}
+        >
           <Button
             type="submit"
             variant="contained"

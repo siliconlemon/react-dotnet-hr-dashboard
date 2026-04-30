@@ -67,9 +67,14 @@ export const enterpriseTheme = createTheme({
       },
     },
     MuiButton: {
-      defaultProps: { size: 'small', disableElevation: true },
+      defaultProps: { size: 'medium', disableElevation: true },
       styleOverrides: {
-        root: { textTransform: 'none', fontWeight: 500 },
+        root: ({ theme }) => ({
+          textTransform: 'capitalize',
+          fontWeight: theme.typography.fontWeightMedium ?? 500,
+          /** Match `TextField` / `OutlinedInput` `size="small"` control height (~40px). */
+          minHeight: 40,
+        }),
       },
     },
     MuiIconButton: {
