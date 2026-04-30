@@ -20,7 +20,12 @@ import { OnboardingForm } from './OnboardingForm';
 
 type DetailTab = 'profile' | 'pto';
 
-type EmployeesViewTab = 'directory' | 'onboard' | 'edit' | 'remove';
+export type EmployeesViewTab = 'directory' | 'onboard' | 'edit' | 'remove';
+
+type EmployeesViewProps = {
+  /** Fires when the top-level area tab changes (and once on mount). */
+  onViewTabChange?: (tab: EmployeesViewTab) => void;
+};
 
 /** Resolves MUI Data Grid row ids (include / exclude selection semantics). */
 function effectiveSelectedRowIds(
@@ -73,7 +78,7 @@ const detailPanelTitleTypographySx = {
 /**
  * Employees area: directory (grid + profile/PTO), onboard, edit, or remove.
  */
-export function EmployeesView() {
+export function EmployeesView({ onViewTabChange }: EmployeesViewProps) {
   const [viewTab, setViewTab] = useState<EmployeesViewTab>('directory');
   const [rows, setRows] = useState<EmployeeReadDto[]>([]);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -128,6 +133,10 @@ export function EmployeesView() {
     })();
     return () => ac.abort();
   }, [reloadEmployees]);
+
+  useEffect(() => {
+    onViewTabChange?.(viewTab);
+  }, [viewTab, onViewTabChange]);
 
   const handleEmployeeCreated = useCallback(
     (created: EmployeeReadDto) => {

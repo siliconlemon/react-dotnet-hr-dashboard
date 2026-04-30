@@ -19,6 +19,7 @@ export const en = {
     expandSidebar: 'Expand sidebar',
     collapseSidebar: 'Collapse sidebar',
     openMenu: 'Open navigation menu',
+    breadcrumb: 'Breadcrumb',
   },
   dashboard: {
     title: 'Dashboard',

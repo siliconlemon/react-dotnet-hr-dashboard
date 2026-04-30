@@ -4,11 +4,13 @@ import {
   ChevronRight,
   DashboardOutlined,
   Menu as MenuIcon,
+  NavigateNext,
   PeopleOutlined,
 } from '@mui/icons-material';
 import {
   AppBar,
   Box,
+  Breadcrumbs,
   Divider,
   Drawer,
   IconButton,
@@ -44,13 +46,15 @@ type AppShellProps = {
   children: React.ReactNode;
   activeNavKey: NavKey;
   onNavKeyChange: (key: NavKey) => void;
+  /** Primary segment matches the drawer; optional further segments (e.g. top-level area tabs). */
+  breadcrumbItems: readonly string[];
 };
 
 /**
  * Top AppBar plus collapsible navigation: mini rail when collapsed on desktop,
  * temporary drawer on small screens.
  */
-export function AppShell({ children, activeNavKey, onNavKeyChange }: AppShellProps) {
+export function AppShell({ children, activeNavKey, onNavKeyChange, breadcrumbItems }: AppShellProps) {
   const theme = useTheme();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
@@ -231,9 +235,32 @@ export function AppShell({ children, activeNavKey, onNavKeyChange }: AppShellPro
           >
             <MenuIcon />
           </IconButton>
-          <Typography variant="subtitle1" component="h1" sx={{ fontWeight: 600 }} noWrap>
-            {strings.app.shellTitle}
-          </Typography>
+          <Breadcrumbs
+            separator={<NavigateNext fontSize="small" sx={{ color: 'text.disabled' }} />}
+            aria-label={strings.shell.breadcrumb}
+            sx={{ flex: 1, minWidth: 0 }}
+          >
+            {breadcrumbItems.map((label, index) => {
+              const isLast = index === breadcrumbItems.length - 1;
+              return (
+                <Typography
+                  key={`${index}-${label}`}
+                  variant="subtitle1"
+                  component={isLast ? 'h1' : 'span'}
+                  color={isLast ? 'text.primary' : 'text.secondary'}
+                  aria-current={isLast ? 'page' : undefined}
+                  sx={{
+                    fontWeight: isLast ? 600 : 500,
+                    fontSize: isLast ? undefined : '0.875rem',
+                    lineHeight: 1.3,
+                  }}
+                  noWrap
+                >
+                  {label}
+                </Typography>
+              );
+            })}
+          </Breadcrumbs>
         </Toolbar>
       </AppBar>
 
