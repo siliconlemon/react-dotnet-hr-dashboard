@@ -392,21 +392,7 @@ export function EmployeesView() {
                   sx={{
                     border: 'none',
                     height: '100%',
-                    '& .MuiDataGrid-toolbarContainer': {
-                      px: 0,
-                      py: 1,
-                      gap: 1,
-                      alignItems: 'center',
-                      flexWrap: 'wrap',
-                    },
-                    '& .MuiDataGrid-toolbarLabel': {
-                      typography: 'h2',
-                    },
-                    '& .MuiDataGrid-toolbarQuickFilter': {
-                      flex: '1 1 auto',
-                      minWidth: { xs: '100%', sm: 260 },
-                      maxWidth: 400,
-                    },
+                    '& .MuiDataGrid-toolbarContainer': { px: 0, py: 1 },
                     '& .MuiDataGrid-columnHeaders': { bgcolor: 'action.hover' },
                     '& .MuiDataGrid-footerContainer': {
                       minHeight: 47,

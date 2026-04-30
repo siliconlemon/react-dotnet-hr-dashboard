@@ -331,6 +331,33 @@ export const enterpriseTheme = createTheme({
           '& .MuiDataGrid-columnHeader:focus-within': {
             backgroundColor: alpha(theme.palette.primary.main, 0.1),
           },
+          /**
+           * Toolbar: title stays left; columns / filter / quick filter cluster on the right.
+           * (MUI default gives the label `flex: 1`, which eats horizontal space.)
+           */
+          '& .MuiDataGrid-toolbarContainer': {
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: theme.spacing(1),
+            justifyContent: 'flex-start',
+            width: '100%',
+          },
+          '& .MuiDataGrid-toolbarLabel': {
+            ...theme.typography.h2,
+            flex: '0 1 auto',
+          },
+          '& .MuiDataGrid-toolbarLabel + *': {
+            marginLeft: 'auto',
+          },
+          /**
+           * Collapsed quick filter should only use the trigger width (`--trigger-width`), not a
+           * wide min-width — otherwise empty space remains beside the icon.
+           */
+          '& .MuiDataGrid-toolbarQuickFilter': {
+            flex: '0 0 auto',
+            minWidth: 0,
+            maxWidth: 400,
+          },
         }),
       },
     },
