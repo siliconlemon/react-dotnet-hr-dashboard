@@ -10,7 +10,7 @@ import {
   Paper,
   Typography,
 } from '@mui/material';
-import { EmployeePickerField } from './EmployeePickerField';
+import { EmployeePickerField, getEmployeeById } from './EmployeePickerField';
 import { useEffect, useMemo, useState } from 'react';
 import { deleteEmployee } from '../../api/employeesApi';
 import type { EmployeeReadDto } from '../../api/types';
@@ -52,7 +52,7 @@ export function EmployeeRemovePane({
   const [removing, setRemoving] = useState(false);
 
   const selectedRow = useMemo(
-    () => (selectedId === '' ? undefined : employees.find((e) => e.id === selectedId)),
+    () => getEmployeeById(employees, selectedId),
     [employees, selectedId],
   );
 
@@ -62,15 +62,15 @@ export function EmployeeRemovePane({
       return;
     }
     if (preferredEmployeeId != null) {
-      const match = employees.some((e) => e.id === preferredEmployeeId);
-      if (match) {
-        setSelectedId(preferredEmployeeId);
+      const row = getEmployeeById(employees, preferredEmployeeId);
+      if (row) {
+        setSelectedId(Number(row.id));
         return;
       }
     }
     setSelectedId((prev) => {
-      if (prev !== '' && employees.some((e) => e.id === prev)) return prev;
-      return employees[0]!.id;
+      if (prev !== '' && getEmployeeById(employees, prev) != null) return prev;
+      return '';
     });
   }, [employees, preferredEmployeeId]);
 
@@ -124,12 +124,10 @@ export function EmployeeRemovePane({
                 setSubmitError(null);
               }}
               label={strings.employees.removePickEmployee}
+              helperText={strings.employees.removeSelectPrompt}
               helperSpacerSx={selectAttachedHelperSpacerSx}
               helperPlaceholder={HELPER_PLACEHOLDER}
             />
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
-              {strings.employees.removeSelectPrompt}
-            </Typography>
             {submitError && (
               <Alert severity="error" sx={{ mb: 1.5 }} onClose={() => setSubmitError(null)}>
                 {submitError}

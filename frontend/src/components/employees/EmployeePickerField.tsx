@@ -2,6 +2,7 @@ import Autocomplete, { createFilterOptions } from '@mui/material/Autocomplete';
 import FormControl from '@mui/material/FormControl';
 import FormHelperText from '@mui/material/FormHelperText';
 import TextField from '@mui/material/TextField';
+import type { Theme } from '@mui/material/styles';
 import type { EmployeeReadDto } from '../../api/types';
 
 const filterEmployees = createFilterOptions<EmployeeReadDto>({
@@ -21,6 +22,17 @@ function fullName(e: EmployeeReadDto) {
   return `${e.firstName} ${e.lastName}`.trim();
 }
 
+/** Resolves a row from the list; uses numeric id comparison so grid / JSON id types stay in sync. */
+export function getEmployeeById(
+  employees: EmployeeReadDto[],
+  id: number | '',
+): EmployeeReadDto | undefined {
+  if (id === '') return undefined;
+  const n = Number(id);
+  if (Number.isNaN(n)) return undefined;
+  return employees.find((e) => Number(e.id) === n);
+}
+
 /** Single-line label: `Name (email)`; falls back to email if name is empty. */
 function employeeChoiceLabel(e: EmployeeReadDto) {
   const name = fullName(e);
@@ -33,6 +45,8 @@ export type EmployeePickerFieldProps = {
   onChangeId: (id: number | '') => void;
   label: string;
   disabled?: boolean;
+  /** Hint under the field (same slot as TextField helper text; uses secondary gray). */
+  helperText?: string;
   /** Renders under the field like TextField helper text (keeps layout aligned with other inputs). */
   helperSpacerSx?: object;
   helperPlaceholder?: string;
@@ -47,27 +61,32 @@ export function EmployeePickerField({
   onChangeId,
   label,
   disabled = false,
+  helperText,
   helperSpacerSx,
   helperPlaceholder = '\u00a0',
 }: EmployeePickerFieldProps) {
-  const value: EmployeeReadDto | undefined =
-    valueId === '' ? undefined : employees.find((e) => e.id === valueId);
+  const value: EmployeeReadDto | null = getEmployeeById(employees, valueId) ?? null;
 
   return (
     <FormControl fullWidth size="small" disabled={disabled}>
-      <Autocomplete<EmployeeReadDto, false, true, false>
+      <Autocomplete<EmployeeReadDto, false, false, false>
         size="small"
         options={employees}
         value={value}
         onChange={(_, next) => {
-          onChangeId(next?.id ?? '');
+          if (next == null) {
+            onChangeId('');
+            return;
+          }
+          const n = Number(next.id);
+          onChangeId(Number.isNaN(n) ? '' : n);
         }}
         filterOptions={filterEmployees}
         getOptionLabel={(e) => employeeChoiceLabel(e)}
-        isOptionEqualToValue={(a, b) => a.id === b.id}
-        disableClearable
+        isOptionEqualToValue={(a, b) => Number(a.id) === Number(b.id)}
         autoHighlight
         blurOnSelect
+        key={valueId === '' ? 'none' : String(Number(valueId))}
         slotProps={{
           popper: {
             placement: 'bottom-start',
@@ -104,11 +123,25 @@ export function EmployeePickerField({
           />
         )}
       />
-      {helperSpacerSx != null && (
-        <FormHelperText sx={helperSpacerSx} aria-hidden>
-          {helperPlaceholder}
+      {(helperText != null && helperText !== '') || helperSpacerSx != null ? (
+        <FormHelperText
+          sx={(theme: Theme) => ({
+            ...(typeof helperSpacerSx === 'function'
+              ? helperSpacerSx(theme)
+              : helperSpacerSx ?? {}),
+            ...(helperText != null && helperText !== ''
+              ? {
+                  minHeight: 'unset',
+                  color: theme.palette.text.secondary,
+                  ml: 1,
+                }
+              : {}),
+          })}
+          aria-hidden={!(helperText != null && helperText !== '')}
+        >
+          {helperText != null && helperText !== '' ? helperText : helperPlaceholder}
         </FormHelperText>
-      )}
+      ) : null}
     </FormControl>
   );
 }

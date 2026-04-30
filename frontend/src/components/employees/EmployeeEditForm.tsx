@@ -11,7 +11,7 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import { EmployeePickerField } from './EmployeePickerField';
+import { EmployeePickerField, getEmployeeById } from './EmployeePickerField';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import dayjs from 'dayjs';
 import { useEffect, useMemo, useState } from 'react';
@@ -81,7 +81,7 @@ export function EmployeeEditForm({
   const [selectedId, setSelectedId] = useState<number | ''>('');
 
   const selectedRow = useMemo(
-    () => (selectedId === '' ? undefined : employees.find((e) => e.id === selectedId)),
+    () => getEmployeeById(employees, selectedId),
     [employees, selectedId],
   );
 
@@ -133,15 +133,15 @@ export function EmployeeEditForm({
       return;
     }
     if (preferredEmployeeId != null) {
-      const match = employees.some((e) => e.id === preferredEmployeeId);
-      if (match) {
-        setSelectedId(preferredEmployeeId);
+      const row = getEmployeeById(employees, preferredEmployeeId);
+      if (row) {
+        setSelectedId(Number(row.id));
         return;
       }
     }
     setSelectedId((prev) => {
-      if (prev !== '' && employees.some((e) => e.id === prev)) return prev;
-      return employees[0]!.id;
+      if (prev !== '' && getEmployeeById(employees, prev) != null) return prev;
+      return '';
     });
   }, [employees, preferredEmployeeId]);
 
@@ -217,20 +217,19 @@ export function EmployeeEditForm({
       <EmployeePickerField
         employees={employees}
         valueId={selectedId}
-        onChangeId={setSelectedId}
+        onChangeId={(id) => {
+          setSelectedId(id);
+          setSubmitError(null);
+        }}
         label={strings.employees.editPickEmployee}
         disabled={noEmployees}
+        helperText={noEmployees ? undefined : strings.employees.editSelectPrompt}
         helperSpacerSx={selectAttachedHelperSpacerSx}
         helperPlaceholder={HELPER_PLACEHOLDER}
       />
       {noEmployees && (
         <Typography variant="body2" color="text.secondary">
           {strings.employees.editNoEmployees}
-        </Typography>
-      )}
-      {!noEmployees && selectedId === '' && (
-        <Typography variant="body2" color="text.secondary">
-          {strings.employees.editSelectPrompt}
         </Typography>
       )}
       {deptError && (
