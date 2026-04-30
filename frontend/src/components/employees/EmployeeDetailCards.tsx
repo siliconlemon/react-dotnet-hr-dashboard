@@ -2,7 +2,7 @@ import { Alert, Box, Paper, Skeleton, Typography } from '@mui/material';
 import type { Theme } from '@mui/material/styles';
 import type { EmployeeReadDto, PtoBalanceDto } from '../../api/types';
 import { strings } from '../../i18n';
-import { getEmployeeCardAccent } from '../../theme/employeeCardPalette';
+import { getDepartmentAccent } from '../../theme/employeeCardPalette';
 import { formatDateOnly } from '../../utils/formatDate';
 import { formatPtoDays } from '../../utils/formatPto';
 
@@ -98,7 +98,7 @@ export function EmployeeDetailCards({
   return (
     <Box sx={cardsGridSx}>
       {employees.map((row) => {
-        const accent = getEmployeeCardAccent(row.id);
+        const accent = getDepartmentAccent(row.departmentId);
         const fullName = `${row.firstName} ${row.lastName}`.trim();
         const pto = ptoByEmployeeId[row.id];
         const ptoErr = ptoErrorByEmployeeId[row.id];

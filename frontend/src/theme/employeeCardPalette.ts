@@ -1,6 +1,6 @@
 /**
- * Accent tokens for selected-employee summary cards (directory).
- * Used by detail cards; mirrors {@link enterpriseTheme} via theme augmentation.
+ * Accent tokens for department-grouped UI (Departments matrix + employee detail cards).
+ * Mirrors {@link enterpriseTheme} via theme augmentation.
  */
 export type EmployeeCardAccent = {
   border: string;
@@ -18,13 +18,6 @@ export const EMPLOYEE_CARD_ACCENTS: readonly EmployeeCardAccent[] = [
   { border: '#283593', headerBg: '#e8eaf6', nameColor: '#1a237e' },
   { border: '#558b2f', headerBg: '#f1f8e9', nameColor: '#33691e' },
 ];
-
-/** Stable accent for an employee id (same id → same colors across views). */
-export function getEmployeeCardAccent(employeeId: number): EmployeeCardAccent {
-  const n = EMPLOYEE_CARD_ACCENTS.length;
-  const i = (Math.abs(employeeId) * 7 + 3) % n;
-  return EMPLOYEE_CARD_ACCENTS[i]!;
-}
 
 /** Index into {@link EMPLOYEE_CARD_ACCENTS} for DataGrid row class names (stable per department). */
 export function getDepartmentAccentIndex(departmentId: number): number {
