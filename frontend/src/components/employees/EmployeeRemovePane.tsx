@@ -7,14 +7,10 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
-  FormControl,
-  FormHelperText,
-  InputLabel,
-  MenuItem,
   Paper,
-  Select,
   Typography,
 } from '@mui/material';
+import { EmployeePickerField } from './EmployeePickerField';
 import { useEffect, useMemo, useState } from 'react';
 import { deleteEmployee } from '../../api/employeesApi';
 import type { EmployeeReadDto } from '../../api/types';
@@ -120,28 +116,17 @@ export function EmployeeRemovePane({
         )}
         {!noEmployees && (
           <>
-            <FormControl fullWidth size="small">
-              <InputLabel id="remove-employee-label">{strings.employees.removePickEmployee}</InputLabel>
-              <Select
-                labelId="remove-employee-label"
-                label={strings.employees.removePickEmployee}
-                value={selectedId === '' ? '' : selectedId}
-                onChange={(e) => {
-                  const raw = e.target.value;
-                  setSelectedId(typeof raw === 'number' ? raw : Number(raw));
-                  setSubmitError(null);
-                }}
-              >
-                {employees.map((e) => (
-                  <MenuItem key={e.id} value={e.id}>
-                    {displayName(e)} ({e.email})
-                  </MenuItem>
-                ))}
-              </Select>
-              <FormHelperText sx={selectAttachedHelperSpacerSx} aria-hidden>
-                {HELPER_PLACEHOLDER}
-              </FormHelperText>
-            </FormControl>
+            <EmployeePickerField
+              employees={employees}
+              valueId={selectedId}
+              onChangeId={(id) => {
+                setSelectedId(id);
+                setSubmitError(null);
+              }}
+              label={strings.employees.removePickEmployee}
+              helperSpacerSx={selectAttachedHelperSpacerSx}
+              helperPlaceholder={HELPER_PLACEHOLDER}
+            />
             <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
               {strings.employees.removeSelectPrompt}
             </Typography>

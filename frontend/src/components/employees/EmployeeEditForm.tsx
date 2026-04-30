@@ -11,6 +11,7 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
+import { EmployeePickerField } from './EmployeePickerField';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import dayjs from 'dayjs';
 import { useEffect, useMemo, useState } from 'react';
@@ -213,27 +214,15 @@ export function EmployeeEditForm({
       <Typography variant="body2" color="text.secondary" sx={{ pb: 3 }}>
         {strings.employees.editSubtitle}
       </Typography>
-      <FormControl fullWidth size="small" disabled={noEmployees}>
-        <InputLabel id="edit-employee-label">{strings.employees.editPickEmployee}</InputLabel>
-        <Select
-          labelId="edit-employee-label"
-          label={strings.employees.editPickEmployee}
-          value={selectedId === '' ? '' : selectedId}
-          onChange={(e) => {
-            const raw = e.target.value;
-            setSelectedId(typeof raw === 'number' ? raw : Number(raw));
-          }}
-        >
-          {employees.map((e) => (
-            <MenuItem key={e.id} value={e.id}>
-              {`${e.firstName} ${e.lastName}`.trim()} ({e.email})
-            </MenuItem>
-          ))}
-        </Select>
-        <FormHelperText sx={selectAttachedHelperSpacerSx} aria-hidden>
-          {HELPER_PLACEHOLDER}
-        </FormHelperText>
-      </FormControl>
+      <EmployeePickerField
+        employees={employees}
+        valueId={selectedId}
+        onChangeId={setSelectedId}
+        label={strings.employees.editPickEmployee}
+        disabled={noEmployees}
+        helperSpacerSx={selectAttachedHelperSpacerSx}
+        helperPlaceholder={HELPER_PLACEHOLDER}
+      />
       {noEmployees && (
         <Typography variant="body2" color="text.secondary">
           {strings.employees.editNoEmployees}
