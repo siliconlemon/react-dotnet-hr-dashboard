@@ -1,4 +1,5 @@
-import { Alert, Box, Paper, Tab, Tabs, Typography } from '@mui/material';
+import { KeyboardArrowDown, KeyboardArrowUp } from '@mui/icons-material';
+import { Alert, Box, IconButton, Paper, Tab, Tabs, Tooltip, Typography } from '@mui/material';
 import {
   DataGrid,
   type GridColDef,
@@ -40,6 +41,35 @@ const SPLIT_MIN = 0.2;
 const SPLIT_MAX = 0.78;
 const SPLIT_DEFAULT = 0.48;
 
+/** Directory detail panel: full overlay, split view, or one-line bar. */
+type DetailPanelTier = 'expanded' | 'normal' | 'collapsed';
+
+const DETAIL_COLLAPSED_PX = 48;
+
+/** Matches split gutter: splitter `py: 1` + 1px line + `py: 1` ≈ 17px at default spacing. */
+const DETAIL_PANEL_COLLAPSED_TOP_GAP = 2.125;
+
+const detailPanelHeaderRowSx = {
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  gap: 1,
+  flexShrink: 0,
+  pl: 2.75,
+  pr: 2.25,
+  py: 1,
+  borderBottom: 1,
+  borderColor: 'divider' as const,
+};
+
+const detailPanelTitleTypographySx = {
+  fontWeight: 600,
+  fontSize: '20px',
+  lineHeight: 1.2,
+  textTransform: 'capitalize' as const,
+  minWidth: 0,
+};
+
 /**
  * Employees area: directory (grid + profile/PTO), onboard, edit, or remove.
  */
@@ -65,6 +95,7 @@ export function EmployeesView() {
   const [splitFraction, setSplitFraction] = useState(SPLIT_DEFAULT);
   const [splitDragging, setSplitDragging] = useState(false);
   const splitContainerRef = useRef<HTMLDivElement | null>(null);
+  const [detailPanelTier, setDetailPanelTier] = useState<DetailPanelTier>('normal');
   const {
     visibility: detailFieldVisibility,
     setProfileVisibility,
@@ -209,6 +240,14 @@ export function EmployeesView() {
     setSelectionModel(model);
   }, []);
 
+  const moveDetailPanelUp = useCallback(() => {
+    setDetailPanelTier((t) => (t === 'collapsed' ? 'normal' : t === 'normal' ? 'expanded' : t));
+  }, []);
+
+  const moveDetailPanelDown = useCallback(() => {
+    setDetailPanelTier((t) => (t === 'expanded' ? 'normal' : t === 'normal' ? 'collapsed' : t));
+  }, []);
+
   useEffect(() => {
     if (!splitDragging) return;
     const onMove = (e: PointerEvent) => {
@@ -329,6 +368,7 @@ export function EmployeesView() {
           >
             <Box
               sx={{
+                position: 'relative',
                 flex: 1,
                 minHeight: 0,
                 minWidth: 0,
@@ -336,15 +376,19 @@ export function EmployeesView() {
                 flexDirection: 'column',
                 overflow: 'hidden',
                 width: '100%',
-                maxWidth: (theme) => theme.spacing(125),
-                alignSelf: 'flex-start',
+                maxWidth: (theme) =>
+                  detailPanelTier === 'expanded' ? 'none' : theme.spacing(125),
+                alignSelf: detailPanelTier === 'expanded' ? 'stretch' : 'flex-start',
                 boxSizing: 'border-box',
               }}
             >
             <Paper
               sx={{
-                flex: '0 0 auto',
-                height: `${splitFraction * 100}%`,
+                flex:
+                  detailPanelTier === 'normal' ? '0 0 auto' : '1 1 auto',
+                ...(detailPanelTier === 'normal'
+                  ? { height: `${splitFraction * 100}%` }
+                  : {}),
                 minHeight: 140,
                 px: 2,
                 pb: 2,
@@ -354,6 +398,9 @@ export function EmployeesView() {
                 overflow: 'hidden',
                 width: '100%',
                 boxSizing: 'border-box',
+                opacity: detailPanelTier === 'expanded' ? 0 : 1,
+                pointerEvents: detailPanelTier === 'expanded' ? 'none' : 'auto',
+                transition: (theme) => theme.transitions.create('opacity', { duration: 160 }),
               }}
               variant="outlined"
             >
@@ -409,7 +456,8 @@ export function EmployeesView() {
                       alignItems: 'center',
                       pt: 1.5,
                       pb: 0,
-                      px: 0.5,
+                      pl: 0.5,
+                      pr: 0,
                       boxSizing: 'border-box',
                     },
                     '& .MuiDataGrid-footerContainer .MuiTablePagination-root': { py: 0, minHeight: 35 },
@@ -424,50 +472,72 @@ export function EmployeesView() {
               </Box>
             </Paper>
 
-            <Box
-              role="separator"
-              aria-orientation="horizontal"
-              aria-valuemin={Math.round(SPLIT_MIN * 100)}
-              aria-valuemax={Math.round(SPLIT_MAX * 100)}
-              aria-valuenow={Math.round(splitFraction * 100)}
-              onPointerDown={(e) => {
-                e.preventDefault();
-                setSplitDragging(true);
-              }}
-              sx={{
-                flexShrink: 0,
-                py: 1,
-                px: 1,
-                display: 'flex',
-                alignItems: 'center',
-                cursor: 'row-resize',
-                touchAction: 'none',
-                userSelect: 'none',
-                bgcolor: 'transparent',
-                '&:hover .EmployeesView-splitterLine': {
-                  opacity: 1,
-                },
-                ...(splitDragging && {
-                  '& .EmployeesView-splitterLine': { opacity: 1 },
-                }),
-              }}
-            >
+            {detailPanelTier === 'normal' && (
               <Box
-                className="EmployeesView-splitterLine"
-                sx={(theme) => ({
-                  height: '1px',
-                  width: '100%',
-                  bgcolor: theme.palette.divider,
-                  opacity: 0,
-                  transition: theme.transitions.create('opacity', { duration: 100 }),
-                })}
-              />
-            </Box>
+                role="separator"
+                aria-orientation="horizontal"
+                aria-valuemin={Math.round(SPLIT_MIN * 100)}
+                aria-valuemax={Math.round(SPLIT_MAX * 100)}
+                aria-valuenow={Math.round(splitFraction * 100)}
+                onPointerDown={(e) => {
+                  e.preventDefault();
+                  setSplitDragging(true);
+                }}
+                sx={{
+                  flexShrink: 0,
+                  py: 1,
+                  px: 1,
+                  display: 'flex',
+                  alignItems: 'center',
+                  cursor: 'row-resize',
+                  touchAction: 'none',
+                  userSelect: 'none',
+                  bgcolor: 'transparent',
+                  '&:hover .EmployeesView-splitterLine': {
+                    opacity: 1,
+                  },
+                  ...(splitDragging && {
+                    '& .EmployeesView-splitterLine': { opacity: 1 },
+                  }),
+                }}
+              >
+                <Box
+                  className="EmployeesView-splitterLine"
+                  sx={(theme) => ({
+                    height: '1px',
+                    width: '100%',
+                    bgcolor: theme.palette.divider,
+                    opacity: 0,
+                    transition: theme.transitions.create('opacity', { duration: 100 }),
+                  })}
+                />
+              </Box>
+            )}
 
             <Paper
               sx={{
-                flex: 1,
-                minHeight: 0,
+                ...(detailPanelTier === 'expanded'
+                  ? {
+                      position: 'absolute',
+                      left: 0,
+                      right: 0,
+                      top: 0,
+                      bottom: 0,
+                      zIndex: 2,
+                      flex: 'none',
+                      maxWidth: 'none',
+                    }
+                  : detailPanelTier === 'collapsed'
+                    ? {
+                        flex: '0 0 auto',
+                        height: DETAIL_COLLAPSED_PX,
+                        minHeight: DETAIL_COLLAPSED_PX,
+                        mt: DETAIL_PANEL_COLLAPSED_TOP_GAP,
+                      }
+                    : {
+                        flex: 1,
+                        minHeight: 0,
+                      }),
                 p: 0,
                 display: 'flex',
                 flexDirection: 'column',
@@ -478,80 +548,156 @@ export function EmployeesView() {
               }}
               variant="outlined"
             >
-              {selectedRows.length === 0 ? (
-                <Box sx={{ px: 3, py: 2 }}>
+              {detailPanelTier === 'collapsed' ? (
+                <Box sx={{ ...detailPanelHeaderRowSx, height: DETAIL_COLLAPSED_PX, boxSizing: 'border-box' }}>
                   <Typography
                     variant="subtitle1"
-                    sx={{
-                      fontWeight: 600,
-                      fontSize: '20px',
-                      mb: 1,
-                      flexShrink: 0,
-                      textTransform: 'capitalize',
-                    }}
+                    component="h2"
+                    sx={detailPanelTitleTypographySx}
                   >
                     {strings.employees.detailTitle}
                   </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {strings.employees.selectPrompt}
-                  </Typography>
+                  <Box sx={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+                    <Tooltip title={strings.employees.detailPanelRestoreSplit}>
+                      <span>
+                        <IconButton
+                          size="small"
+                          onClick={moveDetailPanelUp}
+                          aria-label={strings.employees.detailPanelRestoreSplit}
+                        >
+                          <KeyboardArrowUp />
+                        </IconButton>
+                      </span>
+                    </Tooltip>
+                    <Tooltip title={strings.employees.detailPanelMinimize}>
+                      <span>
+                        <IconButton
+                          size="small"
+                          disabled
+                          aria-label={strings.employees.detailPanelMinimize}
+                        >
+                          <KeyboardArrowDown />
+                        </IconButton>
+                      </span>
+                    </Tooltip>
+                  </Box>
                 </Box>
               ) : (
                 <>
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      borderBottom: 1,
-                      borderColor: 'divider',
-                      mb: 2,
-                      flexShrink: 0,
-                    }}
-                  >
-                    <Tabs
-                      value={detailTab}
-                      onChange={handleDetailTabChange}
-                      sx={{
-                        flex: 1,
-                        minWidth: 0,
-                        px: 2,
-                        borderBottom: 0,
-                      }}
+                  <Box sx={detailPanelHeaderRowSx}>
+                    <Typography variant="subtitle1" component="h2" sx={detailPanelTitleTypographySx}>
+                      {strings.employees.detailTitle}
+                    </Typography>
+                    <Box sx={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+                    <Tooltip
+                      title={
+                        detailPanelTier === 'expanded'
+                          ? strings.employees.detailPanelAlreadyFull
+                          : strings.employees.detailPanelFullHeight
+                      }
                     >
-                      <Tab value="profile" label={strings.employees.tabProfile} />
-                      <Tab value="pto" label={strings.employees.tabPto} />
-                    </Tabs>
-                    <Box
-                      sx={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        alignSelf: 'stretch',
-                        width: 48,
-                        pr: 1,
-                      }}
+                      <span>
+                        <IconButton
+                          size="small"
+                          onClick={moveDetailPanelUp}
+                          disabled={detailPanelTier === 'expanded'}
+                          aria-label={
+                            detailPanelTier === 'expanded'
+                              ? strings.employees.detailPanelAlreadyFull
+                              : strings.employees.detailPanelFullHeight
+                          }
+                        >
+                          <KeyboardArrowUp />
+                        </IconButton>
+                      </span>
+                    </Tooltip>
+                    <Tooltip
+                      title={
+                        detailPanelTier === 'expanded'
+                          ? strings.employees.detailPanelSplitWithTable
+                          : strings.employees.detailPanelMinimize
+                      }
                     >
-                      <EmployeeDetailFieldsPicker
-                        detailTab={detailTab}
-                        profileVisibility={detailFieldVisibility.profile}
-                        ptoVisibility={detailFieldVisibility.pto}
-                        onProfileVisibilityChange={setProfileVisibility}
-                        onPtoVisibilityChange={setPtoVisibility}
-                        onResetProfile={resetDetailProfileFields}
-                        onResetPto={resetDetailPtoFields}
-                      />
+                      <span>
+                        <IconButton
+                          size="small"
+                          onClick={moveDetailPanelDown}
+                          aria-label={
+                            detailPanelTier === 'expanded'
+                              ? strings.employees.detailPanelSplitWithTable
+                              : strings.employees.detailPanelMinimize
+                          }
+                        >
+                          <KeyboardArrowDown />
+                        </IconButton>
+                      </span>
+                    </Tooltip>
                     </Box>
                   </Box>
-                  <Box sx={{ flex: 1, minHeight: 0, overflowY: 'auto', pl: 2, pr: 2, pb: 2 }}>
-                    <EmployeeDetailCards
-                      employees={selectedRows}
-                      detailTab={detailTab}
-                      ptoByEmployeeId={ptoByEmployeeId}
-                      ptoErrorByEmployeeId={ptoErrorByEmployeeId}
-                      ptoLoading={detailTab === 'pto' && ptoLoading}
-                      profileFieldVisibility={detailFieldVisibility.profile}
-                      ptoFieldVisibility={detailFieldVisibility.pto}
-                    />
-                  </Box>
+                  {selectedRows.length === 0 ? (
+                    <Box sx={{ px: 3, py: 2 }}>
+                      <Typography variant="body2" color="text.secondary">
+                        {strings.employees.selectPrompt}
+                      </Typography>
+                    </Box>
+                  ) : (
+                    <>
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          borderBottom: 1,
+                          borderColor: 'divider',
+                          mb: 2,
+                          flexShrink: 0,
+                        }}
+                      >
+                        <Tabs
+                          value={detailTab}
+                          onChange={handleDetailTabChange}
+                          sx={{
+                            flex: 1,
+                            minWidth: 0,
+                            px: 2,
+                            borderBottom: 0,
+                          }}
+                        >
+                          <Tab value="profile" label={strings.employees.tabProfile} />
+                          <Tab value="pto" label={strings.employees.tabPto} />
+                        </Tabs>
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            alignSelf: 'stretch',
+                            width: 48,
+                            pr: 1,
+                          }}
+                        >
+                          <EmployeeDetailFieldsPicker
+                            detailTab={detailTab}
+                            profileVisibility={detailFieldVisibility.profile}
+                            ptoVisibility={detailFieldVisibility.pto}
+                            onProfileVisibilityChange={setProfileVisibility}
+                            onPtoVisibilityChange={setPtoVisibility}
+                            onResetProfile={resetDetailProfileFields}
+                            onResetPto={resetDetailPtoFields}
+                          />
+                        </Box>
+                      </Box>
+                      <Box sx={{ flex: 1, minHeight: 0, overflowY: 'auto', pl: 2, pr: 2, pb: 2 }}>
+                        <EmployeeDetailCards
+                          employees={selectedRows}
+                          detailTab={detailTab}
+                          ptoByEmployeeId={ptoByEmployeeId}
+                          ptoErrorByEmployeeId={ptoErrorByEmployeeId}
+                          ptoLoading={detailTab === 'pto' && ptoLoading}
+                          profileFieldVisibility={detailFieldVisibility.profile}
+                          ptoFieldVisibility={detailFieldVisibility.pto}
+                        />
+                      </Box>
+                    </>
+                  )}
                 </>
               )}
             </Paper>
