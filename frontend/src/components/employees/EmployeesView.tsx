@@ -453,13 +453,18 @@ export function EmployeesView() {
               }}
               variant="outlined"
             >
-              <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1, flexShrink: 0 }}>
-                {strings.employees.detailTitle}
-              </Typography>
               {selectedRows.length === 0 ? (
-                <Typography variant="body2" color="text.secondary">
-                  {strings.employees.selectPrompt}
-                </Typography>
+                <>
+                  <Typography
+                    variant="subtitle1"
+                    sx={{ fontWeight: 600, fontSize: '20px', mb: 1, flexShrink: 0 }}
+                  >
+                    {strings.employees.detailTitle}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {strings.employees.selectPrompt}
+                  </Typography>
+                </>
               ) : (
                 <>
                   <Tabs
