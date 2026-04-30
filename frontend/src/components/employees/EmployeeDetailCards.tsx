@@ -16,7 +16,7 @@ const detailGridSx = {
 
 const ptoGridSx = {
   display: 'grid',
-  gridTemplateColumns: { xs: '1fr', sm: '88px 1fr' },
+  gridTemplateColumns: { xs: '1fr', sm: 'minmax(120px, auto) 1fr' },
   columnGap: { xs: 0.75, sm: 1.25 },
   rowGap: 0.75,
   alignItems: 'baseline',
