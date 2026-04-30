@@ -25,3 +25,14 @@ export function getEmployeeCardAccent(employeeId: number): EmployeeCardAccent {
   const i = (Math.abs(employeeId) * 7 + 3) % n;
   return EMPLOYEE_CARD_ACCENTS[i]!;
 }
+
+/** Index into {@link EMPLOYEE_CARD_ACCENTS} for DataGrid row class names (stable per department). */
+export function getDepartmentAccentIndex(departmentId: number): number {
+  const n = EMPLOYEE_CARD_ACCENTS.length;
+  return (Math.abs(departmentId) * 13 + 7) % n;
+}
+
+/** Same palette as employee cards; groups department parent + child rows by department id. */
+export function getDepartmentAccent(departmentId: number): EmployeeCardAccent {
+  return EMPLOYEE_CARD_ACCENTS[getDepartmentAccentIndex(departmentId)]!;
+}

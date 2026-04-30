@@ -2,14 +2,11 @@ import { Alert, Box, Paper, Skeleton, Typography } from '@mui/material';
 import type { EmployeeReadDto, PtoBalanceDto } from '../../api/types';
 import { strings } from '../../i18n';
 import { getEmployeeCardAccent } from '../../theme/employeeCardPalette';
+import { formatPtoDays } from '../../utils/formatPto';
 
 function formatDateOnly(iso: string): string {
   const d = new Date(iso + 'T12:00:00');
   return Number.isNaN(d.getTime()) ? iso : d.toLocaleDateString();
-}
-
-function formatDays(n: number): string {
-  return n.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 });
 }
 
 const detailGridSx = {
@@ -186,24 +183,24 @@ export function EmployeeDetailCards({
                       <Typography variant="caption" color="text.secondary">
                         {strings.employees.ptoAnnual}
                       </Typography>
-                      <Typography variant="body2">{formatDays(pto.annualEntitlementDays)}</Typography>
+                      <Typography variant="body2">{formatPtoDays(pto.annualEntitlementDays)}</Typography>
                       <Typography variant="caption" color="text.secondary">
                         {strings.employees.ptoAccrued}
                       </Typography>
-                      <Typography variant="body2">{formatDays(pto.accruedDays)}</Typography>
+                      <Typography variant="body2">{formatPtoDays(pto.accruedDays)}</Typography>
                       <Typography variant="caption" color="text.secondary">
                         {strings.employees.ptoUsed}
                       </Typography>
-                      <Typography variant="body2">{formatDays(pto.usedDays)}</Typography>
+                      <Typography variant="body2">{formatPtoDays(pto.usedDays)}</Typography>
                       <Typography variant="caption" color="text.secondary">
                         {strings.employees.ptoPending}
                       </Typography>
-                      <Typography variant="body2">{formatDays(pto.pendingDays)}</Typography>
+                      <Typography variant="body2">{formatPtoDays(pto.pendingDays)}</Typography>
                       <Typography variant="caption" color="text.secondary">
                         {strings.employees.ptoAvailable}
                       </Typography>
                       <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                        {formatDays(pto.availableDays)}
+                        {formatPtoDays(pto.availableDays)}
                       </Typography>
                     </Box>
                   )}

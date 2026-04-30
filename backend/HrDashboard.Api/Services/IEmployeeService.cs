@@ -26,4 +26,11 @@ public interface IEmployeeService
     /// Computes YTD PTO accrual and usage for the calendar year containing <paramref name="asOfDate"/>.
     /// </summary>
     Task<PtoBalanceDto?> GetPtoBalanceAsync(int id, DateOnly? asOfDate, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Departments with per-employee PTO and team rollups (same rules as <see cref="GetPtoBalanceAsync"/>).
+    /// </summary>
+    Task<DepartmentPtoMatrixResponseDto> GetDepartmentPtoMatrixAsync(
+        DateOnly? asOfDate,
+        CancellationToken cancellationToken = default);
 }

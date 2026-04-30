@@ -45,3 +45,36 @@ export type PtoBalanceDto = {
   pendingDays: number;
   availableDays: number;
 };
+
+/** Mirrors {@link HrDashboard.Api.Contracts.PtoRollupDto}. */
+export type PtoRollupDto = {
+  annualEntitlementDays: number;
+  accruedDays: number;
+  usedDays: number;
+  pendingDays: number;
+  availableDays: number;
+};
+
+/** Mirrors {@link HrDashboard.Api.Contracts.EmployeePtoMatrixRowDto}. */
+export type EmployeePtoMatrixRowDto = {
+  employeeId: number;
+  firstName: string;
+  lastName: string;
+  balance: PtoBalanceDto;
+};
+
+/** Mirrors {@link HrDashboard.Api.Contracts.DepartmentPtoMatrixItemDto}. */
+export type DepartmentPtoMatrixItemDto = {
+  departmentId: number;
+  name: string;
+  headcount: number;
+  rollup: PtoRollupDto;
+  employees: EmployeePtoMatrixRowDto[];
+};
+
+/** Mirrors {@link HrDashboard.Api.Contracts.DepartmentPtoMatrixResponseDto}. */
+export type DepartmentPtoMatrixResponseDto = {
+  calendarYear: number;
+  asOfDate: string;
+  departments: DepartmentPtoMatrixItemDto[];
+};

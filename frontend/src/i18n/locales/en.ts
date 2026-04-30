@@ -24,6 +24,20 @@ export const en = {
     title: 'Dashboard',
     placeholder: 'Employee list and forms will connect here in later phases.',
   },
+  departments: {
+    title: 'Departments',
+    subtitle:
+      'Team PTO rollups and per-person rows for the same calendar year as the Directory PTO view. Expand a department to compare individuals.',
+    loadError: 'Could not load department PTO matrix. Is the API running?',
+    colTree: 'Department / employee',
+    expandRow: 'Show or hide employees in this department',
+    departmentsPerPage: 'Departments per page:',
+    departmentsPerPageInputAria: 'Departments per page',
+    departmentsPerPageDecreaseAria: 'Show fewer departments per page',
+    departmentsPerPageIncreaseAria: 'Show more departments per page',
+    paginationRange: (from: number, to: number, count: number) =>
+      `${from}–${to} of ${count} departments`,
+  },
   onboard: {
     title: 'Onboard employee',
     subtitle: 'Creates a new employee record. Email must be unique.',

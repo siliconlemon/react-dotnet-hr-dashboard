@@ -148,6 +148,93 @@ public sealed class EmployeeService : IEmployeeService
             return null;
 
         var asOf = asOfDate ?? DateOnly.FromDateTime(DateTime.UtcNow.Date);
+        return await ComputePtoBalanceAsync(employee, asOf, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
+    public async Task<DepartmentPtoMatrixResponseDto> GetDepartmentPtoMatrixAsync(
+        DateOnly? asOfDate,
+        CancellationToken cancellationToken = default)
+    {
+        var asOf = asOfDate ?? DateOnly.FromDateTime(DateTime.UtcNow.Date);
+
+        var departments = await _db.Departments
+            .AsNoTracking()
+            .OrderBy(d => d.Name)
+            .ToListAsync(cancellationToken)
+            .ConfigureAwait(false);
+
+        var employees = await _db.Employees
+            .AsNoTracking()
+            .Include(e => e.LeaveRequests)
+            .ToListAsync(cancellationToken)
+            .ConfigureAwait(false);
+
+        var items = new List<DepartmentPtoMatrixItemDto>();
+        foreach (var dept in departments)
+        {
+            var deptEmployees = employees
+                .Where(e => e.DepartmentId == dept.Id)
+                .OrderBy(e => e.LastName)
+                .ThenBy(e => e.FirstName)
+                .ToList();
+
+            decimal sumAnnual = 0;
+            decimal sumAccrued = 0;
+            decimal sumUsed = 0;
+            decimal sumPending = 0;
+            decimal sumAvailable = 0;
+            var rows = new List<EmployeePtoMatrixRowDto>();
+
+            foreach (var emp in deptEmployees)
+            {
+                var balance = await ComputePtoBalanceAsync(emp, asOf, cancellationToken).ConfigureAwait(false);
+                sumAnnual += balance.AnnualEntitlementDays;
+                sumAccrued += balance.AccruedDays;
+                sumUsed += balance.UsedDays;
+                sumPending += balance.PendingDays;
+                sumAvailable += balance.AvailableDays;
+                rows.Add(
+                    new EmployeePtoMatrixRowDto
+                    {
+                        EmployeeId = emp.Id,
+                        FirstName = emp.FirstName,
+                        LastName = emp.LastName,
+                        Balance = balance
+                    });
+            }
+
+            items.Add(
+                new DepartmentPtoMatrixItemDto
+                {
+                    DepartmentId = dept.Id,
+                    Name = dept.Name,
+                    Headcount = deptEmployees.Count,
+                    Rollup = new PtoRollupDto
+                    {
+                        AnnualEntitlementDays = RoundPto(sumAnnual),
+                        AccruedDays = RoundPto(sumAccrued),
+                        UsedDays = RoundPto(sumUsed),
+                        PendingDays = RoundPto(sumPending),
+                        AvailableDays = RoundPto(sumAvailable)
+                    },
+                    Employees = rows
+                });
+        }
+
+        return new DepartmentPtoMatrixResponseDto
+        {
+            CalendarYear = asOf.Year,
+            AsOfDate = asOf,
+            Departments = items
+        };
+    }
+
+    private async Task<PtoBalanceDto> ComputePtoBalanceAsync(
+        Employee employee,
+        DateOnly asOf,
+        CancellationToken cancellationToken)
+    {
         var year = asOf.Year;
         var yearStart = new DateOnly(year, 1, 1);
         var yearEnd = new DateOnly(year, 12, 31);

@@ -38,6 +38,7 @@ JSON uses **camelCase**. Typical routes:
 | Method | Path | Description |
 |--------|------|-------------|
 | `GET` | `/api/departments` | List departments (sorted by name), for dropdowns. |
+| `GET` | `/api/departments/pto-matrix?asOf=YYYY-MM-DD` | Hierarchical PTO matrix: per-department rollups (sums) and nested employee balances for the calendar year of `asOf` (optional; defaults to today UTC). Uses the same PTO rules as `GET /api/employees/{id}/pto-balance`. |
 
 ### Employees
 
@@ -107,3 +108,5 @@ Use any SQLite client (for example [DB Browser for SQLite](https://sqlitebrowser
 5. **Employees (Phases 4–6):** Start the API in another terminal (`dotnet run` from `backend/HrDashboard.Api` on `http://localhost:5228`). The Vite dev server proxies `/api` to that URL, so the **Employees** page can load data without CORS setup. If the API is not running, the grid and forms show an error.
 
 The shell uses a compact MUI theme, top **AppBar**, and a **collapsible** side navigation (full labels or icon rail on wide screens; menu drawer on narrow screens). The **Employees** view has **Directory** (MUI **DataGrid** with client-side sort/pagination, **multi-select**, a **resizable split** between the grid and the detail panel, **tabbed** profile + PTO with selected rows shown as **accent-colored cards** in a responsive grid, centralized accent tokens under `frontend/src/theme/employeeCardPalette.ts`) and **Onboard** (**react-hook-form** + MUI fields in a **two-column** layout on medium+ screens, form draft kept while switching Directory/Onboard tabs because the form stays mounted, `POST /api/employees`).
+
+The **Departments** page (Phase 7) loads `GET /api/departments/pto-matrix` and shows department **team totals** (sums of the same PTO columns as Directory) with **expand/collapse** to reveal **per-employee** rows. The UI uses **MUI X community `DataGrid`**, which does not ship **tree rows** (`treeData` is a Pro feature); the app instead **flattens** parent and visible child rows and uses icons + indentation. Shared day formatting lives in `frontend/src/utils/formatPto.ts` so table cells stay consistent with the employee PTO cards.
