@@ -27,6 +27,11 @@ import { strings } from '../../i18n';
 const DRAWER_EXPANDED_PX = 240;
 const DRAWER_COLLAPSED_PX = 64;
 
+/** Single row height for nav items in expanded and collapsed desktop drawer. */
+const NAV_ITEM_MIN_HEIGHT_PX = 48;
+/** Square icon slot so collapsed rail matches expanded vertical rhythm. */
+const NAV_ICON_SLOT_PX = 40;
+
 export type NavKey = 'dashboard' | 'employees' | 'departments';
 
 const NAV_ITEMS: Array<{ key: NavKey; label: string; icon: React.ReactElement }> = [
@@ -67,7 +72,18 @@ export function AppShell({ children, activeNavKey, onNavKeyChange }: AppShellPro
     const iconOnly = !mobile && collapsed;
 
     return (
-      <List sx={{ pt: 1, px: mobile ? 1 : 0.5 }} component="nav" aria-label={strings.nav.listAriaLabel}>
+      <List
+        component="nav"
+        aria-label={strings.nav.listAriaLabel}
+        sx={{
+          pt: 1,
+          px: mobile ? 0.5 : iconOnly ? 0 : 0.75,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: iconOnly ? 'center' : 'stretch',
+          gap: 0.75,
+        }}
+      >
         {NAV_ITEMS.map((item) => {
           const button = (
             <ListItemButton
@@ -78,20 +94,40 @@ export function AppShell({ children, activeNavKey, onNavKeyChange }: AppShellPro
               }}
               sx={{
                 borderRadius: 1,
+                minHeight: NAV_ITEM_MIN_HEIGHT_PX,
+                py: 0,
                 justifyContent: iconOnly ? 'center' : 'flex-start',
-                px: iconOnly ? 1 : 1.5,
+                px: iconOnly ? 0 : 0.75,
+                alignItems: 'center',
+                ...(iconOnly && {
+                  width: NAV_ITEM_MIN_HEIGHT_PX,
+                  height: NAV_ITEM_MIN_HEIGHT_PX,
+                  minWidth: NAV_ITEM_MIN_HEIGHT_PX,
+                  maxWidth: NAV_ITEM_MIN_HEIGHT_PX,
+                  flexShrink: 0,
+                }),
               }}
             >
               <ListItemIcon
                 sx={{
-                  minWidth: 0,
-                  mr: iconOnly ? 0 : 1.5,
+                  minWidth: NAV_ICON_SLOT_PX,
+                  width: NAV_ICON_SLOT_PX,
+                  height: NAV_ICON_SLOT_PX,
+                  mr: iconOnly ? 0 : 0.75,
+                  ml: 0,
                   justifyContent: 'center',
+                  alignItems: 'center',
+                  display: 'flex',
                 }}
               >
                 {item.icon}
               </ListItemIcon>
-              {!iconOnly && <ListItemText primary={item.label} />}
+              {!iconOnly && (
+                <ListItemText
+                  primary={item.label}
+                  slotProps={{ primary: { variant: 'body2', noWrap: true } }}
+                />
+              )}
             </ListItemButton>
           );
           if (iconOnly) {
