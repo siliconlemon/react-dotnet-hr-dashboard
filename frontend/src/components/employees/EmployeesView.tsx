@@ -444,7 +444,7 @@ export function EmployeesView() {
               sx={{
                 flex: 1,
                 minHeight: 0,
-                p: 2,
+                p: 0,
                 display: 'flex',
                 flexDirection: 'column',
                 overflow: 'hidden',
@@ -454,7 +454,7 @@ export function EmployeesView() {
               variant="outlined"
             >
               {selectedRows.length === 0 ? (
-                <>
+                <Box sx={{ p: 2 }}>
                   <Typography
                     variant="subtitle1"
                     sx={{ fontWeight: 600, fontSize: '20px', mb: 1, flexShrink: 0 }}
@@ -464,13 +464,14 @@ export function EmployeesView() {
                   <Typography variant="body2" color="text.secondary">
                     {strings.employees.selectPrompt}
                   </Typography>
-                </>
+                </Box>
               ) : (
                 <>
                   <Tabs
                     value={detailTab}
                     onChange={handleDetailTabChange}
                     sx={{
+                      px: 2,
                       borderBottom: 1,
                       borderColor: 'divider',
                       mb: 2,
@@ -480,7 +481,7 @@ export function EmployeesView() {
                     <Tab value="profile" label={strings.employees.tabProfile} />
                     <Tab value="pto" label={strings.employees.tabPto} />
                   </Tabs>
-                  <Box sx={{ flex: 1, minHeight: 0, overflowY: 'auto', pr: 0.5 }}>
+                  <Box sx={{ flex: 1, minHeight: 0, overflowY: 'auto', pl: 2, pr: 0.5, pb: 2 }}>
                     <EmployeeDetailCards
                       employees={selectedRows}
                       detailTab={detailTab}
