@@ -54,7 +54,7 @@ export const enterpriseTheme = createTheme({
       '"Segoe UI", Roboto, "Helvetica Neue", Helvetica, Arial, sans-serif',
     fontSize: 13,
     h1: { fontSize: '1.5rem', fontWeight: 600 },
-    h2: { fontSize: '1.25rem', fontWeight: 600 },
+    h2: { fontSize: '1.25rem', fontWeight: 600, textTransform: 'capitalize' },
     h3: { fontSize: '1.1rem', fontWeight: 600 },
     subtitle2: { fontWeight: 600 },
   },

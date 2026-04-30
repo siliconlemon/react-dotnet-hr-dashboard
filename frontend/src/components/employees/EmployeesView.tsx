@@ -457,7 +457,13 @@ export function EmployeesView() {
                 <Box sx={{ p: 2 }}>
                   <Typography
                     variant="subtitle1"
-                    sx={{ fontWeight: 600, fontSize: '20px', mb: 1, flexShrink: 0 }}
+                    sx={{
+                      fontWeight: 600,
+                      fontSize: '20px',
+                      mb: 1,
+                      flexShrink: 0,
+                      textTransform: 'capitalize',
+                    }}
                   >
                     {strings.employees.detailTitle}
                   </Typography>
