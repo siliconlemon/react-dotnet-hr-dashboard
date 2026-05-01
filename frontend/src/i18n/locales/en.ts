@@ -116,7 +116,6 @@ export const en = {
     editReviewCancel: 'Cancel',
     editNoChanges: 'No changes to save.',
     editNoEmployees: 'No employees to edit. Add someone from Onboard first.',
-    editSelectPrompt: 'Choose an employee or select exactly one row in Directory.',
     updateFailed: 'Could not save changes. Try again.',
     removeTitle: 'Remove Employee',
     removeSubtitle:
@@ -135,7 +134,6 @@ export const en = {
     removing: 'Removing…',
     removeFailed: 'Could not remove employee. Try again.',
     removeNoEmployees: 'No employees on file.',
-    removeSelectPrompt: 'Choose an employee to remove, or select one row in Directory.',
   },
 } as const;
 

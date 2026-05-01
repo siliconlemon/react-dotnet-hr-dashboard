@@ -1,4 +1,5 @@
 import Autocomplete, { createFilterOptions } from '@mui/material/Autocomplete';
+import Box from '@mui/material/Box';
 import FormControl from '@mui/material/FormControl';
 import FormHelperText from '@mui/material/FormHelperText';
 import TextField from '@mui/material/TextField';
@@ -59,6 +60,7 @@ export function EmployeePickerField({
 
   return (
     <FormControl fullWidth size="small" disabled={disabled}>
+      <Box sx={{ pb: 3 }}>
       <Autocomplete<EmployeeReadDto, false, false, false>
         size="small"
         options={employees}
@@ -113,6 +115,7 @@ export function EmployeePickerField({
           />
         )}
       />
+      </Box>
       {(helperText != null && helperText !== '') || helperSpacerSx != null ? (
         <FormHelperText
           sx={(theme: Theme) => ({

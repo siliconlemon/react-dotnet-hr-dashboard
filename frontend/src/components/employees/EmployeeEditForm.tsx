@@ -35,17 +35,6 @@ const compactFieldSlotProps = {
   },
 } as const;
 
-/** Same as the edit form grid `gap` — space between full field rows (label + input + helper). */
-const FIELD_STACK_GAP = 1.5;
-
-/** Helper strip under an input/outlined control (matches TextField `formHelperText` slot). */
-const selectAttachedHelperSpacerSx = (theme: { spacing: (n: number) => string }) => ({
-  minHeight: 20,
-  m: 0,
-  mt: 0.5,
-  mb: theme.spacing(FIELD_STACK_GAP),
-});
-
 type EditFormValues = {
   firstName: string;
   lastName: string;
@@ -135,19 +124,11 @@ function buildEmployeeChangeRows(
 
 type EmployeeEditFormProps = {
   employees: EmployeeReadDto[];
-  /** Set when exactly one row is selected in Directory; otherwise picker stays empty. */
-  preferredEmployeeId: number | null;
   onUpdated: () => void;
 };
 
-/**
- * Full PUT form for an existing employee; dropdown stays in sync with Directory (filled only when exactly one row is selected).
- */
-export function EmployeeEditForm({
-  employees,
-  preferredEmployeeId,
-  onUpdated,
-}: EmployeeEditFormProps) {
+/** Full PUT form for an existing employee; employee is chosen only via the picker. */
+export function EmployeeEditForm({ employees, onUpdated }: EmployeeEditFormProps) {
   const [departments, setDepartments] = useState<DepartmentReadDto[]>([]);
   const [deptError, setDeptError] = useState<string | null>(null);
   const [deptLoading, setDeptLoading] = useState(true);
@@ -157,28 +138,14 @@ export function EmployeeEditForm({
   const [pendingValues, setPendingValues] = useState<EditFormValues | null>(null);
   const [changeRows, setChangeRows] = useState<EmployeeEditChangeRow[]>([]);
   const [confirmSubmitting, setConfirmSubmitting] = useState(false);
-  const directorySyncKey = useMemo(
-    () =>
-      JSON.stringify({
-        pref: preferredEmployeeId,
-        ids: employees.map((e) => e.id),
-      }),
-    [employees, preferredEmployeeId],
+  const employeeListKey = useMemo(
+    () => JSON.stringify(employees.map((e) => e.id)),
+    [employees],
   );
-
-  const autoSelectedId = useMemo((): number | '' => {
-    if (employees.length === 0) return '';
-    if (preferredEmployeeId != null) {
-      const row = getEmployeeById(employees, preferredEmployeeId);
-      if (row) return Number(row.id);
-    }
-    return '';
-  }, [employees, preferredEmployeeId]);
 
   const [userPick, setUserPick] = useState<{ key: string; id: number | '' } | null>(null);
 
-  const selectedId =
-    userPick?.key === directorySyncKey ? userPick.id : autoSelectedId;
+  const selectedId = userPick?.key === employeeListKey ? userPick.id : '';
 
   const selectedRow = useMemo(
     () => getEmployeeById(employees, selectedId),
@@ -344,20 +311,19 @@ export function EmployeeEditForm({
       <Typography variant="body2" color="text.secondary" sx={{ pb: 3 }}>
         {strings.employees.editSubtitle}
       </Typography>
-      <EmployeePickerField
-        employees={employees}
-        valueId={selectedId}
-        onChangeId={(id) => {
-          setUserPick({ key: directorySyncKey, id });
-          setSubmitError(null);
-          setInfoMessage(null);
-        }}
-        label={strings.employees.editPickEmployee}
-        disabled={noEmployees}
-        helperText={noEmployees ? undefined : strings.employees.editSelectPrompt}
-        helperSpacerSx={selectAttachedHelperSpacerSx}
-        helperPlaceholder={HELPER_PLACEHOLDER}
-      />
+      <Box sx={{ mb: selectedRow ? 0 : 1 }}>
+        <EmployeePickerField
+          employees={employees}
+          valueId={selectedId}
+          onChangeId={(id) => {
+            setUserPick({ key: employeeListKey, id });
+            setSubmitError(null);
+            setInfoMessage(null);
+          }}
+          label={strings.employees.editPickEmployee}
+          disabled={noEmployees}
+        />
+      </Box>
       {noEmployees && (
         <Typography variant="body2" color="text.secondary">
           {strings.employees.editNoEmployees}
@@ -384,6 +350,8 @@ export function EmployeeEditForm({
             gap: 1.5,
             columnGap: 2,
             alignItems: 'start',
+            /* Picker sits outside the grid; match vertical rhythm between grid rows. */
+            mt: 1.5,
           }}
         >
           <TextField

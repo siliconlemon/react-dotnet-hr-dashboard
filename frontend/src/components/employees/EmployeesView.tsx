@@ -216,9 +216,6 @@ export function EmployeesView({ onViewTabChange }: EmployeesViewProps) {
     return arr;
   }, [rows, selectionModel]);
 
-  const preferredSingleEmployeeId =
-    selectedIdsSorted.length === 1 ? selectedIdsSorted[0]! : null;
-
   const selectedKey = selectedIdsSorted.join(',');
 
   const selectedRows = useMemo(
@@ -803,11 +800,7 @@ export function EmployeesView({ onViewTabChange }: EmployeesViewProps) {
               theme.transitions.create(['opacity', 'visibility'], { duration: 120 }),
           }}
         >
-          <EmployeeEditForm
-            employees={rows}
-            preferredEmployeeId={preferredSingleEmployeeId}
-            onUpdated={handleEmployeeUpdated}
-          />
+          <EmployeeEditForm employees={rows} onUpdated={handleEmployeeUpdated} />
         </Box>
 
         <Box
@@ -826,11 +819,7 @@ export function EmployeesView({ onViewTabChange }: EmployeesViewProps) {
               theme.transitions.create(['opacity', 'visibility'], { duration: 120 }),
           }}
         >
-          <EmployeeRemoveForm
-            employees={rows}
-            preferredEmployeeId={preferredSingleEmployeeId}
-            onRemoved={handleEmployeeRemoved}
-          />
+          <EmployeeRemoveForm employees={rows} onRemoved={handleEmployeeRemoved} />
         </Box>
       </Box>
     </Box>

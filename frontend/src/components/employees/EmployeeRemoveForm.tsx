@@ -18,22 +18,8 @@ import { deleteEmployee } from '../../api/employeesApi';
 import type { EmployeeReadDto } from '../../api/types';
 import { strings } from '../../i18n';
 
-/** Kept in sync with EmployeeEditForm field stack / grid row gap. */
-const FIELD_STACK_GAP = 1.5;
-
-const selectAttachedHelperSpacerSx = (theme: { spacing: (n: number) => string }) => ({
-  minHeight: 20,
-  m: 0,
-  mt: 0.5,
-  mb: theme.spacing(FIELD_STACK_GAP),
-});
-
-const HELPER_PLACEHOLDER = '\u00a0';
-
 type EmployeeRemoveFormProps = {
   employees: EmployeeReadDto[];
-  /** Set when exactly one row is selected in Directory; otherwise picker stays empty. */
-  preferredEmployeeId: number | null;
   onRemoved: (id: number) => void;
 };
 
@@ -44,33 +30,15 @@ function displayName(e: EmployeeReadDto) {
 /**
  * Select an employee and confirm permanent deletion (DELETE /api/employees/:id).
  */
-export function EmployeeRemoveForm({
-  employees,
-  preferredEmployeeId,
-  onRemoved,
-}: EmployeeRemoveFormProps) {
-  const directorySyncKey = useMemo(
-    () =>
-      JSON.stringify({
-        pref: preferredEmployeeId,
-        ids: employees.map((e) => e.id),
-      }),
-    [employees, preferredEmployeeId],
+export function EmployeeRemoveForm({ employees, onRemoved }: EmployeeRemoveFormProps) {
+  const employeeListKey = useMemo(
+    () => JSON.stringify(employees.map((e) => e.id)),
+    [employees],
   );
-
-  const autoSelectedId = useMemo((): number | '' => {
-    if (employees.length === 0) return '';
-    if (preferredEmployeeId != null) {
-      const row = getEmployeeById(employees, preferredEmployeeId);
-      if (row) return Number(row.id);
-    }
-    return '';
-  }, [employees, preferredEmployeeId]);
 
   const [userPick, setUserPick] = useState<{ key: string; id: number | '' } | null>(null);
 
-  const selectedId =
-    userPick?.key === directorySyncKey ? userPick.id : autoSelectedId;
+  const selectedId = userPick?.key === employeeListKey ? userPick.id : '';
 
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [confirmNameInput, setConfirmNameInput] = useState('');
@@ -131,13 +99,10 @@ export function EmployeeRemoveForm({
               employees={employees}
               valueId={selectedId}
               onChangeId={(id) => {
-                setUserPick({ key: directorySyncKey, id });
+                setUserPick({ key: employeeListKey, id });
                 setSubmitError(null);
               }}
               label={strings.employees.removePickEmployee}
-              helperText={strings.employees.removeSelectPrompt}
-              helperSpacerSx={selectAttachedHelperSpacerSx}
-              helperPlaceholder={HELPER_PLACEHOLDER}
             />
             {submitError && (
               <Alert severity="error" sx={{ mb: 1.5 }} onClose={() => setSubmitError(null)}>
