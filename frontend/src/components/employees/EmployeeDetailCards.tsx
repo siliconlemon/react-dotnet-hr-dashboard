@@ -1,4 +1,4 @@
-import { Alert, Box, Paper, Skeleton, Typography } from '@mui/material';
+import { Alert, Box, Paper, Skeleton, Typography, useTheme } from '@mui/material';
 import type { SxProps, Theme } from '@mui/material/styles';
 import { Fragment, type ReactNode } from 'react';
 import type { EmployeeReadDto, PtoBalanceDto } from '../../api/types';
@@ -211,6 +211,9 @@ export function EmployeeDetailCards({
   profileFieldVisibility = DEFAULT_EMPLOYEE_DETAIL_FIELD_VISIBILITY.profile,
   ptoFieldVisibility = DEFAULT_EMPLOYEE_DETAIL_FIELD_VISIBILITY.pto,
 }: EmployeeDetailCardsProps) {
+  const theme = useTheme();
+  const isDark = theme.palette.mode === 'dark';
+
   if (detailTab === 'pto' && ptoLoading && employees.length > 0) {
     return <EmployeeDetailCardsSkeleton count={employees.length} />;
   }
@@ -219,6 +222,8 @@ export function EmployeeDetailCards({
     <Box sx={cardsGridSx}>
       {employees.map((row) => {
         const accent = getDepartmentAccent(row.departmentId);
+        const headerBg = isDark ? accent.nameColor : accent.headerBg;
+        const nameColor = isDark ? accent.headerBg : accent.nameColor;
         const fullName = `${row.firstName} ${row.lastName}`.trim();
         const pto = ptoByEmployeeId[row.id];
         const ptoErr = ptoErrorByEmployeeId[row.id];
@@ -241,12 +246,12 @@ export function EmployeeDetailCards({
               sx={{
                 px: 1.75,
                 py: 0.75,
-                bgcolor: accent.headerBg,
+                bgcolor: headerBg,
                 borderBottom: 1,
                 borderColor: 'divider',
               }}
             >
-              <Typography variant="subtitle1" sx={{ fontWeight: 700, color: accent.nameColor }}>
+              <Typography variant="subtitle1" sx={{ fontWeight: 700, color: nameColor }}>
                 {fullName}
               </Typography>
             </Box>

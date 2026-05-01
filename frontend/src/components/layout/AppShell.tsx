@@ -27,6 +27,7 @@ import { Fragment, useState, type ReactNode } from 'react';
 import { FAVICON_URL } from '../../constants/faviconUrl';
 import { strings } from '../../i18n';
 import { DrawerLanguageSwitcher } from './DrawerLanguageSwitcher';
+import { DrawerThemeSwitcher } from './DrawerThemeSwitcher';
 
 const DRAWER_EXPANDED_PX = 240;
 const DRAWER_COLLAPSED_PX = 64;
@@ -264,7 +265,7 @@ export function AppShell({ children, activeNavKey, onNavKeyChange, breadcrumbIte
           display: 'flex',
           flexDirection: 'column',
           height: '100%',
-          pb: 1,
+          pb: 3,
         },
       }}
     >
@@ -315,6 +316,7 @@ export function AppShell({ children, activeNavKey, onNavKeyChange, breadcrumbIte
         {renderNavList({ mobile: false })}
       </Box>
       <Box sx={{ px: DRAWER_NAV_LIST_OUTER_GUTTER_SPACING, flexShrink: 0 }}>
+        <DrawerThemeSwitcher collapsed={collapsed} mobile={false} />
         <DrawerLanguageSwitcher collapsed={collapsed} mobile={false} />
       </Box>
     </Drawer>
@@ -394,7 +396,7 @@ export function AppShell({ children, activeNavKey, onNavKeyChange, breadcrumbIte
               display: 'flex',
               flexDirection: 'column',
               height: '100%',
-              pb: 1,
+              pb: 3,
             },
           }}
         >
@@ -420,6 +422,7 @@ export function AppShell({ children, activeNavKey, onNavKeyChange, breadcrumbIte
             {renderNavList({ mobile: true })}
           </Box>
           <Box sx={{ px: DRAWER_NAV_LIST_OUTER_GUTTER_SPACING, flexShrink: 0 }}>
+            <DrawerThemeSwitcher collapsed={false} mobile />
             <DrawerLanguageSwitcher collapsed={false} mobile />
           </Box>
         </Drawer>

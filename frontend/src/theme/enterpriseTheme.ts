@@ -1,6 +1,7 @@
 import type {} from '@mui/x-data-grid/themeAugmentation';
 import type {} from '@mui/x-date-pickers/themeAugmentation';
-import { alpha, createTheme } from '@mui/material/styles';
+import type { PaletteMode } from '@mui/material';
+import { alpha, createTheme, type Theme } from '@mui/material/styles';
 import { EMPLOYEE_CARD_ACCENTS } from './employeeCardPalette';
 
 const paperShadow = '0 1px 2px rgba(15, 31, 53, 0.08)';
@@ -28,64 +29,142 @@ const FW = {
   semibold: 600,
 } as const;
 
+const LIGHT_PAPER = '#ffffff';
+
+const lightPalette = {
+  mode: 'light' as const,
+  primary: {
+    main: '#1e3a5f',
+    light: '#3d5a80',
+    dark: '#0f1f35',
+    contrastText: '#ffffff',
+  },
+  secondary: {
+    main: '#546e7a',
+  },
+  background: {
+    default: '#eef1f5',
+    paper: LIGHT_PAPER,
+  },
+  /** Align MUI X Data Grid canvas with {@link background.paper} (default dark mix differs). */
+  DataGrid: {
+    bg: LIGHT_PAPER,
+  },
+  text: {
+    primary: '#1a2332',
+    secondary: '#5c6570',
+  },
+  divider: 'rgba(15, 31, 53, 0.1)',
+};
+
+const DARK_PAPER = '#161d27';
+
+const darkPalette = {
+  mode: 'dark' as const,
+  primary: {
+    main: '#8bb4e8',
+    light: '#b3cdf2',
+    dark: '#5c8cc9',
+    contrastText: '#0a1628',
+  },
+  secondary: {
+    main: '#78909c',
+  },
+  background: {
+    default: '#0f1419',
+    paper: DARK_PAPER,
+  },
+  DataGrid: {
+    bg: DARK_PAPER,
+  },
+  text: {
+    primary: '#e8ecf1',
+    secondary: '#9aa5b1',
+  },
+  divider: 'rgba(232, 236, 241, 0.12)',
+};
+
 /**
- * Compact enterprise theme: restrained elevation, navy primary, cool neutrals.
+ * Compact enterprise theme: restrained elevation, navy primary, cool neutrals (light),
+ * or a matching dark surface palette.
  */
-export const enterpriseTheme = createTheme({
-  employeeCard: {
-    accents: EMPLOYEE_CARD_ACCENTS,
-  },
-  palette: {
-    mode: 'light',
-    primary: {
-      main: '#1e3a5f',
-      light: '#3d5a80',
-      dark: '#0f1f35',
-      contrastText: '#ffffff',
+export function createEnterpriseTheme(mode: PaletteMode = 'light') {
+  return createTheme({
+    employeeCard: {
+      accents: EMPLOYEE_CARD_ACCENTS,
     },
-    secondary: {
-      main: '#546e7a',
+    palette: mode === 'light' ? lightPalette : darkPalette,
+    shape: {
+      borderRadius: 6,
     },
-    background: {
-      default: '#eef1f5',
-      paper: '#ffffff',
+    typography: {
+      fontFamily:
+        '"Segoe UI", Roboto, "Helvetica Neue", Helvetica, Arial, sans-serif',
+      fontSize: 13,
+      fontWeightMedium: FW.semibold,
+      body1: { fontWeight: FW.regular },
+      body2: { fontWeight: FW.regular },
+      caption: { fontWeight: FW.regular },
+      button: {
+        fontWeight: FW.semibold,
+        textTransform: 'uppercase',
+        letterSpacing: '0.06em',
+      },
+      h1: { fontSize: '1.5rem', fontWeight: FW.semibold },
+      h2: {
+        fontSize: '1.25rem',
+        fontWeight: FW.semibold,
+      },
+      h3: { fontSize: '1.1rem', fontWeight: FW.semibold },
+      subtitle1: { fontWeight: FW.regular },
+      subtitle2: { fontWeight: FW.semibold },
     },
-    text: {
-      primary: '#1a2332',
-      secondary: '#5c6570',
-    },
-    divider: 'rgba(15, 31, 53, 0.1)',
-  },
-  shape: {
-    borderRadius: 6,
-  },
-  typography: {
-    fontFamily:
-      '"Segoe UI", Roboto, "Helvetica Neue", Helvetica, Arial, sans-serif',
-    fontSize: 13,
-    fontWeightMedium: FW.semibold,
-    body1: { fontWeight: FW.regular },
-    body2: { fontWeight: FW.regular },
-    caption: { fontWeight: FW.regular },
-    button: {
-      fontWeight: FW.semibold,
-      textTransform: 'uppercase',
-      letterSpacing: '0.06em',
-    },
-    h1: { fontSize: '1.5rem', fontWeight: FW.semibold },
-    h2: {
-      fontSize: '1.25rem',
-      fontWeight: FW.semibold,
-    },
-    h3: { fontSize: '1.1rem', fontWeight: FW.semibold },
-    subtitle1: { fontWeight: FW.regular },
-    subtitle2: { fontWeight: FW.semibold },
-  },
-  components: {
+    components: {
     MuiCssBaseline: {
       styleOverrides: {
-        body: {
-          backgroundColor: '#eef1f5',
+        html: ({ theme }: { theme: Theme }) => {
+          const thumb =
+            theme.palette.mode === 'dark'
+              ? alpha(theme.palette.common.white, 0.28)
+              : alpha(theme.palette.common.black, 0.35);
+          const track = theme.palette.background.default;
+          return {
+            scrollbarColor: `${thumb} ${track}`,
+            scrollbarWidth: 'thin',
+          };
+        },
+        body: ({ theme }: { theme: Theme }) => ({
+          backgroundColor: theme.palette.background.default,
+        }),
+        '*': ({ theme }: { theme: Theme }) => {
+          const thumb =
+            theme.palette.mode === 'dark'
+              ? alpha(theme.palette.common.white, 0.28)
+              : alpha(theme.palette.common.black, 0.35);
+          const thumbHover =
+            theme.palette.mode === 'dark'
+              ? alpha(theme.palette.common.white, 0.42)
+              : alpha(theme.palette.common.black, 0.5);
+          const track = theme.palette.background.default;
+          return {
+            scrollbarWidth: 'thin',
+            scrollbarColor: `${thumb} ${track}`,
+            '&::-webkit-scrollbar': {
+              width: 10,
+              height: 10,
+            },
+            '&::-webkit-scrollbar-track': {
+              backgroundColor: track,
+            },
+            '&::-webkit-scrollbar-thumb': {
+              backgroundColor: thumb,
+              borderRadius: 5,
+              border: `2px solid ${track}`,
+            },
+            '&::-webkit-scrollbar-thumb:hover': {
+              backgroundColor: thumbHover,
+            },
+          };
         },
       },
     },
@@ -123,10 +202,10 @@ export const enterpriseTheme = createTheme({
     MuiAppBar: {
       defaultProps: { elevation: 0, color: 'default' },
       styleOverrides: {
-        root: {
+        root: ({ theme }) => ({
           borderBottom: '1px solid',
-          borderColor: 'rgba(15, 31, 53, 0.1)',
-        },
+          borderColor: theme.palette.divider,
+        }),
       },
     },
     /** Dialog body gutters stay 24px; tuck actions closer to content and align button row with content inset. */
@@ -365,3 +444,4 @@ export const enterpriseTheme = createTheme({
     },
   },
 });
+}

@@ -36,6 +36,10 @@ export const cs = {
     languageCzech: 'Čeština',
     languageSwitcherAria: 'Jazyk rozhraní',
     languageMenuTooltip: 'Zvolte jazyk rozhraní',
+    themeSwitcherAria: 'Barevné schéma',
+    themeMenuTooltip: 'Zvolte barevné schéma',
+    themeLight: 'Světlé',
+    themeDark: 'Tmavé',
   },
   dashboard: {
     title: 'Přehled',

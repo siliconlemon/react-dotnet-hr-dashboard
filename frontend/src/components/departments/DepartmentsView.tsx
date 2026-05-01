@@ -1,5 +1,6 @@
 import { ChevronRight, ExpandMore, KeyboardArrowDown, KeyboardArrowUp } from '@mui/icons-material';
-import { Alert, Box, IconButton, Paper, TextField, Typography } from '@mui/material';
+import { Alert, Box, IconButton, Paper, TextField, Typography, useTheme } from '@mui/material';
+import { alpha } from '@mui/material/styles';
 import TablePaginationActions from '@mui/material/TablePaginationActions';
 import {
   DataGrid,
@@ -262,6 +263,7 @@ const DepartmentsPagination = forwardRef<HTMLDivElement, DepartmentsPaginationPr
 );
 
 export function DepartmentsView() {
+  const theme = useTheme();
   const [matrix, setMatrix] = useState<DepartmentPtoMatrixResponseDto | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -334,11 +336,14 @@ export function DepartmentsView() {
       if (row.kind === 'department') {
         const open = expandedDeptIds.has(row.departmentId);
         const accent = getDepartmentAccent(row.departmentId);
+        const isDark = theme.palette.mode === 'dark';
+        const nameTextColor = isDark ? accent.headerBg : accent.nameColor;
+        const headcountColor = isDark ? alpha(accent.headerBg, 0.75) : undefined;
         return (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, minWidth: 0, width: '100%', height: '100%' }}>
             <IconButton
               size="small"
-              sx={{ flexShrink: 0 }}
+              sx={{ flexShrink: 0, color: 'inherit' }}
               aria-expanded={open}
               aria-label={strings.departments.expandRow}
               onClick={(e) => {
@@ -348,9 +353,17 @@ export function DepartmentsView() {
             >
               {open ? <ExpandMore fontSize="small" /> : <ChevronRight fontSize="small" />}
             </IconButton>
-            <Typography variant="body2" sx={{ fontWeight: 700, minWidth: 0, flex: 1, color: accent.nameColor }} noWrap>
+            <Typography variant="body2" sx={{ fontWeight: 700, minWidth: 0, flex: 1, color: nameTextColor }} noWrap>
               {row.name}
-              <Typography component="span" variant="caption" color="text.secondary" sx={{ ml: 1, fontWeight: 400 }}>
+              <Typography
+                component="span"
+                variant="caption"
+                sx={{
+                  ml: 1,
+                  fontWeight: 400,
+                  ...(headcountColor != null ? { color: headcountColor } : { color: 'text.secondary' }),
+                }}
+              >
                 ({row.headcount})
               </Typography>
             </Typography>
@@ -365,7 +378,7 @@ export function DepartmentsView() {
         </Box>
       );
     },
-    [expandedDeptIds, toggleDept],
+    [expandedDeptIds, theme.palette.mode, toggleDept],
   );
 
   const columns = useMemo<GridColDef<MatrixGridRow>[]>(
@@ -441,8 +454,15 @@ export function DepartmentsView() {
   const departmentAccentGridSx = useMemo(
     () =>
       EMPLOYEE_CARD_ACCENTS.reduce<Record<string, object>>((acc, a, i) => {
+        const dark = theme.palette.mode === 'dark';
         acc[`& .dept-pto-parent.dept-accent-${i}`] = {
-          bgcolor: a.headerBg,
+          bgcolor: dark ? a.nameColor : a.headerBg,
+          ...(dark
+            ? {
+                color: a.headerBg,
+                '& .MuiDataGrid-cell': { color: a.headerBg },
+              }
+            : {}),
           borderLeftWidth: 4,
           borderLeftStyle: 'solid',
           borderLeftColor: a.border,
@@ -456,7 +476,7 @@ export function DepartmentsView() {
         };
         return acc;
       }, {}),
-    [],
+    [theme.palette.mode],
   );
 
   return (
@@ -533,7 +553,7 @@ export function DepartmentsView() {
           sx={{
             height: '100%',
             border: 'none',
-            '& .MuiDataGrid-columnHeaders': { bgcolor: 'background.default' },
+            '& .MuiDataGrid-columnHeaders': { bgcolor: 'action.hover' },
             '& .MuiDataGrid-footerContainer': {
               minHeight: 47,
               height: 47,

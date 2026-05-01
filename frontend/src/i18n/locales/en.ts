@@ -26,6 +26,10 @@ export const en = {
     languageCzech: 'Czech',
     languageSwitcherAria: 'Interface language',
     languageMenuTooltip: 'Choose interface language',
+    themeSwitcherAria: 'Color theme',
+    themeMenuTooltip: 'Choose color theme',
+    themeLight: 'Light',
+    themeDark: 'Dark',
   },
   dashboard: {
     title: 'Dashboard',

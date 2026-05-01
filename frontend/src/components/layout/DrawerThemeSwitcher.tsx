@@ -1,4 +1,4 @@
-import { Translate } from '@mui/icons-material';
+import { Brightness6, DarkMode, LightMode } from '@mui/icons-material';
 import {
   Box,
   IconButton,
@@ -9,37 +9,36 @@ import {
   ToggleButton,
   ToggleButtonGroup,
   Tooltip,
+  type PaletteMode,
 } from '@mui/material';
 import type { MouseEvent } from 'react';
 import { useState } from 'react';
-import { strings, type Locale } from '../../i18n';
-import { useLocale } from '../../i18n/useLocale';
+import { strings } from '../../i18n';
+import { useColorMode } from '../../theme/useColorMode';
 
 const NAV_ICON_SLOT_PX = 40;
 const NAV_SVG_ICON_PX = 20;
 
-type DrawerLanguageSwitcherProps = {
-  /** Desktop drawer collapsed to icon rail — compact trigger + menu. */
+type DrawerThemeSwitcherProps = {
   collapsed: boolean;
-  /** Mobile temporary drawer — always show expanded control. */
   mobile: boolean;
 };
 
-export function DrawerLanguageSwitcher({ collapsed, mobile }: DrawerLanguageSwitcherProps) {
-  const { locale, setLocale } = useLocale();
+export function DrawerThemeSwitcher({ collapsed, mobile }: DrawerThemeSwitcherProps) {
+  const { mode, setMode } = useColorMode();
   const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null);
   const menuOpen = Boolean(menuAnchor);
   const compact = collapsed && !mobile;
 
-  const handleToggle = (_: MouseEvent<HTMLElement>, next: Locale | null) => {
-    if (next != null) setLocale(next);
+  const handleToggle = (_: MouseEvent<HTMLElement>, next: PaletteMode | null) => {
+    if (next != null) setMode(next);
   };
 
   const openMenu = (e: MouseEvent<HTMLElement>) => setMenuAnchor(e.currentTarget);
   const closeMenu = () => setMenuAnchor(null);
 
-  const pickFromMenu = (next: Locale) => {
-    setLocale(next);
+  const pickFromMenu = (next: PaletteMode) => {
+    setMode(next);
     closeMenu();
   };
 
@@ -47,9 +46,9 @@ export function DrawerLanguageSwitcher({ collapsed, mobile }: DrawerLanguageSwit
     <ToggleButtonGroup
       exclusive
       size="small"
-      value={locale}
+      value={mode}
       onChange={handleToggle}
-      aria-label={strings.shell.languageSwitcherAria}
+      aria-label={strings.shell.themeSwitcherAria}
       sx={{
         flex: 1,
         width: '100%',
@@ -73,8 +72,12 @@ export function DrawerLanguageSwitcher({ collapsed, mobile }: DrawerLanguageSwit
         },
       }}
     >
-      <ToggleButton value="en">EN</ToggleButton>
-      <ToggleButton value="cs">CS</ToggleButton>
+      <ToggleButton value="light" aria-label={strings.shell.themeLight}>
+        <LightMode sx={{ fontSize: NAV_SVG_ICON_PX }} />
+      </ToggleButton>
+      <ToggleButton value="dark" aria-label={strings.shell.themeDark}>
+        <DarkMode sx={{ fontSize: NAV_SVG_ICON_PX }} />
+      </ToggleButton>
     </ToggleButtonGroup>
   );
 
@@ -89,12 +92,12 @@ export function DrawerLanguageSwitcher({ collapsed, mobile }: DrawerLanguageSwit
     >
       {compact ? (
         <>
-          <Tooltip title={strings.shell.languageMenuTooltip} placement="right" arrow>
+          <Tooltip title={strings.shell.themeMenuTooltip} placement="right" arrow>
             <IconButton
               color="inherit"
               size="small"
               onClick={openMenu}
-              aria-label={strings.shell.languageSwitcherAria}
+              aria-label={strings.shell.themeSwitcherAria}
               aria-haspopup="menu"
               aria-expanded={menuOpen ? 'true' : undefined}
               sx={{
@@ -109,7 +112,7 @@ export function DrawerLanguageSwitcher({ collapsed, mobile }: DrawerLanguageSwit
                 },
               }}
             >
-              <Translate sx={{ fontSize: NAV_SVG_ICON_PX }} />
+              <Brightness6 sx={{ fontSize: NAV_SVG_ICON_PX }} />
             </IconButton>
           </Tooltip>
           <Menu
@@ -126,16 +129,16 @@ export function DrawerLanguageSwitcher({ collapsed, mobile }: DrawerLanguageSwit
             }}
           >
             <MenuItem
-              selected={locale === 'en'}
-              onClick={() => pickFromMenu('en')}
+              selected={mode === 'light'}
+              onClick={() => pickFromMenu('light')}
               dense
             >
               <ListItemIcon sx={{ minWidth: 36 }}>
-                <Translate
+                <LightMode
                   fontSize="small"
                   sx={{
                     color: (theme) =>
-                      locale === 'en'
+                      mode === 'light'
                         ? 'primary.main'
                         : theme.palette.mode === 'dark'
                           ? theme.palette.common.white
@@ -143,19 +146,19 @@ export function DrawerLanguageSwitcher({ collapsed, mobile }: DrawerLanguageSwit
                   }}
                 />
               </ListItemIcon>
-              <ListItemText primary={strings.shell.languageEnglish} secondary="EN" />
+              <ListItemText primary={strings.shell.themeLight} />
             </MenuItem>
             <MenuItem
-              selected={locale === 'cs'}
-              onClick={() => pickFromMenu('cs')}
+              selected={mode === 'dark'}
+              onClick={() => pickFromMenu('dark')}
               dense
             >
               <ListItemIcon sx={{ minWidth: 36 }}>
-                <Translate
+                <DarkMode
                   fontSize="small"
                   sx={{
                     color: (theme) =>
-                      locale === 'cs'
+                      mode === 'dark'
                         ? 'primary.main'
                         : theme.palette.mode === 'dark'
                           ? theme.palette.common.white
@@ -163,7 +166,7 @@ export function DrawerLanguageSwitcher({ collapsed, mobile }: DrawerLanguageSwit
                   }}
                 />
               </ListItemIcon>
-              <ListItemText primary={strings.shell.languageCzech} secondary="CS" />
+              <ListItemText primary={strings.shell.themeDark} />
             </MenuItem>
           </Menu>
         </>
@@ -197,7 +200,7 @@ export function DrawerLanguageSwitcher({ collapsed, mobile }: DrawerLanguageSwit
             }}
             aria-hidden
           >
-            <Translate
+            <Brightness6
               sx={{
                 color: (theme) =>
                   theme.palette.mode === 'dark' ? theme.palette.common.white : theme.palette.text.secondary,
