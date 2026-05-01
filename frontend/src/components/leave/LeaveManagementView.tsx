@@ -1,3 +1,5 @@
+import ClearIcon from '@mui/icons-material/Clear';
+import Autocomplete from '@mui/material/Autocomplete';
 import {
   Alert,
   Box,
@@ -9,6 +11,8 @@ import {
   Divider,
   FormControl,
   FormControlLabel,
+  IconButton,
+  InputAdornment,
   InputLabel,
   MenuItem,
   Paper,
@@ -42,10 +46,26 @@ import { EmployeePickerField } from '../employees/EmployeePickerField';
 import { formatDateOnly, formatDateTime } from '../../utils/formatDate';
 import { formatPtoDays } from '../../utils/formatPto';
 
-function employeeDisplayName(row: PtoLedgerEntryReadDto): string {
+function formatEmployeeNameEmail(row: PtoLedgerEntryReadDto, rosterEmail?: string): string {
   const name = `${row.employeeFirstName} ${row.employeeLastName}`.trim();
+  const email = row.employeeEmail?.trim() || rosterEmail?.trim() || '';
+  if (email && name) return `${name} (${email})`;
+  if (email) return email;
   return name || `#${row.employeeId}`;
 }
+
+/** Ledger grid default min width for columns using fixed `width`; matches effective date column. */
+const LEDGER_COL_MIN_WIDTH_PX = 107;
+
+/** Match MUI Autocomplete `ClearIndicator`: hidden until hover (fine pointer) or focus-within. */
+const filterSelectFormControlSx = {
+  minWidth: 0,
+  '& .leave-filter-select-clear': { visibility: 'hidden' },
+  '&:focus-within .leave-filter-select-clear': { visibility: 'visible' },
+  '@media (pointer: fine)': {
+    '&:hover .leave-filter-select-clear': { visibility: 'visible' },
+  },
+} as const;
 
 export function LeaveManagementView() {
   const [employees, setEmployees] = useState<EmployeeReadDto[]>([]);
@@ -156,19 +176,31 @@ export function LeaveManagementView() {
     }
   }, []);
 
+  /** Ledger rows may omit email; match picker roster so the grid still shows name (email). */
+  const employeeEmailById = useMemo(() => {
+    const m = new Map<number, string>();
+    for (const e of employees) {
+      const em = e.email?.trim();
+      if (em) m.set(e.id, em);
+    }
+    return m;
+  }, [employees]);
+
   const columns = useMemo<GridColDef<PtoLedgerEntryReadDto>[]>(
     () => [
       {
         field: 'effectiveDate',
         headerName: strings.leave.colEffectiveDate,
-        width: 130,
+        width: LEDGER_COL_MIN_WIDTH_PX,
+        minWidth: LEDGER_COL_MIN_WIDTH_PX,
         sortable: false,
         valueGetter: (_, row) => formatDateOnly(row.effectiveDate),
       },
       {
         field: 'entryType',
         headerName: strings.leave.colEntryType,
-        width: 120,
+        width: 105,
+        minWidth: LEDGER_COL_MIN_WIDTH_PX,
         sortable: false,
         valueGetter: (_, row) => entryTypeLabel(row.entryType),
       },
@@ -176,6 +208,7 @@ export function LeaveManagementView() {
         field: 'amount',
         headerName: strings.leave.colAmount,
         width: 110,
+        minWidth: LEDGER_COL_MIN_WIDTH_PX,
         sortable: false,
         align: 'right',
         headerAlign: 'right',
@@ -184,16 +217,17 @@ export function LeaveManagementView() {
       {
         field: 'employee',
         headerName: strings.leave.colEmployee,
-        flex: 1.1,
-        minWidth: 200,
+        flex: 1.375,
+        minWidth: 219,
         sortable: false,
-        valueGetter: (_, row) => `${employeeDisplayName(row)} (#${row.employeeId})`,
+        valueGetter: (_, row) =>
+          formatEmployeeNameEmail(row, employeeEmailById.get(row.employeeId)),
       },
       {
         field: 'departmentName',
         headerName: strings.leave.colDepartment,
-        flex: 0.9,
-        minWidth: 130,
+        flex: 0.6,
+        minWidth: LEDGER_COL_MIN_WIDTH_PX,
         sortable: false,
       },
       {
@@ -207,7 +241,8 @@ export function LeaveManagementView() {
       {
         field: 'createdAt',
         headerName: strings.leave.colCreatedAt,
-        width: 160,
+        width: 188,
+        minWidth: LEDGER_COL_MIN_WIDTH_PX,
         sortable: false,
         valueGetter: (_, row) => formatDateTime(row.createdAt),
       },
@@ -215,11 +250,12 @@ export function LeaveManagementView() {
         field: 'createdBy',
         headerName: strings.leave.colCreatedBy,
         width: 100,
+        minWidth: LEDGER_COL_MIN_WIDTH_PX,
         sortable: false,
         valueGetter: (_, row) => row.createdBy ?? '—',
       },
     ],
-    [entryTypeLabel],
+    [employeeEmailById, entryTypeLabel],
   );
 
   const clearFilters = useCallback(() => {
@@ -334,7 +370,7 @@ export function LeaveManagementView() {
         <Box
           sx={{
             display: 'grid',
-            gap: 2,
+            gap: 1,
             alignItems: 'end',
             mb: 1,
             flexShrink: 0,
@@ -344,7 +380,18 @@ export function LeaveManagementView() {
               md: 'repeat(3, minmax(0, 1fr))',
               lg: 'repeat(4, minmax(0, 1fr))',
               xl:
-                'minmax(200px, 1.75fr) minmax(160px, 1fr) minmax(140px, 0.75fr) minmax(140px, 0.75fr) minmax(150px, 1fr) auto auto',
+                'minmax(180px, 1.75fr) minmax(160px, 1fr) minmax(170px, 0.75fr) minmax(170px, 0.75fr) minmax(130px, 1fr) auto auto',
+            },
+            /** One row height for employee picker, selects, date fields, and actions (~theme small OutlinedInput). */
+            '& .MuiOutlinedInput-root, & .MuiPickersOutlinedInput-root': {
+              fontSize: '0.8125rem',
+              minHeight: 40,
+              boxSizing: 'border-box',
+            },
+            '& .MuiInputLabel-root': { fontSize: '0.8125rem' },
+            '& .MuiSelect-select': {
+              display: 'flex',
+              alignItems: 'center',
             },
           }}
         >
@@ -357,27 +404,65 @@ export function LeaveManagementView() {
                 setPaginationModel((m) => ({ ...m, page: 0 }));
               }}
               label={strings.leave.filterEmployee}
+              clearButtonAriaLabel={strings.leave.clearField}
             />
           </Box>
-          <FormControl size="small" fullWidth sx={{ minWidth: 0 }}>
-            <InputLabel id="leave-filter-dept-label">{strings.leave.filterDepartment}</InputLabel>
-            <Select
-              labelId="leave-filter-dept-label"
-              label={strings.leave.filterDepartment}
-              value={filterDepartmentId === '' ? '' : String(filterDepartmentId)}
-              onChange={(e) => {
-                const v = e.target.value;
-                setFilterDepartmentId(v === '' ? '' : Number(v));
+          <FormControl fullWidth size="small" sx={{ minWidth: 0 }}>
+            <Autocomplete
+              size="small"
+              options={departments}
+              value={
+                filterDepartmentId === ''
+                  ? null
+                  : departments.find((d) => Number(d.id) === Number(filterDepartmentId)) ?? null
+              }
+              onChange={(_, next) => {
+                setFilterDepartmentId(next == null ? '' : Number(next.id));
                 setPaginationModel((m) => ({ ...m, page: 0 }));
               }}
-            >
-              <MenuItem value="">{strings.leave.filterAll}</MenuItem>
-              {departments.map((d) => (
-                <MenuItem key={d.id} value={String(d.id)}>
-                  {d.name}
-                </MenuItem>
-              ))}
-            </Select>
+              getOptionLabel={(d) => d.name}
+              isOptionEqualToValue={(a, b) => Number(a.id) === Number(b.id)}
+              autoHighlight
+              blurOnSelect
+              disableClearable={filterDepartmentId === ''}
+              slotProps={{
+                popper: {
+                  placement: 'bottom-start',
+                  modifiers: [{ name: 'offset', options: { offset: [0, 4] } }],
+                  sx: {
+                    '& .MuiPaper-root': {
+                      transition: (theme) =>
+                        theme.transitions.create(['box-shadow', 'opacity'], { duration: 150 }),
+                    },
+                  },
+                },
+                paper: {
+                  elevation: 4,
+                  sx: (theme) => ({
+                    mt: 0.25,
+                    borderRadius: 1,
+                    border: `1px solid ${theme.palette.divider}`,
+                    boxShadow: theme.shadows[8],
+                  }),
+                },
+                clearIndicator: { 'aria-label': strings.leave.clearField },
+              }}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label={strings.leave.filterDepartment}
+                  size="small"
+                  placeholder={strings.leave.filterAll}
+                  slotProps={{
+                    ...params.slotProps,
+                    htmlInput: {
+                      ...params.slotProps?.htmlInput,
+                      autoComplete: 'off',
+                    },
+                  }}
+                />
+              )}
+            />
           </FormControl>
           <DatePicker
             label={strings.leave.filterFrom}
@@ -386,7 +471,10 @@ export function LeaveManagementView() {
               setFilterFrom(v);
               setPaginationModel((m) => ({ ...m, page: 0 }));
             }}
-            slotProps={{ textField: { size: 'small', fullWidth: true } }}
+            slotProps={{
+              field: { clearable: true },
+              textField: { size: 'small', fullWidth: true },
+            }}
           />
           <DatePicker
             label={strings.leave.filterTo}
@@ -395,9 +483,12 @@ export function LeaveManagementView() {
               setFilterTo(v);
               setPaginationModel((m) => ({ ...m, page: 0 }));
             }}
-            slotProps={{ textField: { size: 'small', fullWidth: true } }}
+            slotProps={{
+              field: { clearable: true },
+              textField: { size: 'small', fullWidth: true },
+            }}
           />
-          <FormControl size="small" fullWidth sx={{ minWidth: 0 }}>
+          <FormControl size="small" fullWidth sx={filterSelectFormControlSx}>
             <InputLabel id="leave-filter-type-label">{strings.leave.filterEntryType}</InputLabel>
             <Select
               labelId="leave-filter-type-label"
@@ -407,6 +498,25 @@ export function LeaveManagementView() {
                 setFilterEntryType(e.target.value as PtoLedgerEntryTypeDto | '');
                 setPaginationModel((m) => ({ ...m, page: 0 }));
               }}
+              endAdornment={
+                filterEntryType !== '' ? (
+                  <InputAdornment position="end" sx={{ mr: 1.5, maxHeight: 'unset' }}>
+                    <IconButton
+                      className="leave-filter-select-clear"
+                      size="small"
+                      aria-label={strings.leave.clearField}
+                      onMouseDown={(e) => e.preventDefault()}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setFilterEntryType('');
+                        setPaginationModel((m) => ({ ...m, page: 0 }));
+                      }}
+                    >
+                      <ClearIcon fontSize="small" />
+                    </IconButton>
+                  </InputAdornment>
+                ) : undefined
+              }
             >
               <MenuItem value="">{strings.leave.filterAll}</MenuItem>
               <MenuItem value="accrual">{strings.leave.entryAccrual}</MenuItem>
@@ -421,7 +531,12 @@ export function LeaveManagementView() {
             sx={{
               justifySelf: { xs: 'stretch', xl: 'start' },
               width: { xs: '100%', xl: 'auto' },
-              minWidth: 144,
+              minWidth: { xs: 'auto', sm: 112 },
+              minHeight: 40,
+              boxSizing: 'border-box',
+              fontSize: '0.8125rem',
+              lineHeight: 1.5,
+              py: 0.75,
               whiteSpace: 'nowrap',
             }}
           >
@@ -434,7 +549,12 @@ export function LeaveManagementView() {
             sx={{
               justifySelf: { xs: 'stretch', xl: 'start' },
               width: { xs: '100%', xl: 'auto' },
-              minWidth: 144,
+              minWidth: { xs: 'auto', sm: 112 },
+              minHeight: 40,
+              boxSizing: 'border-box',
+              fontSize: '0.8125rem',
+              lineHeight: 1.5,
+              py: 0.75,
               whiteSpace: 'nowrap',
             }}
           >

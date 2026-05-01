@@ -214,6 +214,7 @@ public sealed class PtoLedgerService : IPtoLedgerService
             EmployeeId = p.EmployeeId,
             EmployeeFirstName = emp.FirstName,
             EmployeeLastName = emp.LastName,
+            EmployeeEmail = emp.Email,
             DepartmentId = emp.DepartmentId,
             DepartmentName = dept?.Name ?? string.Empty,
             EntryType = p.EntryType,

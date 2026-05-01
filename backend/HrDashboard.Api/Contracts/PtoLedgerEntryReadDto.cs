@@ -15,6 +15,8 @@ public sealed class PtoLedgerEntryReadDto
 
     public string EmployeeLastName { get; init; } = string.Empty;
 
+    public string EmployeeEmail { get; init; } = string.Empty;
+
     public int DepartmentId { get; init; }
 
     public string DepartmentName { get; init; } = string.Empty;

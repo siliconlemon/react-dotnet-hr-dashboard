@@ -93,6 +93,8 @@ export type PtoLedgerEntryReadDto = {
   employeeId: number;
   employeeFirstName: string;
   employeeLastName: string;
+  /** Present when API returns employee email (omit on older backends). */
+  employeeEmail?: string;
   departmentId: number;
   departmentName: string;
   entryType: PtoLedgerEntryTypeDto;

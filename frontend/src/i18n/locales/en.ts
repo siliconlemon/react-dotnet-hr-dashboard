@@ -71,6 +71,7 @@ export const en = {
     filterTo: 'To',
     filterEntryType: 'Entry type',
     filterAll: 'All',
+    clearField: 'Clear',
     clearFilters: 'Clear filters',
     addEntry: 'Add entry',
     dialogTitle: 'Add PTO ledger entry',

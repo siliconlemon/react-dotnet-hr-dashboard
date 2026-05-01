@@ -40,6 +40,8 @@ export type EmployeePickerFieldProps = {
   /** Renders under the field like TextField helper text (keeps layout aligned with other inputs). */
   helperSpacerSx?: object;
   helperPlaceholder?: string;
+  /** Accessible label for the built-in clear (X) control when a selection exists. */
+  clearButtonAriaLabel?: string;
 };
 
 /**
@@ -54,6 +56,7 @@ export function EmployeePickerField({
   helperText,
   helperSpacerSx,
   helperPlaceholder = '\u00a0',
+  clearButtonAriaLabel,
 }: EmployeePickerFieldProps) {
   const value: EmployeeReadDto | null = getEmployeeById(employees, valueId) ?? null;
 
@@ -97,6 +100,9 @@ export function EmployeePickerField({
               boxShadow: theme.shadows[8],
             }),
           },
+          ...(clearButtonAriaLabel
+            ? { clearIndicator: { 'aria-label': clearButtonAriaLabel } }
+            : {}),
         }}
         renderInput={(params) => (
           <TextField
