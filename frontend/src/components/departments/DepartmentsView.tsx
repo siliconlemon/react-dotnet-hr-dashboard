@@ -482,7 +482,9 @@ export function DepartmentsView() {
   return (
     <Paper
       sx={{
-        p: 2,
+        px: 2,
+        pt: 2,
+        pb: 0,
         mt: 1,
         mb: 1,
         maxWidth: 900,
@@ -559,8 +561,7 @@ export function DepartmentsView() {
               height: 47,
               maxHeight: 47,
               alignItems: 'center',
-              pt: 1.5,
-              pb: 0,
+              py: 0,
               px: 0.5,
               boxSizing: 'border-box',
             },

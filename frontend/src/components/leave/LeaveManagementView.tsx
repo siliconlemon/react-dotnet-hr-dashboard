@@ -345,7 +345,9 @@ export function LeaveManagementView() {
       <Paper
         variant="outlined"
         sx={{
-          p: 2,
+          px: 2,
+          pt: 2,
+          pb: 0,
           flex: 1,
           minHeight: 0,
           display: 'flex',
@@ -599,8 +601,7 @@ export function LeaveManagementView() {
                 height: 47,
                 maxHeight: 47,
                 alignItems: 'center',
-                pt: 1.5,
-                pb: 0,
+                py: 0,
                 pl: 0.5,
                 pr: 0,
                 boxSizing: 'border-box',
