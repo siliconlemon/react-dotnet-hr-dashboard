@@ -4,8 +4,49 @@ import type { PaletteMode } from '@mui/material';
 import { alpha, createTheme, type Theme } from '@mui/material/styles';
 import { EMPLOYEE_CARD_ACCENTS } from './employeeCardPalette';
 
-const paperShadow = '0 1px 2px rgba(25, 79, 130, 0.08)';
-const paperShadowRaised = '0 2px 8px rgba(25, 79, 130, 0.12)';
+/**
+ * Symmetric depth (`0 0` blur only) so surfaces don’t read as directional cast shadows next to
+ * {@link ambientHalo}.
+ */
+const paperLift = '0 0 10px rgba(25, 79, 130, 0.055)';
+const paperLiftRaised = '0 0 16px rgba(25, 79, 130, 0.075)';
+
+/** Shared chrome weight: papers, dividers, drawer edge, fields, outlined buttons. */
+const CONTROL_OUTLINE = '2px';
+
+/**
+ * Omnidirectional primary tint only (`0 0` blur — no offsets). Two soft layers read clearly
+ * without mimicking a cast shadow.
+ */
+function ambientHalo(theme: Theme): string {
+  const main = theme.palette.primary.main;
+  const strong = theme.palette.mode === 'dark' ? 0.09 : 0.058;
+  const soft = theme.palette.mode === 'dark' ? 0.045 : 0.028;
+  return [
+    `0 0 18px ${alpha(main, strong)}`,
+    `0 0 36px ${alpha(main, soft)}`,
+  ].join(', ');
+}
+
+function modalLift(theme: Theme): string {
+  return theme.palette.mode === 'dark'
+    ? '0 0 28px rgba(0, 0, 0, 0.5)'
+    : '0 0 22px rgba(25, 79, 130, 0.12)';
+}
+
+function paperChrome(
+  theme: Theme,
+  depthShadow?: string,
+): { border: string; boxShadow: string; backgroundImage: string } {
+  const shadow = depthShadow
+    ? `${depthShadow}, ${ambientHalo(theme)}`
+    : ambientHalo(theme);
+  return {
+    border: `${CONTROL_OUTLINE} solid ${theme.palette.divider}`,
+    boxShadow: shadow,
+    backgroundImage: 'none',
+  };
+}
 
 /** One typographic step for all in-popup calendar text (matches `typography.fontSize` 13). */
 const calRem = (px: number) => `${px / 16}rem`;
@@ -203,6 +244,39 @@ export function createEnterpriseTheme(mode: PaletteMode = 'light') {
           /** Match `TextField` / `OutlinedInput` `size="small"` control height (~40px). */
           minHeight: 40,
         }),
+        outlined: {
+          borderWidth: CONTROL_OUTLINE,
+          '&:hover': { borderWidth: CONTROL_OUTLINE },
+          '&:active': { borderWidth: CONTROL_OUTLINE },
+          '&:focus-visible': { borderWidth: CONTROL_OUTLINE },
+          '&.Mui-disabled': { borderWidth: CONTROL_OUTLINE },
+        },
+      },
+    },
+    MuiToggleButton: {
+      styleOverrides: {
+        root: ({ theme }) => ({
+          border: `${CONTROL_OUTLINE} solid ${theme.palette.divider}`,
+          '&.Mui-disabled': {
+            border: `${CONTROL_OUTLINE} solid ${theme.palette.action.disabledBackground}`,
+          },
+        }),
+      },
+    },
+    MuiToggleButtonGroup: {
+      styleOverrides: {
+        root: {
+          '&:not(.MuiToggleButtonGroup-vertical) .MuiToggleButtonGroup-middleButton, &:not(.MuiToggleButtonGroup-vertical) .MuiToggleButtonGroup-lastButton':
+            {
+              marginLeft: '-2px',
+              borderLeft: '2px solid transparent',
+            },
+          '&.MuiToggleButtonGroup-vertical .MuiToggleButtonGroup-middleButton, &.MuiToggleButtonGroup-vertical .MuiToggleButtonGroup-lastButton':
+            {
+              marginTop: '-2px',
+              borderTop: '2px solid transparent',
+            },
+        },
       },
     },
     MuiIconButton: {
@@ -219,20 +293,97 @@ export function createEnterpriseTheme(mode: PaletteMode = 'light') {
     MuiToolbar: {
       defaultProps: { variant: 'dense' },
     },
+    MuiDivider: {
+      styleOverrides: {
+        root: ({ theme }) => ({
+          borderColor: theme.palette.divider,
+          '&:not(.MuiDivider-vertical)': {
+            borderBottomWidth: CONTROL_OUTLINE,
+          },
+          '&.MuiDivider-vertical': {
+            borderBottomWidth: 0,
+            borderRightWidth: CONTROL_OUTLINE,
+          },
+        }),
+      },
+    },
+    /** Permanent/temporary drawer panel — match divider weight on the outer edge. */
+    MuiDrawer: {
+      styleOverrides: {
+        paper: ({ theme }) => ({
+          borderRight: `${CONTROL_OUTLINE} solid ${theme.palette.divider}`,
+        }),
+      },
+    },
     MuiPaper: {
       styleOverrides: {
-        elevation1: { boxShadow: paperShadow },
-        elevation2: { boxShadow: paperShadowRaised },
-        elevation3: { boxShadow: paperShadowRaised },
+        elevation0: ({ theme }) => paperChrome(theme),
+        elevation1: ({ theme }) => paperChrome(theme, paperLift),
+        elevation2: ({ theme }) => paperChrome(theme, paperLiftRaised),
+        elevation3: ({ theme }) => paperChrome(theme, paperLiftRaised),
+        outlined: ({ theme }) => ({
+          borderWidth: CONTROL_OUTLINE,
+          boxShadow: ambientHalo(theme),
+        }),
+      },
+    },
+    /** Same outline weight as `OutlinedInput` / buttons — pickers use this root. */
+    MuiOutlinedInput: {
+      styleOverrides: {
+        root: {
+          '& .MuiOutlinedInput-notchedOutline': {
+            borderWidth: CONTROL_OUTLINE,
+          },
+          '&:hover .MuiOutlinedInput-notchedOutline': {
+            borderWidth: CONTROL_OUTLINE,
+          },
+          '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+            borderWidth: CONTROL_OUTLINE,
+          },
+          '&.Mui-disabled .MuiOutlinedInput-notchedOutline': {
+            borderWidth: CONTROL_OUTLINE,
+          },
+          '&.Mui-error .MuiOutlinedInput-notchedOutline': {
+            borderWidth: CONTROL_OUTLINE,
+          },
+        },
+      },
+    },
+    /** Date/time fields — separate root from `MuiOutlinedInput`; keep outline weight aligned. */
+    MuiPickersOutlinedInput: {
+      styleOverrides: {
+        root: {
+          '& .MuiPickersOutlinedInput-notchedOutline': {
+            borderWidth: CONTROL_OUTLINE,
+          },
+          '&:hover .MuiPickersOutlinedInput-notchedOutline': {
+            borderWidth: CONTROL_OUTLINE,
+          },
+          '&.Mui-focused .MuiPickersOutlinedInput-notchedOutline': {
+            borderWidth: CONTROL_OUTLINE,
+          },
+          '&.Mui-disabled .MuiPickersOutlinedInput-notchedOutline': {
+            borderWidth: CONTROL_OUTLINE,
+          },
+          '&.Mui-error .MuiPickersOutlinedInput-notchedOutline': {
+            borderWidth: CONTROL_OUTLINE,
+          },
+        },
       },
     },
     MuiAppBar: {
       defaultProps: { elevation: 0, color: 'default' },
       styleOverrides: {
         root: ({ theme }) => ({
-          borderBottom: '1px solid',
+          borderBottom: `${CONTROL_OUTLINE} solid`,
           borderColor: theme.palette.divider,
+          boxShadow: ambientHalo(theme),
         }),
+      },
+    },
+    MuiDialog: {
+      styleOverrides: {
+        paper: ({ theme }) => paperChrome(theme, modalLift(theme)),
       },
     },
     /** Dialog body gutters stay 24px; tuck actions closer to content and align button row with content inset. */
@@ -260,8 +411,8 @@ export function createEnterpriseTheme(mode: PaletteMode = 'light') {
       styleOverrides: {
         paper: ({ theme }) => ({
           borderRadius: theme.shape.borderRadius,
-          boxShadow: paperShadowRaised,
           overflow: 'hidden',
+          ...paperChrome(theme, paperLiftRaised),
         }),
       },
     },

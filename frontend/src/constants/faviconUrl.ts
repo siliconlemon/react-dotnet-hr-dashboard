@@ -6,3 +6,6 @@
 export const FAVICON_CACHE_KEY = '20260501';
 
 export const FAVICON_URL = `/favicon.svg?v=${FAVICON_CACHE_KEY}`;
+
+/** Drawer brand asset on dark surfaces (`public/favicon-dark.svg`). */
+export const FAVICON_DARK_URL = `/favicon-dark.svg?v=${FAVICON_CACHE_KEY}`;

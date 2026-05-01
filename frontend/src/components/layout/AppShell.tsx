@@ -24,7 +24,7 @@ import {
 } from '@mui/material';
 import { useTheme, type Theme } from '@mui/material/styles';
 import { Fragment, useState, type ReactNode } from 'react';
-import { FAVICON_URL } from '../../constants/faviconUrl';
+import { FAVICON_DARK_URL, FAVICON_URL } from '../../constants/faviconUrl';
 import { strings } from '../../i18n';
 import { DrawerLanguageSwitcher } from './DrawerLanguageSwitcher';
 import { DrawerThemeSwitcher } from './DrawerThemeSwitcher';
@@ -67,10 +67,12 @@ const NAV_TITLE_STRONG_SX = {
 const DRAWER_BRAND_ICON_BUTTON_SX = { p: 0.5 } as const;
 
 function DrawerBrandFaviconImg() {
+  const theme = useTheme();
+  const src = theme.palette.mode === 'dark' ? FAVICON_DARK_URL : FAVICON_URL;
   return (
     <Box
       component="img"
-      src={FAVICON_URL}
+      src={src}
       alt=""
       aria-hidden
       sx={{
@@ -193,12 +195,29 @@ export function AppShell({ children, activeNavKey, onNavKeyChange, breadcrumbIte
                 if (mobile) setMobileOpen(false);
               }}
               sx={{
-                borderRadius: 1,
+                borderRadius: `${theme.shape.borderRadius}px`,
+                borderStyle: 'solid',
+                borderWidth: 2,
+                borderColor: 'divider',
+                boxSizing: 'border-box',
                 minHeight: NAV_ITEM_MIN_HEIGHT_PX,
                 py: 0,
                 justifyContent: 'flex-start',
                 px: DRAWER_NAV_ITEM_INNER_PADDING_X_SPACING,
                 alignItems: 'center',
+                fontWeight: 600,
+                letterSpacing: '0.04em',
+                '&:hover': {
+                  bgcolor: 'action.hover',
+                },
+                '&.Mui-selected': {
+                  bgcolor: 'action.selected',
+                  color: 'primary.main',
+                  borderColor: 'divider',
+                  '&:hover': {
+                    bgcolor: 'action.selected',
+                  },
+                },
                 ...(iconOnly && {
                   height: NAV_ITEM_MIN_HEIGHT_PX,
                   flexShrink: 0,
@@ -216,6 +235,7 @@ export function AppShell({ children, activeNavKey, onNavKeyChange, breadcrumbIte
                   alignItems: 'center',
                   display: 'flex',
                   flexShrink: 0,
+                  color: 'inherit',
                   '& .MuiSvgIcon-root': {
                     fontSize: NAV_SVG_ICON_PX,
                     width: NAV_SVG_ICON_PX,
@@ -228,7 +248,13 @@ export function AppShell({ children, activeNavKey, onNavKeyChange, breadcrumbIte
               {!iconOnly && (
                 <ListItemText
                   primary={item.label}
-                  slotProps={{ primary: { variant: 'body2', noWrap: true } }}
+                  slotProps={{
+                    primary: {
+                      variant: 'body2',
+                      noWrap: true,
+                      sx: { fontWeight: 600, letterSpacing: '0.04em' },
+                    },
+                  }}
                   sx={{ flex: '1 1 auto', minWidth: 0 }}
                 />
               )}
@@ -260,8 +286,6 @@ export function AppShell({ children, activeNavKey, onNavKeyChange, breadcrumbIte
           width: drawerWidth,
           transition: drawerPaperTransition,
           overflowX: 'hidden',
-          borderRight: '1px solid',
-          borderColor: 'divider',
           display: 'flex',
           flexDirection: 'column',
           height: '100%',

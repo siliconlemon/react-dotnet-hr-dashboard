@@ -551,7 +551,10 @@ export function EmployeesView({ onViewTabChange }: EmployeesViewProps) {
                   cursor: 'row-resize',
                   touchAction: 'none',
                   userSelect: 'none',
-                  bgcolor: 'transparent',
+                  /** Page backdrop so `Paper` halo does not tint the gutter; drag strip stays visually neutral. */
+                  bgcolor: 'background.default',
+                  boxShadow: 'none',
+                  filter: 'none',
                   '&:hover .EmployeesView-splitterLine': {
                     opacity: 1,
                   },
