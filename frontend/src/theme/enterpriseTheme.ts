@@ -67,7 +67,11 @@ export const enterpriseTheme = createTheme({
     body1: { fontWeight: FW.regular },
     body2: { fontWeight: FW.regular },
     caption: { fontWeight: FW.regular },
-    button: { fontWeight: FW.semibold },
+    button: {
+      fontWeight: FW.semibold,
+      textTransform: 'uppercase',
+      letterSpacing: '0.06em',
+    },
     h1: { fontSize: '1.5rem', fontWeight: FW.semibold },
     h2: {
       fontSize: '1.25rem',
@@ -89,7 +93,6 @@ export const enterpriseTheme = createTheme({
       defaultProps: { size: 'medium', disableElevation: true },
       styleOverrides: {
         root: ({ theme }) => ({
-          textTransform: 'none',
           fontWeight: theme.typography.fontWeightMedium,
           /** Match `TextField` / `OutlinedInput` `size="small"` control height (~40px). */
           minHeight: 40,
