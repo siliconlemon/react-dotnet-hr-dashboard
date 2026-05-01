@@ -1,4 +1,8 @@
-import { Brightness6, DarkMode, LightMode } from '@mui/icons-material';
+import {
+  Brightness6Outlined,
+  DarkModeOutlined,
+  LightModeOutlined,
+} from '@mui/icons-material';
 import {
   Box,
   IconButton,
@@ -73,10 +77,10 @@ export function DrawerThemeSwitcher({ collapsed, mobile }: DrawerThemeSwitcherPr
       }}
     >
       <ToggleButton value="light" aria-label={strings.shell.themeLight}>
-        <LightMode sx={{ fontSize: NAV_SVG_ICON_PX }} />
+        <LightModeOutlined sx={{ fontSize: NAV_SVG_ICON_PX }} />
       </ToggleButton>
       <ToggleButton value="dark" aria-label={strings.shell.themeDark}>
-        <DarkMode sx={{ fontSize: NAV_SVG_ICON_PX }} />
+        <DarkModeOutlined sx={{ fontSize: NAV_SVG_ICON_PX }} />
       </ToggleButton>
     </ToggleButtonGroup>
   );
@@ -112,7 +116,7 @@ export function DrawerThemeSwitcher({ collapsed, mobile }: DrawerThemeSwitcherPr
                 },
               }}
             >
-              <Brightness6 sx={{ fontSize: NAV_SVG_ICON_PX }} />
+              <Brightness6Outlined sx={{ fontSize: NAV_SVG_ICON_PX }} />
             </IconButton>
           </Tooltip>
           <Menu
@@ -134,7 +138,7 @@ export function DrawerThemeSwitcher({ collapsed, mobile }: DrawerThemeSwitcherPr
               dense
             >
               <ListItemIcon sx={{ minWidth: 36 }}>
-                <LightMode
+                <LightModeOutlined
                   fontSize="small"
                   sx={{
                     color: (theme) =>
@@ -154,7 +158,7 @@ export function DrawerThemeSwitcher({ collapsed, mobile }: DrawerThemeSwitcherPr
               dense
             >
               <ListItemIcon sx={{ minWidth: 36 }}>
-                <DarkMode
+                <DarkModeOutlined
                   fontSize="small"
                   sx={{
                     color: (theme) =>
@@ -200,7 +204,7 @@ export function DrawerThemeSwitcher({ collapsed, mobile }: DrawerThemeSwitcherPr
             }}
             aria-hidden
           >
-            <Brightness6
+            <Brightness6Outlined
               sx={{
                 color: (theme) =>
                   theme.palette.mode === 'dark' ? theme.palette.common.white : theme.palette.text.secondary,
