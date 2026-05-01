@@ -1,7 +1,6 @@
 import {
   BusinessOutlined,
   ChevronLeft,
-  ChevronRight,
   DashboardOutlined,
   EventNoteOutlined,
   Menu as MenuIcon,
@@ -25,15 +24,55 @@ import {
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { Fragment, useState } from 'react';
+import { FAVICON_URL } from '../../constants/faviconUrl';
 import { strings } from '../../i18n';
 
 const DRAWER_EXPANDED_PX = 240;
 const DRAWER_COLLAPSED_PX = 64;
+/** Favicon in drawer header: same size expanded, collapsed rail, and mobile. */
+const DRAWER_FAVICON_PX = 28;
 
 /** Single row height for nav items in expanded and collapsed desktop drawer. */
 const NAV_ITEM_MIN_HEIGHT_PX = 48;
 /** Square icon slot so collapsed rail matches expanded vertical rhythm. */
 const NAV_ICON_SLOT_PX = 40;
+
+/** Strong nav title: matches breadcrumb current-page segment (`subtitle1` + weight + line height). */
+const NAV_TITLE_STRONG_SX = {
+  fontWeight: 600,
+  lineHeight: 1.3,
+} as const;
+
+function DrawerTitleRow({ title }: { title: string }) {
+  return (
+    <Box
+      sx={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 1,
+        minWidth: 0,
+        justifyContent: 'flex-start',
+        flex: 1,
+      }}
+    >
+      <Box
+        component="img"
+        src={FAVICON_URL}
+        alt=""
+        aria-hidden
+        sx={{
+          width: DRAWER_FAVICON_PX,
+          height: DRAWER_FAVICON_PX,
+          flexShrink: 0,
+          display: 'block',
+        }}
+      />
+      <Typography variant="subtitle1" color="text.primary" sx={NAV_TITLE_STRONG_SX} noWrap>
+        {title}
+      </Typography>
+    </Box>
+  );
+}
 
 export type NavKey = 'dashboard' | 'employees' | 'departments' | 'leave';
 
@@ -169,32 +208,34 @@ export function AppShell({ children, activeNavKey, onNavKeyChange, breadcrumbIte
     >
       <Toolbar
         sx={{
-          minHeight: collapsed ? 72 : 48,
+          minHeight: 48,
           px: collapsed ? 0.5 : 1.5,
-          flexDirection: collapsed ? 'column' : 'row',
           justifyContent: collapsed ? 'center' : 'space-between',
           alignItems: 'center',
-          gap: collapsed ? 0.5 : 0,
         }}
       >
         {collapsed ? (
-          <>
-            <Typography variant="subtitle2" sx={{ fontWeight: 700, letterSpacing: 0.5 }}>
-              {strings.shell.brandShort}
-            </Typography>
-            <IconButton
-              onClick={() => setCollapsed(false)}
-              aria-label={strings.shell.expandSidebar}
-              size="small"
-            >
-              <ChevronRight fontSize="small" />
-            </IconButton>
-          </>
+          <IconButton
+            onClick={() => setCollapsed(false)}
+            aria-label={strings.shell.expandSidebar}
+            size="small"
+            sx={{ p: 0.5 }}
+          >
+            <Box
+              component="img"
+              src={FAVICON_URL}
+              alt=""
+              aria-hidden
+              sx={{
+                width: DRAWER_FAVICON_PX,
+                height: DRAWER_FAVICON_PX,
+                display: 'block',
+              }}
+            />
+          </IconButton>
         ) : (
           <>
-            <Typography variant="subtitle2" sx={{ fontWeight: 700, letterSpacing: 0.4 }} noWrap>
-              {strings.shell.brandFull}
-            </Typography>
+            <DrawerTitleRow title={strings.shell.brandFull} />
             <IconButton
               onClick={() => setCollapsed(true)}
               aria-label={strings.shell.collapseSidebar}
@@ -251,11 +292,15 @@ export function AppShell({ children, activeNavKey, onNavKeyChange, breadcrumbIte
                   component={isLast ? 'h1' : 'span'}
                   color={isLast ? 'text.primary' : 'text.secondary'}
                   aria-current={isLast ? 'page' : undefined}
-                  sx={{
-                    fontWeight: isLast ? 600 : 500,
-                    fontSize: isLast ? undefined : '0.875rem',
-                    lineHeight: 1.3,
-                  }}
+                  sx={
+                    isLast
+                      ? NAV_TITLE_STRONG_SX
+                      : {
+                          fontWeight: 500,
+                          fontSize: '0.875rem',
+                          lineHeight: 1.3,
+                        }
+                  }
                   noWrap
                 >
                   {label}
@@ -281,9 +326,7 @@ export function AppShell({ children, activeNavKey, onNavKeyChange, breadcrumbIte
           }}
         >
           <Toolbar sx={{ minHeight: 48 }}>
-            <Typography variant="subtitle2" sx={{ fontWeight: 700, letterSpacing: 0.4 }}>
-              {strings.nav.drawerTitle}
-            </Typography>
+            <DrawerTitleRow title={strings.nav.drawerTitle} />
           </Toolbar>
           <Divider />
           {renderNavList({ mobile: true })}

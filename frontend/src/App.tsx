@@ -7,6 +7,21 @@ import { AppShell, type NavKey } from './components/layout/AppShell';
 import { LeaveManagementView } from './components/leave/LeaveManagementView';
 import { strings } from './i18n';
 
+const NAV_STORAGE_KEY = 'hr-dashboard-nav';
+
+function readStoredNavKey(): NavKey {
+  if (typeof window === 'undefined') return 'dashboard';
+  try {
+    const raw = window.localStorage.getItem(NAV_STORAGE_KEY);
+    if (raw === 'dashboard' || raw === 'employees' || raw === 'departments' || raw === 'leave') {
+      return raw;
+    }
+  } catch {
+    /* ignore quota / private mode */
+  }
+  return 'dashboard';
+}
+
 function navLabel(key: NavKey): string {
   switch (key) {
     case 'dashboard':
@@ -34,12 +49,20 @@ function employeesTabLabel(tab: EmployeesViewTab): string {
 }
 
 function App() {
-  const [navKey, setNavKey] = useState<NavKey>('dashboard');
+  const [navKey, setNavKey] = useState<NavKey>(readStoredNavKey);
   const [employeesViewTab, setEmployeesViewTab] = useState<EmployeesViewTab>('directory');
 
   useEffect(() => {
     document.title = strings.app.documentTitle;
   }, []);
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(NAV_STORAGE_KEY, navKey);
+    } catch {
+      /* ignore */
+    }
+  }, [navKey]);
 
   useEffect(() => {
     if (navKey !== 'employees') {
