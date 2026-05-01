@@ -2,7 +2,8 @@ namespace HrDashboard.Api.Contracts;
 
 /// <summary>
 /// PTO snapshot for a calendar year: linear accrual vs approved and pending usage.
-/// All day amounts are Czech workdays (Mon–Fri excluding Czech public holidays from date.nager.at when available).
+/// All day amounts are Czech workdays (Mon–Fri excluding Czech public holidays from date.nager.at when available),
+/// each rounded to the nearest half day for display.
 /// </summary>
 public sealed class PtoBalanceDto
 {

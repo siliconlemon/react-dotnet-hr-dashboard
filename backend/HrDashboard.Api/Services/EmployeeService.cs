@@ -73,7 +73,8 @@ public sealed class EmployeeService : IEmployeeService
             Email = email,
             JobTitle = dto.JobTitle.Trim(),
             HireDate = dto.HireDate,
-            DepartmentId = dto.DepartmentId
+            DepartmentId = dto.DepartmentId,
+            AnnualPtoDays = DefaultAnnualPtoDays
         };
 
         _db.Employees.Add(entity);
@@ -251,26 +252,30 @@ public sealed class EmployeeService : IEmployeeService
                 LeaveRequestStatus.Pending,
                 cancellationToken)
             .ConfigureAwait(false);
+        var annual = employee.AnnualPtoDays > 0 ? employee.AnnualPtoDays : DefaultAnnualPtoDays;
         var accrued = await CalculateAccruedPtoWorkdaysAsync(
                 employee.HireDate,
                 asOf,
                 yearStart,
                 yearEnd,
-                DefaultAnnualPtoDays,
+                annual,
                 cancellationToken)
             .ConfigureAwait(false);
-        var available = Math.Max(0m, accrued - used - pending);
+        var accruedR = RoundToHalfDay(accrued);
+        var usedR = RoundToHalfDay(used);
+        var pendingR = RoundToHalfDay(pending);
+        var available = Math.Max(0m, accruedR - usedR - pendingR);
 
         return new PtoBalanceDto
         {
             EmployeeId = employee.Id,
             CalendarYear = year,
             AsOfDate = asOf,
-            AnnualEntitlementDays = DefaultAnnualPtoDays,
-            AccruedDays = RoundPto(accrued),
-            UsedDays = RoundPto(used),
-            PendingDays = RoundPto(pending),
-            AvailableDays = RoundPto(available)
+            AnnualEntitlementDays = RoundToHalfDay(annual),
+            AccruedDays = accruedR,
+            UsedDays = usedR,
+            PendingDays = pendingR,
+            AvailableDays = available
         };
     }
 
@@ -290,8 +295,9 @@ public sealed class EmployeeService : IEmployeeService
     }
 
     /// <summary>
-    /// Linear accrual in Czech workdays from the later of hire date or Jan 1 through <paramref name="asOfDate"/>,
-    /// scaled to workdays from that start through Dec 31 of the same year.
+    /// Czech-style display accrual: employees employed since Jan 1 show the full annual entitlement;
+    /// mid-year hires earn a prorated share of that entitlement through <paramref name="asOf"/>,
+    /// linear in Czech workdays over the calendar year.
     /// </summary>
     private async Task<decimal> CalculateAccruedPtoWorkdaysAsync(
         DateOnly hireDate,
@@ -304,20 +310,28 @@ public sealed class EmployeeService : IEmployeeService
         if (asOf < hireDate)
             return 0m;
 
-        var accrualStart = hireDate > yearStart ? hireDate : yearStart;
-        if (asOf < accrualStart)
+        if (asOf < yearStart)
             return 0m;
 
-        var workdaysInWindow = await _czechWorkdays
-            .CountWorkdaysAsync(accrualStart, yearEnd, cancellationToken)
+        var yearTotalWorkdays = await _czechWorkdays
+            .CountWorkdaysAsync(yearStart, yearEnd, cancellationToken)
             .ConfigureAwait(false);
-        if (workdaysInWindow <= 0m)
+        if (yearTotalWorkdays <= 0m)
             return 0m;
 
-        var workdaysElapsed = await _czechWorkdays
-            .CountWorkdaysAsync(accrualStart, asOf, cancellationToken)
+        // Already on staff at year start: full-year entitlement (accrued tracks annual for typical employees).
+        if (hireDate <= yearStart)
+            return annualWorkdays;
+
+        var accrualEnd = asOf < yearEnd ? asOf : yearEnd;
+        if (accrualEnd < hireDate)
+            return 0m;
+
+        var elapsedWorkdays = await _czechWorkdays
+            .CountWorkdaysAsync(hireDate, accrualEnd, cancellationToken)
             .ConfigureAwait(false);
-        return annualWorkdays * workdaysElapsed / workdaysInWindow;
+
+        return annualWorkdays * elapsedWorkdays / yearTotalWorkdays;
     }
 
     private async Task<decimal> SumLeaveWorkdaysInYearAsync(
@@ -344,5 +358,8 @@ public sealed class EmployeeService : IEmployeeService
         return total;
     }
 
-    private static decimal RoundPto(decimal value) => Math.Round(value, 2, MidpointRounding.AwayFromZero);
+    private static decimal RoundPto(decimal value) => RoundToHalfDay(value);
+
+    private static decimal RoundToHalfDay(decimal value) =>
+        Math.Round(value * 2m, 0, MidpointRounding.AwayFromZero) / 2m;
 }

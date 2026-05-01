@@ -296,38 +296,90 @@ public static class HrDashboardDbInitializer
             }
         };
 
+        var rng = new Random(42);
+        foreach (var e in employees)
+        {
+            // Most staff share the standard annual; a minority have a higher seniority/role grant.
+            e.AnnualPtoDays = rng.Next(100) < 84 ? 15m : 20m;
+        }
+
         context.Employees.AddRange(employees);
         context.SaveChanges();
 
-        var alex = employees[0];
-        var jordan = employees[1];
-        var sam = employees[2];
-
-        context.LeaveRequests.AddRange(
-            new LeaveRequest
-            {
-                EmployeeId = alex.Id,
-                StartDate = new DateOnly(2026, 6, 1),
-                EndDate = new DateOnly(2026, 6, 5),
-                Status = LeaveRequestStatus.Approved,
-                Notes = "Summer travel"
-            },
-            new LeaveRequest
-            {
-                EmployeeId = jordan.Id,
-                StartDate = new DateOnly(2026, 4, 10),
-                EndDate = new DateOnly(2026, 4, 11),
-                Status = LeaveRequestStatus.Pending
-            },
-            new LeaveRequest
-            {
-                EmployeeId = sam.Id,
-                StartDate = new DateOnly(2026, 3, 3),
-                EndDate = new DateOnly(2026, 3, 4),
-                Status = LeaveRequestStatus.Rejected,
-                Notes = "Blackout dates"
-            });
-
+        context.LeaveRequests.AddRange(BuildSampleLeaveRequests(employees, rng));
         context.SaveChanges();
+    }
+
+    /// <summary>
+    /// Deterministic PTO usage for the mock year (2026): approved days in Q1–Q2, pending in H2, some rejections.
+    /// </summary>
+    private static IEnumerable<LeaveRequest> BuildSampleLeaveRequests(
+        IReadOnlyList<Employee> employees,
+        Random rng)
+    {
+        var approvedPool = DatesOnWeekday(new DateOnly(2026, 1, 1), new DateOnly(2026, 5, 15), DayOfWeek.Wednesday);
+        var pendingPool = DatesOnWeekday(new DateOnly(2026, 7, 1), new DateOnly(2026, 11, 30), DayOfWeek.Wednesday);
+        var leaves = new List<LeaveRequest>();
+
+        foreach (var emp in employees)
+        {
+            var approvedPick = approvedPool.OrderBy(_ => rng.Next()).ToList();
+            var nApproved = rng.Next(0, 8);
+            for (var i = 0; i < nApproved && i < approvedPick.Count; i++)
+            {
+                var d = approvedPick[i];
+                leaves.Add(
+                    new LeaveRequest
+                    {
+                        EmployeeId = emp.Id,
+                        StartDate = d,
+                        EndDate = d,
+                        Status = LeaveRequestStatus.Approved
+                    });
+            }
+
+            var pendingPick = pendingPool.OrderBy(_ => rng.Next()).ToList();
+            var nPending = rng.Next(0, 4);
+            for (var j = 0; j < nPending && j < pendingPick.Count; j++)
+            {
+                var d = pendingPick[j];
+                leaves.Add(
+                    new LeaveRequest
+                    {
+                        EmployeeId = emp.Id,
+                        StartDate = d,
+                        EndDate = d,
+                        Status = LeaveRequestStatus.Pending
+                    });
+            }
+
+            if (rng.Next(100) < 30)
+            {
+                var d = new DateOnly(2026, 3, 11);
+                leaves.Add(
+                    new LeaveRequest
+                    {
+                        EmployeeId = emp.Id,
+                        StartDate = d,
+                        EndDate = d,
+                        Status = LeaveRequestStatus.Rejected,
+                        Notes = "Blackout / coverage"
+                    });
+            }
+        }
+
+        return leaves;
+    }
+
+    private static List<DateOnly> DatesOnWeekday(DateOnly from, DateOnly to, DayOfWeek weekday)
+    {
+        var list = new List<DateOnly>();
+        for (var d = from; d <= to; d = d.AddDays(1))
+        {
+            if (d.DayOfWeek == weekday)
+                list.Add(d);
+        }
+
+        return list;
     }
 }

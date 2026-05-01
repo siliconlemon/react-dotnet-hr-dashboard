@@ -29,6 +29,7 @@ public class HrDashboardDbContext : DbContext
 
         modelBuilder.Entity<Employee>(entity =>
         {
+            entity.Property(e => e.AnnualPtoDays).HasPrecision(5, 2);
             entity.Property(e => e.FirstName).HasMaxLength(100).IsRequired();
             entity.Property(e => e.LastName).HasMaxLength(100).IsRequired();
             entity.Property(e => e.Email).HasMaxLength(256).IsRequired();
