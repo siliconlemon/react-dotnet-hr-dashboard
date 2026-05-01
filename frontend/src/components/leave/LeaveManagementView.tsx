@@ -348,6 +348,7 @@ export function LeaveManagementView() {
           display: 'flex',
           flexDirection: 'column',
           overflow: 'hidden',
+          my: 1,
         }}
       >
         <Box sx={{ flexShrink: 0 }}>
