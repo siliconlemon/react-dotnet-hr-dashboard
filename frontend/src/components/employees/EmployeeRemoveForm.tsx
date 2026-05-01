@@ -94,7 +94,7 @@ export function EmployeeRemoveForm({ employees, onRemoved }: EmployeeRemoveFormP
           </Typography>
         )}
         {!noEmployees && (
-          <>
+          <Stack spacing={3}>
             <EmployeePickerField
               employees={employees}
               valueId={selectedId}
@@ -105,7 +105,7 @@ export function EmployeeRemoveForm({ employees, onRemoved }: EmployeeRemoveFormP
               label={strings.employees.removePickEmployee}
             />
             {submitError && (
-              <Alert severity="error" sx={{ mb: 1.5 }} onClose={() => setSubmitError(null)}>
+              <Alert severity="error" onClose={() => setSubmitError(null)}>
                 {submitError}
               </Alert>
             )}
@@ -122,7 +122,7 @@ export function EmployeeRemoveForm({ employees, onRemoved }: EmployeeRemoveFormP
                 {strings.employees.removeButton}
               </Button>
             </Box>
-          </>
+          </Stack>
         )}
       </Paper>
 
