@@ -4,8 +4,8 @@ import type { PaletteMode } from '@mui/material';
 import { alpha, createTheme, type Theme } from '@mui/material/styles';
 import { EMPLOYEE_CARD_ACCENTS } from './employeeCardPalette';
 
-const paperShadow = '0 1px 2px rgba(15, 31, 53, 0.08)';
-const paperShadowRaised = '0 2px 8px rgba(15, 31, 53, 0.1)';
+const paperShadow = '0 1px 2px rgba(25, 79, 130, 0.08)';
+const paperShadowRaised = '0 2px 8px rgba(25, 79, 130, 0.12)';
 
 /** One typographic step for all in-popup calendar text (matches `typography.fontSize` 13). */
 const calRem = (px: number) => `${px / 16}rem`;
@@ -31,19 +31,28 @@ const FW = {
 
 const LIGHT_PAPER = '#ffffff';
 
+/** Brand: sky blue primary `#56ace0`, navy `#194f82`, gold `#ffc10d` (see `warning`). */
 const lightPalette = {
   mode: 'light' as const,
   primary: {
-    main: '#1e3a5f',
-    light: '#3d5a80',
-    dark: '#0f1f35',
+    main: '#56ace0',
+    light: '#8ec5eb',
+    dark: '#194f82',
     contrastText: '#ffffff',
   },
   secondary: {
-    main: '#546e7a',
+    /** Steel blue between primary and navy — secondary actions / chips without competing with CTAs. */
+    main: '#4a7bad',
+    contrastText: '#ffffff',
+  },
+  warning: {
+    main: '#ffc10d',
+    light: '#fff4cc',
+    dark: '#d9a000',
+    contrastText: '#1a2433',
   },
   background: {
-    default: '#eef1f5',
+    default: '#edf2f8',
     paper: LIGHT_PAPER,
   },
   /** Align MUI X Data Grid canvas with {@link background.paper} (default dark mix differs). */
@@ -51,42 +60,51 @@ const lightPalette = {
     bg: LIGHT_PAPER,
   },
   text: {
-    primary: '#1a2332',
-    secondary: '#5c6570',
+    /** Navy-tinted body copy for contrast without pure black. */
+    primary: '#152a45',
+    secondary: '#5a6b7d',
   },
-  divider: 'rgba(15, 31, 53, 0.1)',
+  divider: 'rgba(25, 79, 130, 0.12)',
 };
 
-const DARK_PAPER = '#161d27';
+const DARK_PAPER = '#161f2e';
 
 const darkPalette = {
   mode: 'dark' as const,
   primary: {
-    main: '#8bb4e8',
-    light: '#b3cdf2',
-    dark: '#5c8cc9',
-    contrastText: '#0a1628',
+    main: '#56ace0',
+    light: '#8ec5eb',
+    dark: '#194f82',
+    /** Same hue as light mode: sky blue calls for light copy on filled buttons. */
+    contrastText: '#ffffff',
   },
   secondary: {
-    main: '#78909c',
+    main: '#8fabbf',
+    contrastText: '#0c1520',
+  },
+  warning: {
+    main: '#ffc10d',
+    light: '#ffe066',
+    dark: '#d9a000',
+    contrastText: '#1a2433',
   },
   background: {
-    default: '#0f1419',
+    default: '#0f1825',
     paper: DARK_PAPER,
   },
   DataGrid: {
     bg: DARK_PAPER,
   },
   text: {
-    primary: '#e8ecf1',
-    secondary: '#9aa5b1',
+    primary: '#e8eef5',
+    secondary: '#9eb0c4',
   },
-  divider: 'rgba(232, 236, 241, 0.12)',
+  divider: 'rgba(143, 171, 191, 0.16)',
 };
 
 /**
- * Compact enterprise theme: restrained elevation, navy primary, cool neutrals (light),
- * or a matching dark surface palette.
+ * Compact enterprise theme: brand sky blue primary, navy shade for emphasis, gold warnings,
+ * cool blue-gray surfaces (light) or navy-tinted dark surfaces.
  */
 export function createEnterpriseTheme(mode: PaletteMode = 'light') {
   return createTheme({

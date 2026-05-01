@@ -9,7 +9,7 @@ export type EmployeeCardAccent = {
 };
 
 export const EMPLOYEE_CARD_ACCENTS: readonly EmployeeCardAccent[] = [
-  { border: '#1565c0', headerBg: '#e3f2fd', nameColor: '#0d47a1' },
+  { border: '#56ace0', headerBg: '#e8f4fc', nameColor: '#194f82' },
   { border: '#2e7d32', headerBg: '#e8f5e9', nameColor: '#1b5e20' },
   { border: '#6a1b9a', headerBg: '#f3e5f5', nameColor: '#4a148c' },
   { border: '#455a64', headerBg: '#eceff1', nameColor: '#263238' },
