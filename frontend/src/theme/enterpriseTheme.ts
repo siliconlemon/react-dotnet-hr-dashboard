@@ -129,6 +129,12 @@ export function createEnterpriseTheme(mode: PaletteMode = 'light') {
               : alpha(theme.palette.common.black, 0.35);
           const track = theme.palette.background.default;
           return {
+            /**
+             * Chromium (notably root / overlay scrollbars) keys off `color-scheme` for native
+             * scrollbar chrome; without this, dark UI can keep light scrollbars despite
+             * `::-webkit-scrollbar` / `scrollbar-color`. Firefox follows `scrollbar-color` reliably.
+             */
+            colorScheme: theme.palette.mode,
             scrollbarColor: `${thumb} ${track}`,
             scrollbarWidth: 'thin',
           };

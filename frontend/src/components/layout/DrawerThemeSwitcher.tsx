@@ -57,6 +57,7 @@ export function DrawerThemeSwitcher({ collapsed, mobile }: DrawerThemeSwitcherPr
         flex: 1,
         width: '100%',
         minWidth: 0,
+        height: 32,
         display: 'flex',
         '& .MuiToggleButton-root': {
           flex: 1,
