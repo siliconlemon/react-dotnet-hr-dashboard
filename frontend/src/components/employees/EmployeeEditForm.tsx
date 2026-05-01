@@ -25,7 +25,7 @@ import { Controller, useForm } from 'react-hook-form';
 import { fetchDepartments } from '../../api/departmentsApi';
 import { updateEmployee } from '../../api/employeesApi';
 import type { DepartmentReadDto, EmployeeReadDto } from '../../api/types';
-import { strings } from '../../i18n';
+import { dayjsCalendarMonthFormat, dayjsPickerDateFormat, strings } from '../../i18n';
 
 const HELPER_PLACEHOLDER = '\u00a0';
 
@@ -432,7 +432,7 @@ export function EmployeeEditForm({ employees, onUpdated }: EmployeeEditFormProps
             rules={{ required: strings.onboard.required }}
             render={({ field, fieldState }) => (
               <DatePicker
-                format="YYYY-MM-DD"
+                format={dayjsPickerDateFormat()}
                 label={strings.onboard.fieldHireDate}
                 value={hireDateValue(field.value)}
                 onChange={(v) => {
@@ -451,7 +451,7 @@ export function EmployeeEditForm({ employees, onUpdated }: EmployeeEditFormProps
                     ...compactFieldSlotProps,
                   },
                   calendarHeader: {
-                    format: 'YYYY-MM',
+                    format: dayjsCalendarMonthFormat(),
                   } as { format: string },
                   popper: {
                     placement: 'bottom-start',

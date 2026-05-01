@@ -30,7 +30,7 @@ import {
 } from '@mui/x-data-grid';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import dayjs, { type Dayjs } from 'dayjs';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { startTransition, useCallback, useEffect, useMemo, useState } from 'react';
 import { fetchDepartments } from '../../api/departmentsApi';
 import { fetchEmployees } from '../../api/employeesApi';
 import { createPtoLedgerEntries, fetchPtoLedgerPage } from '../../api/ptoLedgerApi';
@@ -41,7 +41,7 @@ import type {
   PtoLedgerEntryReadDto,
   PtoLedgerEntryTypeDto,
 } from '../../api/types';
-import { strings } from '../../i18n';
+import { dayjsPickerDateFormat, strings } from '../../i18n';
 import { EmployeePickerField } from '../employees/EmployeePickerField';
 import { formatDateOnly, formatDateTime } from '../../utils/formatDate';
 import { formatPtoDays } from '../../utils/formatPto';
@@ -119,6 +119,7 @@ export function LeaveManagementView() {
   }, []);
 
   const reloadLedger = useCallback(async () => {
+    void refreshToken;
     setGridLoading(true);
     setGridError(null);
     try {
@@ -154,7 +155,9 @@ export function LeaveManagementView() {
   ]);
 
   useEffect(() => {
-    void reloadLedger();
+    startTransition(() => {
+      void reloadLedger();
+    });
   }, [reloadLedger]);
 
   const deptMemberCount = useMemo(() => {
@@ -466,6 +469,7 @@ export function LeaveManagementView() {
             />
           </FormControl>
           <DatePicker
+            format={dayjsPickerDateFormat()}
             label={strings.leave.filterFrom}
             value={filterFrom}
             onChange={(v) => {
@@ -478,6 +482,7 @@ export function LeaveManagementView() {
             }}
           />
           <DatePicker
+            format={dayjsPickerDateFormat()}
             label={strings.leave.filterTo}
             value={filterTo}
             onChange={(v) => {
@@ -703,6 +708,7 @@ export function LeaveManagementView() {
             />
 
             <DatePicker
+              format={dayjsPickerDateFormat()}
               label={strings.leave.fieldEffectiveDate}
               value={dialogEffective}
               onChange={(v) => setDialogEffective(v)}

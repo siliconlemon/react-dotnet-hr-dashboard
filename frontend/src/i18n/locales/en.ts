@@ -22,6 +22,10 @@ export const en = {
     collapseSidebar: 'Collapse sidebar',
     openMenu: 'Open navigation menu',
     breadcrumb: 'Breadcrumb',
+    languageEnglish: 'English',
+    languageCzech: 'Czech',
+    languageSwitcherAria: 'Interface language',
+    languageMenuTooltip: 'Choose interface language',
   },
   dashboard: {
     title: 'Dashboard',
@@ -207,6 +211,6 @@ export const en = {
     removeFailed: 'Could not remove employee. Try again.',
     removeNoEmployees: 'No employees on file.',
   },
-} as const;
+};
 
 export type EnMessages = typeof en;

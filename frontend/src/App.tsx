@@ -6,6 +6,7 @@ import { EmployeesView, type EmployeesViewTab } from './components/employees/Emp
 import { AppShell, type NavKey } from './components/layout/AppShell';
 import { LeaveManagementView } from './components/leave/LeaveManagementView';
 import { strings } from './i18n';
+import { useLocale } from './i18n/useLocale';
 
 const NAV_STORAGE_KEY = 'hr-dashboard-nav';
 
@@ -49,12 +50,13 @@ function employeesTabLabel(tab: EmployeesViewTab): string {
 }
 
 function App() {
+  const { locale } = useLocale();
   const [navKey, setNavKey] = useState<NavKey>(readStoredNavKey);
   const [employeesViewTab, setEmployeesViewTab] = useState<EmployeesViewTab>('directory');
 
   useEffect(() => {
     document.title = strings.app.documentTitle;
-  }, []);
+  }, [locale]);
 
   useEffect(() => {
     try {
@@ -64,19 +66,21 @@ function App() {
     }
   }, [navKey]);
 
-  useEffect(() => {
-    if (navKey !== 'employees') {
-      setEmployeesViewTab('directory');
-    }
-  }, [navKey]);
-
   const breadcrumbItems = useMemo(() => {
+    void locale;
     const items: string[] = [navLabel(navKey)];
     if (navKey === 'employees') {
       items.push(employeesTabLabel(employeesViewTab));
     }
     return items;
-  }, [navKey, employeesViewTab]);
+  }, [locale, navKey, employeesViewTab]);
+
+  const handleNavKeyChange = useCallback((key: NavKey) => {
+    setNavKey(key);
+    if (key !== 'employees') {
+      setEmployeesViewTab('directory');
+    }
+  }, []);
 
   const handleEmployeesViewTabChange = useCallback((tab: EmployeesViewTab) => {
     setEmployeesViewTab(tab);
@@ -86,7 +90,7 @@ function App() {
     <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, width: '100%' }}>
       <AppShell
         activeNavKey={navKey}
-        onNavKeyChange={setNavKey}
+        onNavKeyChange={handleNavKeyChange}
         breadcrumbItems={breadcrumbItems}
       >
         {navKey === 'employees' ? (

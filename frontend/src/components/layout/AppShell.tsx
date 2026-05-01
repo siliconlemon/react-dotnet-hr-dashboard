@@ -26,6 +26,7 @@ import { useTheme, type Theme } from '@mui/material/styles';
 import { Fragment, useState, type ReactNode } from 'react';
 import { FAVICON_URL } from '../../constants/faviconUrl';
 import { strings } from '../../i18n';
+import { DrawerLanguageSwitcher } from './DrawerLanguageSwitcher';
 
 const DRAWER_EXPANDED_PX = 240;
 const DRAWER_COLLAPSED_PX = 64;
@@ -129,13 +130,6 @@ function DrawerTitleRow({ title, endSlot }: { title: string; endSlot?: ReactNode
 
 export type NavKey = 'dashboard' | 'employees' | 'departments' | 'leave';
 
-const NAV_ITEMS: Array<{ key: NavKey; label: string; icon: React.ReactElement }> = [
-  { key: 'dashboard', label: strings.nav.dashboard, icon: <DashboardOutlined fontSize="small" /> },
-  { key: 'employees', label: strings.nav.employees, icon: <PeopleOutlined fontSize="small" /> },
-  { key: 'departments', label: strings.nav.departments, icon: <BusinessOutlined fontSize="small" /> },
-  { key: 'leave', label: strings.nav.leave, icon: <EventNoteOutlined fontSize="small" /> },
-];
-
 type AppShellProps = {
   children: React.ReactNode;
   activeNavKey: NavKey;
@@ -169,6 +163,13 @@ export function AppShell({ children, activeNavKey, onNavKeyChange, breadcrumbIte
     const { mobile } = options;
     const iconOnly = !mobile && collapsed;
 
+    const navItems: Array<{ key: NavKey; label: string; icon: React.ReactElement }> = [
+      { key: 'dashboard', label: strings.nav.dashboard, icon: <DashboardOutlined fontSize="small" /> },
+      { key: 'employees', label: strings.nav.employees, icon: <PeopleOutlined fontSize="small" /> },
+      { key: 'departments', label: strings.nav.departments, icon: <BusinessOutlined fontSize="small" /> },
+      { key: 'leave', label: strings.nav.leave, icon: <EventNoteOutlined fontSize="small" /> },
+    ];
+
     return (
       <List
         component="nav"
@@ -182,7 +183,7 @@ export function AppShell({ children, activeNavKey, onNavKeyChange, breadcrumbIte
           gap: 0.75,
         }}
       >
-        {NAV_ITEMS.map((item) => {
+        {navItems.map((item) => {
           const button = (
             <ListItemButton
               selected={item.key === activeNavKey}
@@ -260,6 +261,10 @@ export function AppShell({ children, activeNavKey, onNavKeyChange, breadcrumbIte
           overflowX: 'hidden',
           borderRight: '1px solid',
           borderColor: 'divider',
+          display: 'flex',
+          flexDirection: 'column',
+          height: '100%',
+          pb: 1,
         },
       }}
     >
@@ -271,6 +276,7 @@ export function AppShell({ children, activeNavKey, onNavKeyChange, breadcrumbIte
           pr: collapsed ? 0.5 : drawerToolbarInsetX,
           justifyContent: collapsed ? 'flex-start' : 'space-between',
           alignItems: 'center',
+          flexShrink: 0,
         }}
       >
         {collapsed ? (
@@ -297,8 +303,20 @@ export function AppShell({ children, activeNavKey, onNavKeyChange, breadcrumbIte
           />
         )}
       </Toolbar>
-      <Divider />
-      {renderNavList({ mobile: false })}
+      <Divider sx={{ flexShrink: 0 }} />
+      <Box
+        sx={{
+          flex: 1,
+          minHeight: 0,
+          overflowY: 'auto',
+          overflowX: 'hidden',
+        }}
+      >
+        {renderNavList({ mobile: false })}
+      </Box>
+      <Box sx={{ px: DRAWER_NAV_LIST_OUTER_GUTTER_SPACING, flexShrink: 0 }}>
+        <DrawerLanguageSwitcher collapsed={collapsed} mobile={false} />
+      </Box>
     </Drawer>
   );
 
@@ -373,6 +391,10 @@ export function AppShell({ children, activeNavKey, onNavKeyChange, breadcrumbIte
             '& .MuiDrawer-paper': {
               boxSizing: 'border-box',
               width: DRAWER_EXPANDED_PX,
+              display: 'flex',
+              flexDirection: 'column',
+              height: '100%',
+              pb: 1,
             },
           }}
         >
@@ -381,12 +403,25 @@ export function AppShell({ children, activeNavKey, onNavKeyChange, breadcrumbIte
             sx={{
               minHeight: 48,
               px: (theme) => `calc(${theme.spacing(2)} - 2px)`,
+              flexShrink: 0,
             }}
           >
             <DrawerTitleRow title={strings.nav.drawerTitle} />
           </Toolbar>
-          <Divider />
-          {renderNavList({ mobile: true })}
+          <Divider sx={{ flexShrink: 0 }} />
+          <Box
+            sx={{
+              flex: 1,
+              minHeight: 0,
+              overflowY: 'auto',
+              overflowX: 'hidden',
+            }}
+          >
+            {renderNavList({ mobile: true })}
+          </Box>
+          <Box sx={{ px: DRAWER_NAV_LIST_OUTER_GUTTER_SPACING, flexShrink: 0 }}>
+            <DrawerLanguageSwitcher collapsed={false} mobile />
+          </Box>
         </Drawer>
 
         {desktopDrawer}
