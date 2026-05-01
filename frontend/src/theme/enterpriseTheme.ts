@@ -31,13 +31,15 @@ const FW = {
 
 const LIGHT_PAPER = '#ffffff';
 
-/** Brand: sky blue primary `#56ace0`, navy `#194f82`, gold `#ffc10d` (see `warning`). */
+/** Brand: navy `#194f82` / sky `#56ace0` swap by mode (see `primary`), gold `#ffc10d` (`warning`). */
 const lightPalette = {
   mode: 'light' as const,
   primary: {
-    main: '#56ace0',
-    light: '#8ec5eb',
-    dark: '#194f82',
+    /** Navy — default interactive color on light surfaces (high contrast). */
+    main: '#194f82',
+    /** Sky blue — lighter ramp step for chips / selection tint. */
+    light: '#56ace0',
+    dark: '#123d63',
     contrastText: '#ffffff',
   },
   secondary: {
@@ -72,10 +74,10 @@ const DARK_PAPER = '#161f2e';
 const darkPalette = {
   mode: 'dark' as const,
   primary: {
+    /** Sky blue — reads clearly on dark surfaces without heavy navy fills. */
     main: '#56ace0',
     light: '#8ec5eb',
     dark: '#194f82',
-    /** Same hue as light mode: sky blue calls for light copy on filled buttons. */
     contrastText: '#ffffff',
   },
   secondary: {
@@ -102,8 +104,21 @@ const darkPalette = {
   divider: 'rgba(143, 171, 191, 0.16)',
 };
 
+/** Scrollbar thumb/track + `color-scheme` value aligned with the active palette (root + nested scrollers). */
+function baselineScrollbarChrome(theme: Theme) {
+  const isDark = theme.palette.mode === 'dark';
+  const thumb = isDark
+    ? alpha(theme.palette.common.white, 0.28)
+    : alpha(theme.palette.common.black, 0.35);
+  const thumbHover = isDark
+    ? alpha(theme.palette.common.white, 0.42)
+    : alpha(theme.palette.common.black, 0.5);
+  const track = theme.palette.background.default;
+  return { thumb, thumbHover, track };
+}
+
 /**
- * Compact enterprise theme: brand sky blue primary, navy shade for emphasis, gold warnings,
+ * Compact enterprise theme: navy primary in light mode, sky primary in dark mode; gold warnings;
  * cool blue-gray surfaces (light) or navy-tinted dark surfaces.
  */
 export function createEnterpriseTheme(mode: PaletteMode = 'light') {
@@ -141,35 +156,23 @@ export function createEnterpriseTheme(mode: PaletteMode = 'light') {
     MuiCssBaseline: {
       styleOverrides: {
         html: ({ theme }: { theme: Theme }) => {
-          const thumb =
-            theme.palette.mode === 'dark'
-              ? alpha(theme.palette.common.white, 0.28)
-              : alpha(theme.palette.common.black, 0.35);
-          const track = theme.palette.background.default;
+          const { thumb, track } = baselineScrollbarChrome(theme);
           return {
-            /**
-             * Chromium (notably root / overlay scrollbars) keys off `color-scheme` for native
-             * scrollbar chrome; without this, dark UI can keep light scrollbars despite
-             * `::-webkit-scrollbar` / `scrollbar-color`. Firefox follows `scrollbar-color` reliably.
-             */
-            colorScheme: theme.palette.mode,
+            /** `color-scheme` is set on the DOM in ColorModeProvider (Chromium relies on it reliably). */
             scrollbarColor: `${thumb} ${track}`,
             scrollbarWidth: 'thin',
           };
         },
-        body: ({ theme }: { theme: Theme }) => ({
-          backgroundColor: theme.palette.background.default,
-        }),
+        body: ({ theme }: { theme: Theme }) => {
+          const { thumb, track } = baselineScrollbarChrome(theme);
+          return {
+            backgroundColor: theme.palette.background.default,
+            scrollbarColor: `${thumb} ${track}`,
+            scrollbarWidth: 'thin',
+          };
+        },
         '*': ({ theme }: { theme: Theme }) => {
-          const thumb =
-            theme.palette.mode === 'dark'
-              ? alpha(theme.palette.common.white, 0.28)
-              : alpha(theme.palette.common.black, 0.35);
-          const thumbHover =
-            theme.palette.mode === 'dark'
-              ? alpha(theme.palette.common.white, 0.42)
-              : alpha(theme.palette.common.black, 0.5);
-          const track = theme.palette.background.default;
+          const { thumb, thumbHover, track } = baselineScrollbarChrome(theme);
           return {
             scrollbarWidth: 'thin',
             scrollbarColor: `${thumb} ${track}`,

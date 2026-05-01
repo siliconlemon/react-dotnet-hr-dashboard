@@ -1,9 +1,29 @@
 import type { PaletteMode } from '@mui/material';
 import { ThemeProvider } from '@mui/material/styles';
-import { createContext, useCallback, useMemo, useState, type ReactNode } from 'react';
+import {
+  createContext,
+  useCallback,
+  useLayoutEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from 'react';
 import { createEnterpriseTheme } from './enterpriseTheme';
 
 export const COLOR_MODE_STORAGE_KEY = 'hr-dashboard-color-mode';
+
+/**
+ * Chromium uses the document's used `color-scheme` for native overlay scrollbars. Setting it on
+ * the DOM (not only via MUI/Emotion) keeps light/dark scrollbars in sync with the app palette.
+ */
+function applyDocumentColorScheme(mode: PaletteMode) {
+  if (typeof document === 'undefined') return;
+  const scheme = mode === 'dark' ? 'dark' : 'light';
+  document.documentElement.style.setProperty('color-scheme', scheme);
+  if (document.body) {
+    document.body.style.setProperty('color-scheme', scheme);
+  }
+}
 
 export function readStoredColorMode(): PaletteMode {
   if (typeof window === 'undefined') return 'light';
@@ -36,6 +56,10 @@ export function ColorModeProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const theme = useMemo(() => createEnterpriseTheme(mode), [mode]);
+
+  useLayoutEffect(() => {
+    applyDocumentColorScheme(mode);
+  }, [mode]);
 
   const value = useMemo(() => ({ mode, setMode }), [mode, setMode]);
 

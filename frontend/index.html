@@ -4,8 +4,16 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="__FAVICON_HREF__" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <!-- Lets Chromium pick correct themed scrollbars/forms before JS/CSS hydrates the active palette. -->
-    <meta name="color-scheme" content="light dark" />
+    <!-- Match `COLOR_MODE_STORAGE_KEY` + applyDocumentColorScheme (ColorModeProvider). Runs before paint so the first scrollbar chrome matches the stored theme. -->
+    <script>
+      (function () {
+        try {
+          var k = 'hr-dashboard-color-mode';
+          var m = localStorage.getItem(k);
+          document.documentElement.style.colorScheme = m === 'dark' ? 'dark' : 'light';
+        } catch (e) {}
+      })();
+    </script>
     <title>HR Dashboard</title>
   </head>
   <body>
