@@ -22,13 +22,29 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material';
-import { useTheme } from '@mui/material/styles';
-import { Fragment, useState } from 'react';
+import { useTheme, type Theme } from '@mui/material/styles';
+import { Fragment, useState, type ReactNode } from 'react';
 import { FAVICON_URL } from '../../constants/faviconUrl';
 import { strings } from '../../i18n';
 
 const DRAWER_EXPANDED_PX = 240;
 const DRAWER_COLLAPSED_PX = 64;
+/**
+ * Outer list inset (expanded, collapsed, mobile): pairs with inner nav item horizontal padding so the icon stays
+ * 12px from the drawer edge (`spacing(1)` + `spacing(0.5)`) in every mode — no horizontal re-centering when collapsed.
+ */
+const DRAWER_NAV_LIST_OUTER_GUTTER_SPACING = 1;
+/**
+ * Horizontal padding inside each expanded nav `ListItemButton`: same as inside the collapsed 48×48 row
+ * around the 40px icon slot — `(48 − 40) / 2` = 4px (`theme.spacing(0.5)`).
+ */
+const DRAWER_NAV_ITEM_INNER_PADDING_X_SPACING = 0.5;
+/**
+ * Drawer header row horizontal inset: `calc(spacing(2) − 2px)` on the left in both expanded and collapsed desktop
+ * drawers so the brand favicon does not shift when toggling width; right inset may be tighter when collapsed so the
+ * control still fits in `DRAWER_COLLAPSED_PX`. Drawer `Toolbar` uses `disableGutters`.
+ */
+const drawerToolbarInsetX = (theme: Theme) => `calc(${theme.spacing(2)} - 2px)`;
 /** Favicon in drawer header: same size expanded, collapsed rail, and mobile. */
 const DRAWER_FAVICON_PX = 28;
 
@@ -36,6 +52,8 @@ const DRAWER_FAVICON_PX = 28;
 const NAV_ITEM_MIN_HEIGHT_PX = 48;
 /** Square icon slot so collapsed rail matches expanded vertical rhythm. */
 const NAV_ICON_SLOT_PX = 40;
+/** Match `fontSize="small"` on nav SvgIcons — lock size so dense rows + flex don’t shrink glyphs when labels appear. */
+const NAV_SVG_ICON_PX = 20;
 
 /** Strong nav title: matches breadcrumb current-page segment (`subtitle1` + weight + line height). */
 const NAV_TITLE_STRONG_SX = {
@@ -43,33 +61,68 @@ const NAV_TITLE_STRONG_SX = {
   lineHeight: 1.3,
 } as const;
 
-function DrawerTitleRow({ title }: { title: string }) {
+/** Same slot as collapsed rail: small IconButton + `p: 0.5` (not a plain Box — IconButton has fixed min size). */
+const DRAWER_BRAND_ICON_BUTTON_SX = { p: 0.5 } as const;
+
+function DrawerBrandFaviconImg() {
+  return (
+    <Box
+      component="img"
+      src={FAVICON_URL}
+      alt=""
+      aria-hidden
+      sx={{
+        width: DRAWER_FAVICON_PX,
+        height: DRAWER_FAVICON_PX,
+        display: 'block',
+      }}
+    />
+  );
+}
+
+/**
+ * Brand row: icon + title + optional trailing control in one flex row.
+ * Title uses `flex: 1` + `minWidth: 0` so it truncates against the trailing slot — never a stretched
+ * empty band between name and control (that read as “padding growing” when the drawer widened).
+ */
+function DrawerTitleRow({ title, endSlot }: { title: string; endSlot?: ReactNode }) {
   return (
     <Box
       sx={{
         display: 'flex',
         alignItems: 'center',
         gap: 1,
+        width: '100%',
         minWidth: 0,
-        justifyContent: 'flex-start',
-        flex: 1,
       }}
     >
-      <Box
-        component="img"
-        src={FAVICON_URL}
-        alt=""
+      <IconButton
+        component="span"
+        size="small"
+        disableRipple
+        tabIndex={-1}
         aria-hidden
         sx={{
-          width: DRAWER_FAVICON_PX,
-          height: DRAWER_FAVICON_PX,
+          ...DRAWER_BRAND_ICON_BUTTON_SX,
+          cursor: 'default',
           flexShrink: 0,
-          display: 'block',
         }}
-      />
-      <Typography variant="subtitle1" color="text.primary" sx={NAV_TITLE_STRONG_SX} noWrap>
+      >
+        <DrawerBrandFaviconImg />
+      </IconButton>
+      <Typography
+        variant="subtitle1"
+        color="text.primary"
+        sx={{ ...NAV_TITLE_STRONG_SX, flex: 1, minWidth: 0 }}
+        noWrap
+      >
         {title}
       </Typography>
+      {endSlot != null ? (
+        <Box component="span" sx={{ display: 'flex', flexShrink: 0 }}>
+          {endSlot}
+        </Box>
+      ) : null}
     </Box>
   );
 }
@@ -122,10 +175,10 @@ export function AppShell({ children, activeNavKey, onNavKeyChange, breadcrumbIte
         aria-label={strings.nav.listAriaLabel}
         sx={{
           pt: 1,
-          px: mobile ? 0.5 : iconOnly ? 0 : 0.75,
+          px: mobile ? DRAWER_NAV_LIST_OUTER_GUTTER_SPACING : DRAWER_NAV_LIST_OUTER_GUTTER_SPACING,
           display: 'flex',
           flexDirection: 'column',
-          alignItems: iconOnly ? 'center' : 'stretch',
+          alignItems: 'stretch',
           gap: 0.75,
         }}
       >
@@ -141,14 +194,11 @@ export function AppShell({ children, activeNavKey, onNavKeyChange, breadcrumbIte
                 borderRadius: 1,
                 minHeight: NAV_ITEM_MIN_HEIGHT_PX,
                 py: 0,
-                justifyContent: iconOnly ? 'center' : 'flex-start',
-                px: iconOnly ? 0 : 0.75,
+                justifyContent: 'flex-start',
+                px: DRAWER_NAV_ITEM_INNER_PADDING_X_SPACING,
                 alignItems: 'center',
                 ...(iconOnly && {
-                  width: NAV_ITEM_MIN_HEIGHT_PX,
                   height: NAV_ITEM_MIN_HEIGHT_PX,
-                  minWidth: NAV_ITEM_MIN_HEIGHT_PX,
-                  maxWidth: NAV_ITEM_MIN_HEIGHT_PX,
                   flexShrink: 0,
                 }),
               }}
@@ -163,6 +213,12 @@ export function AppShell({ children, activeNavKey, onNavKeyChange, breadcrumbIte
                   justifyContent: 'center',
                   alignItems: 'center',
                   display: 'flex',
+                  flexShrink: 0,
+                  '& .MuiSvgIcon-root': {
+                    fontSize: NAV_SVG_ICON_PX,
+                    width: NAV_SVG_ICON_PX,
+                    height: NAV_SVG_ICON_PX,
+                  },
                 }}
               >
                 {item.icon}
@@ -171,6 +227,7 @@ export function AppShell({ children, activeNavKey, onNavKeyChange, breadcrumbIte
                 <ListItemText
                   primary={item.label}
                   slotProps={{ primary: { variant: 'body2', noWrap: true } }}
+                  sx={{ flex: '1 1 auto', minWidth: 0 }}
                 />
               )}
             </ListItemButton>
@@ -207,10 +264,12 @@ export function AppShell({ children, activeNavKey, onNavKeyChange, breadcrumbIte
       }}
     >
       <Toolbar
+        disableGutters
         sx={{
           minHeight: 48,
-          px: collapsed ? 0.5 : 1.5,
-          justifyContent: collapsed ? 'center' : 'space-between',
+          pl: drawerToolbarInsetX,
+          pr: collapsed ? 0.5 : drawerToolbarInsetX,
+          justifyContent: collapsed ? 'flex-start' : 'space-between',
           alignItems: 'center',
         }}
       >
@@ -219,31 +278,23 @@ export function AppShell({ children, activeNavKey, onNavKeyChange, breadcrumbIte
             onClick={() => setCollapsed(false)}
             aria-label={strings.shell.expandSidebar}
             size="small"
-            sx={{ p: 0.5 }}
+            sx={DRAWER_BRAND_ICON_BUTTON_SX}
           >
-            <Box
-              component="img"
-              src={FAVICON_URL}
-              alt=""
-              aria-hidden
-              sx={{
-                width: DRAWER_FAVICON_PX,
-                height: DRAWER_FAVICON_PX,
-                display: 'block',
-              }}
-            />
+            <DrawerBrandFaviconImg />
           </IconButton>
         ) : (
-          <>
-            <DrawerTitleRow title={strings.shell.brandFull} />
-            <IconButton
-              onClick={() => setCollapsed(true)}
-              aria-label={strings.shell.collapseSidebar}
-              size="small"
-            >
-              <ChevronLeft fontSize="small" />
-            </IconButton>
-          </>
+          <DrawerTitleRow
+            title={strings.shell.brandFull}
+            endSlot={
+              <IconButton
+                onClick={() => setCollapsed(true)}
+                aria-label={strings.shell.collapseSidebar}
+                size="small"
+              >
+                <ChevronLeft fontSize="small" />
+              </IconButton>
+            }
+          />
         )}
       </Toolbar>
       <Divider />
@@ -325,7 +376,13 @@ export function AppShell({ children, activeNavKey, onNavKeyChange, breadcrumbIte
             },
           }}
         >
-          <Toolbar sx={{ minHeight: 48 }}>
+          <Toolbar
+            disableGutters
+            sx={{
+              minHeight: 48,
+              px: (theme) => `calc(${theme.spacing(2)} - 2px)`,
+            }}
+          >
             <DrawerTitleRow title={strings.nav.drawerTitle} />
           </Toolbar>
           <Divider />
