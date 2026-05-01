@@ -112,7 +112,6 @@ const detailPanelTitleTypographySx = {
   fontWeight: 600,
   fontSize: '20px',
   lineHeight: 1.2,
-  textTransform: 'capitalize' as const,
   minWidth: 0,
 };
 

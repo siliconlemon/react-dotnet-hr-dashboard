@@ -1,5 +1,6 @@
 /**
  * English UI strings. Add other locale files alongside this and switch in `../index.ts`.
+ * Headings and buttons do not auto-capitalize; title-tier strings below use Title Case.
  */
 export const en = {
   app: {
@@ -40,7 +41,7 @@ export const en = {
       `${from}–${to} of ${count}`,
   },
   onboard: {
-    title: 'Onboard employee',
+    title: 'Onboard Employee',
     subtitle: 'Adds a new employee record. Email must be unique.',
     fieldFirstName: 'First name',
     fieldLastName: 'Last name',
@@ -83,7 +84,7 @@ export const en = {
     detailPanelRestoreSplit: 'Restore split layout',
     selectPrompt: 'Select an employee in the table above.',
     tabProfile: 'Profile',
-    tabPto: 'PTO balance',
+    tabPto: 'PTO Balance',
     detailFieldsPickerAria: 'Choose which detail fields to show',
     detailFieldsPickerSearch: 'Search',
     detailFieldsPickerNoMatches: 'No matching fields.',
@@ -104,12 +105,12 @@ export const en = {
     ptoUsed: 'Used (days)',
     ptoPending: 'Pending (days)',
     ptoAvailable: 'Available (days)',
-    editTitle: 'Edit employee details',
+    editTitle: 'Edit Employee Details',
     editSubtitle: 'Update profile fields. Email must stay unique. Changes apply when you save.',
     editPickEmployee: 'Employee',
     editSave: 'Save changes',
     editSaving: 'Saving…',
-    editReviewTitle: 'Review changes',
+    editReviewTitle: 'Review Changes',
     editReviewSubtitle: 'Confirm updates below before saving.',
     editReviewConfirm: 'Confirm changes',
     editReviewCancel: 'Cancel',
@@ -117,13 +118,13 @@ export const en = {
     editNoEmployees: 'No employees to edit. Add someone from Onboard first.',
     editSelectPrompt: 'Choose an employee or select exactly one row in Directory.',
     updateFailed: 'Could not save changes. Try again.',
-    removeTitle: 'Remove employee',
+    removeTitle: 'Remove Employee',
     removeSubtitle:
       'Permanently deletes the employee record and related leave data. This cannot be undone.',
     removePickEmployee: 'Employee',
     removeButton: 'Remove employee',
     removeConfirmTitle: (name: string) =>
-      name.trim() ? `Remove ${name}?` : 'Remove employee?',
+      name.trim() ? `Remove ${name}?` : 'Remove Employee?',
     removeConfirmBody: (name: string) =>
       `${name} will be permanently deleted along with their leave requests. This cannot be undone.`,
     removeConfirmWriteBefore: 'Write',

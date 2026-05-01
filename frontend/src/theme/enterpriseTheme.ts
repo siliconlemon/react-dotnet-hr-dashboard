@@ -72,7 +72,6 @@ export const enterpriseTheme = createTheme({
     h2: {
       fontSize: '1.25rem',
       fontWeight: FW.semibold,
-      textTransform: 'capitalize',
     },
     h3: { fontSize: '1.1rem', fontWeight: FW.semibold },
     subtitle1: { fontWeight: FW.regular },
@@ -90,7 +89,7 @@ export const enterpriseTheme = createTheme({
       defaultProps: { size: 'medium', disableElevation: true },
       styleOverrides: {
         root: ({ theme }) => ({
-          textTransform: 'capitalize',
+          textTransform: 'none',
           fontWeight: theme.typography.fontWeightMedium,
           /** Match `TextField` / `OutlinedInput` `size="small"` control height (~40px). */
           minHeight: 40,
