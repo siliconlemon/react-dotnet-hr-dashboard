@@ -143,6 +143,7 @@ public sealed class EmployeeService : IEmployeeService
         var employee = await _db.Employees
             .AsNoTracking()
             .Include(e => e.LeaveRequests)
+            .Include(e => e.PtoLedgerEntries)
             .FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
 
         if (employee is null)
@@ -168,6 +169,7 @@ public sealed class EmployeeService : IEmployeeService
         var employees = await _db.Employees
             .AsNoTracking()
             .Include(e => e.LeaveRequests)
+            .Include(e => e.PtoLedgerEntries)
             .ToListAsync(cancellationToken)
             .ConfigureAwait(false);
 
@@ -261,10 +263,13 @@ public sealed class EmployeeService : IEmployeeService
                 annual,
                 cancellationToken)
             .ConfigureAwait(false);
-        var accruedR = RoundToHalfDay(accrued);
-        var usedR = RoundToHalfDay(used);
+        SumLedgerThroughAsOf(employee.PtoLedgerEntries, year, asOf, out var ledgerAccrual, out var ledgerUsage, out var ledgerAdjustment);
+
+        var accruedR = RoundToHalfDay(accrued + ledgerAccrual);
+        var usedR = RoundToHalfDay(used + ledgerUsage);
         var pendingR = RoundToHalfDay(pending);
-        var available = Math.Max(0m, accruedR - usedR - pendingR);
+        var adjustmentR = RoundToHalfDay(ledgerAdjustment);
+        var available = Math.Max(0m, accruedR - usedR - pendingR + adjustmentR);
 
         return new PtoBalanceDto
         {
@@ -277,6 +282,41 @@ public sealed class EmployeeService : IEmployeeService
             PendingDays = pendingR,
             AvailableDays = available
         };
+    }
+
+    /// <summary>
+    /// Sums ledger lines through <paramref name="asOf"/> for the calendar year <paramref name="year"/>.
+    /// Accrual and usage amounts are positive magnitudes; adjustments are signed offsets applied to availability.
+    /// </summary>
+    private static void SumLedgerThroughAsOf(
+        IEnumerable<PtoLedgerEntry> entries,
+        int year,
+        DateOnly asOf,
+        out decimal accrualSum,
+        out decimal usageSum,
+        out decimal adjustmentSum)
+    {
+        accrualSum = 0;
+        usageSum = 0;
+        adjustmentSum = 0;
+        foreach (var e in entries)
+        {
+            if (e.EffectiveDate.Year != year || e.EffectiveDate > asOf)
+                continue;
+
+            switch (e.EntryType)
+            {
+                case PtoLedgerEntryType.Accrual:
+                    accrualSum += e.Amount;
+                    break;
+                case PtoLedgerEntryType.Usage:
+                    usageSum += e.Amount;
+                    break;
+                case PtoLedgerEntryType.Adjustment:
+                    adjustmentSum += e.Amount;
+                    break;
+            }
+        }
     }
 
     private static EmployeeReadDto ToReadDto(Employee e)

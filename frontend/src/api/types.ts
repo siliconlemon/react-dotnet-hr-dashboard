@@ -83,3 +83,40 @@ export type DepartmentPtoMatrixResponseDto = {
   asOfDate: string;
   departments: DepartmentPtoMatrixItemDto[];
 };
+
+/** Mirrors {@link HrDashboard.Api.Entities.PtoLedgerEntryType} (camelCase JSON enum). */
+export type PtoLedgerEntryTypeDto = 'accrual' | 'usage' | 'adjustment';
+
+/** Mirrors {@link HrDashboard.Api.Contracts.PtoLedgerEntryReadDto}. */
+export type PtoLedgerEntryReadDto = {
+  id: number;
+  employeeId: number;
+  employeeFirstName: string;
+  employeeLastName: string;
+  departmentId: number;
+  departmentName: string;
+  entryType: PtoLedgerEntryTypeDto;
+  amount: number;
+  effectiveDate: string;
+  note: string | null;
+  createdAt: string;
+  createdBy: string | null;
+  batchId: string | null;
+};
+
+/** Mirrors {@link HrDashboard.Api.Contracts.PtoLedgerPageDto}. */
+export type PtoLedgerPageDto = {
+  items: PtoLedgerEntryReadDto[];
+  totalCount: number;
+};
+
+/** Mirrors {@link HrDashboard.Api.Contracts.PtoLedgerCreateDto}. */
+export type PtoLedgerCreateDto = {
+  scope: 'employee' | 'department';
+  employeeId?: number | null;
+  departmentId?: number | null;
+  entryType: PtoLedgerEntryTypeDto;
+  amount: number;
+  effectiveDate: string;
+  note?: string | null;
+};

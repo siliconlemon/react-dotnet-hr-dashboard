@@ -3,6 +3,7 @@ import {
   ChevronLeft,
   ChevronRight,
   DashboardOutlined,
+  EventNoteOutlined,
   Menu as MenuIcon,
   NavigateNext,
   PeopleOutlined,
@@ -34,12 +35,13 @@ const NAV_ITEM_MIN_HEIGHT_PX = 48;
 /** Square icon slot so collapsed rail matches expanded vertical rhythm. */
 const NAV_ICON_SLOT_PX = 40;
 
-export type NavKey = 'dashboard' | 'employees' | 'departments';
+export type NavKey = 'dashboard' | 'employees' | 'departments' | 'leave';
 
 const NAV_ITEMS: Array<{ key: NavKey; label: string; icon: React.ReactElement }> = [
   { key: 'dashboard', label: strings.nav.dashboard, icon: <DashboardOutlined fontSize="small" /> },
   { key: 'employees', label: strings.nav.employees, icon: <PeopleOutlined fontSize="small" /> },
   { key: 'departments', label: strings.nav.departments, icon: <BusinessOutlined fontSize="small" /> },
+  { key: 'leave', label: strings.nav.leave, icon: <EventNoteOutlined fontSize="small" /> },
 ];
 
 type AppShellProps = {
@@ -299,8 +301,8 @@ export function AppShell({ children, activeNavKey, onNavKeyChange, breadcrumbIte
           minWidth: 0,
           minHeight: 0,
           px: 2,
-          pt: 1,
-          pb: 1,
+          pt: 2,
+          pb: 2,
           width: { md: `calc(100% - ${drawerWidth}px)` },
           bgcolor: 'background.default',
           boxSizing: 'border-box',

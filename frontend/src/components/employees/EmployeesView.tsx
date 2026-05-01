@@ -463,7 +463,7 @@ export function EmployeesView({ onViewTabChange }: EmployeesViewProps) {
               variant="outlined"
             >
               {loadError && (
-                <Alert severity="error" sx={{ mb: 2 }}>
+                <Alert severity="error" sx={{ mt: 2, mb: 0 }}>
                   {loadError}
                 </Alert>
               )}

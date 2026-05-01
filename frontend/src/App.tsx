@@ -4,6 +4,7 @@ import { DashboardView } from './components/dashboard/DashboardView';
 import { DepartmentsView } from './components/departments/DepartmentsView';
 import { EmployeesView, type EmployeesViewTab } from './components/employees/EmployeesView';
 import { AppShell, type NavKey } from './components/layout/AppShell';
+import { LeaveManagementView } from './components/leave/LeaveManagementView';
 import { strings } from './i18n';
 
 function navLabel(key: NavKey): string {
@@ -14,6 +15,8 @@ function navLabel(key: NavKey): string {
       return strings.nav.employees;
     case 'departments':
       return strings.nav.departments;
+    case 'leave':
+      return strings.nav.leave;
   }
 }
 
@@ -67,6 +70,8 @@ function App() {
           <EmployeesView onViewTabChange={handleEmployeesViewTabChange} />
         ) : navKey === 'departments' ? (
           <DepartmentsView />
+        ) : navKey === 'leave' ? (
+          <LeaveManagementView />
         ) : (
           <DashboardView />
         )}

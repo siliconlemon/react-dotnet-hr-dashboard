@@ -33,4 +33,6 @@ public class Employee
     public Department? Department { get; set; }
 
     public ICollection<LeaveRequest> LeaveRequests { get; set; } = new List<LeaveRequest>();
+
+    public ICollection<PtoLedgerEntry> PtoLedgerEntries { get; set; } = new List<PtoLedgerEntry>();
 }

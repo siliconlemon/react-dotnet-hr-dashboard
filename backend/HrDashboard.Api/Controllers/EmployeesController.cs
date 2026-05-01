@@ -85,7 +85,7 @@ public sealed class EmployeesController : ControllerBase
     }
 
     /// <summary>
-    /// Deletes an employee and related leave requests.
+    /// Deletes an employee and related leave requests and PTO ledger rows.
     /// </summary>
     [HttpDelete("{id:int}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]

@@ -1,10 +1,16 @@
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using HrDashboard.Api.Data;
 using HrDashboard.Api.Services;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(o =>
+    {
+        o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase));
+    });
 builder.Services.AddMemoryCache();
 builder.Services.AddHttpClient(
     "NagerPublicHoliday",
@@ -16,6 +22,7 @@ builder.Services.AddHttpClient(
     });
 builder.Services.AddSingleton<ICzechWorkdayCalculator, CzechWorkdayCalculator>();
 builder.Services.AddScoped<IEmployeeService, EmployeeService>();
+builder.Services.AddScoped<IPtoLedgerService, PtoLedgerService>();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 

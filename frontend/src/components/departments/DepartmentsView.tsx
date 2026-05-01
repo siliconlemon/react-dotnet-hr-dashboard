@@ -484,7 +484,7 @@ export function DepartmentsView() {
       </Typography>
 
       {loadError && (
-        <Alert severity="error" sx={{ mb: 2, flexShrink: 0 }}>
+        <Alert severity="error" sx={{ mt: 2, mb: 0, flexShrink: 0 }}>
           {loadError}
         </Alert>
       )}

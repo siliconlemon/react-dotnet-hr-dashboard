@@ -19,6 +19,8 @@ public class HrDashboardDbContext : DbContext
 
     public DbSet<LeaveRequest> LeaveRequests => Set<LeaveRequest>();
 
+    public DbSet<PtoLedgerEntry> PtoLedgerEntries => Set<PtoLedgerEntry>();
+
     /// <inheritdoc />
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -47,6 +49,19 @@ public class HrDashboardDbContext : DbContext
             entity.HasOne(l => l.Employee)
                 .WithMany(e => e.LeaveRequests)
                 .HasForeignKey(l => l.EmployeeId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<PtoLedgerEntry>(entity =>
+        {
+            entity.Property(p => p.Amount).HasPrecision(8, 2);
+            entity.Property(p => p.Note).HasMaxLength(500);
+            entity.Property(p => p.CreatedBy).HasMaxLength(128);
+            entity.HasIndex(p => p.EffectiveDate);
+            entity.HasIndex(p => p.BatchId);
+            entity.HasOne(p => p.Employee)
+                .WithMany(e => e.PtoLedgerEntries)
+                .HasForeignKey(p => p.EmployeeId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
     }
