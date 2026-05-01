@@ -24,7 +24,29 @@ export const en = {
   },
   dashboard: {
     title: 'Dashboard',
-    placeholder: 'Employee list and forms will connect here in later phases.',
+    subtitle: (calendarYear: number, asOfFormatted: string) =>
+      `Workforce snapshot for calendar year ${calendarYear}, as of ${asOfFormatted}.`,
+    loading: 'Loading workforce metrics…',
+    loadError: 'Could not load dashboard metrics. Is the API running?',
+    emptyWorkforce: 'No employees in the matrix.',
+    cardHeadcount: 'Employees',
+    deptCountOne: '1 department',
+    deptCountMany: (n: number) => `${n} departments`,
+    cardMeanAvailable: 'Mean available PTO',
+    cardMeanAccrued: 'Mean accrued PTO',
+    cardMeanUsed: 'Mean used PTO',
+    cardMeanHint: 'Average across all employees',
+    cardHighBalance: 'High balance count',
+    cardHighBalanceHint: (workdays: number) =>
+      `Employees with available PTO over ${workdays} workdays`,
+    cardLowBalance: 'Low balance count',
+    cardLowBalanceHint: (thresholdDays: number) =>
+      `Employees with available PTO under ${thresholdDays} workdays`,
+    cardDeptBreakdown: 'Headcount by department',
+    spotlightHighest: 'Highest available balance',
+    spotlightLowest: 'Lowest available balance',
+    spotlightAvailable: (daysLabel: string) => `${daysLabel} days available`,
+    spotlightTieMore: (additionalCount: number) => `(and ${additionalCount} more)`,
   },
   departments: {
     title: 'Departments',

@@ -1,5 +1,6 @@
-import { Box, Paper, Typography } from '@mui/material';
+import { Box } from '@mui/material';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { DashboardView } from './components/dashboard/DashboardView';
 import { DepartmentsView } from './components/departments/DepartmentsView';
 import { EmployeesView, type EmployeesViewTab } from './components/employees/EmployeesView';
 import { AppShell, type NavKey } from './components/layout/AppShell';
@@ -67,14 +68,7 @@ function App() {
         ) : navKey === 'departments' ? (
           <DepartmentsView />
         ) : (
-          <Paper sx={{ p: 2, my: 1 }} variant="outlined">
-            <Typography variant="h2" gutterBottom>
-              {strings.dashboard.title}
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              {strings.dashboard.placeholder}
-            </Typography>
-          </Paper>
+          <DashboardView />
         )}
       </AppShell>
     </Box>
