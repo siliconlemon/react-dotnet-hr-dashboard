@@ -43,14 +43,14 @@ export const cs = {
   },
   auth: {
     loginTitle: 'Přihlášení',
-    loginSubtitle: 'Pro prohlížení použijte ukázkový účet.',
+    loginSubtitle: 'Přihlášení zatím není povoleno, pro prohlížení použijte ukázkový účet.',
     emailLabel: 'E-mail',
     passwordLabel: 'Heslo',
     submitLogin: 'Přihlásit se',
     demoTrayTitle: 'Přihlášení uživatelé',
     demoRowAriaLabel: 'Přihlásit jako Demo',
     formBlockedHint:
-      'Zadání e-mailu a hesla je v této verzi uzavřené: nové účty vyžadují potvrzení před povolením přihlášení heslem.',
+      'Zadání e-mailu a hesla je v této verzi vypnuto.',
     loadingSession: 'Načítání relace…',
     demoLoading: 'Přihlašování…',
     demoError: 'Nepodařilo se spustit demo relaci. Běží API?',

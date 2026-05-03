@@ -15,8 +15,11 @@ import {
 } from '@mui/material';
 import { useCallback, useMemo, useState } from 'react';
 import { useAuth } from '../../auth/AuthContext';
+import { FAVICON_URL } from '../../constants/faviconUrl';
 import { strings } from '../../i18n';
 import { initialsFromAccount } from '../../utils/accountDisplay';
+
+const LOGIN_BRAND_ICON_PX = 40;
 
 /** Matches seeded demo account (`AppUserSeed` / API). */
 const DEMO_DISPLAY_NAME = 'Demo';
@@ -84,6 +87,35 @@ export function LoginView() {
         }}
       >
         <Stack spacing={2.5}>
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1.5,
+              pb: 0.25,
+            }}
+          >
+            <Box
+              component="img"
+              src={FAVICON_URL}
+              alt=""
+              sx={{
+                width: LOGIN_BRAND_ICON_PX,
+                height: LOGIN_BRAND_ICON_PX,
+                display: 'block',
+                flexShrink: 0,
+              }}
+            />
+            <Typography
+              variant="subtitle1"
+              component="span"
+              color="text.primary"
+              sx={{ fontWeight: 600, lineHeight: 1.3, fontSize: '24pt' }}
+            >
+              {strings.shell.brandFull}
+            </Typography>
+          </Box>
+
           <Box>
             <Typography component="h1" variant="h1" color="text.primary" sx={{ mb: 0.75 }}>
               {strings.auth.loginTitle}

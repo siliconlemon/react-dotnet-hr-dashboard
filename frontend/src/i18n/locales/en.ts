@@ -33,7 +33,7 @@ export const en = {
   },
   auth: {
     loginTitle: 'Sign in',
-    loginSubtitle: 'Use the showcase account to explore the dashboard.',
+    loginSubtitle: 'Login disabled for now, use the demo account to explore.',
     emailLabel: 'Email',
     passwordLabel: 'Password',
     submitLogin: 'Sign in',
