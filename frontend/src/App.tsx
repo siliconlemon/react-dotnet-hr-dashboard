@@ -1,33 +1,24 @@
 import { Box, CircularProgress } from '@mui/material';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
+import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import { patchAccountSettings } from './api/accountApi';
 import { useAuth } from './auth/AuthContext';
 import { LoginView } from './components/auth/LoginView';
 import { DashboardView } from './components/dashboard/DashboardView';
 import { DepartmentsView } from './components/departments/DepartmentsView';
-import { EmployeesView, type EmployeesViewTab } from './components/employees/EmployeesView';
+import type { EmployeesViewTab } from './components/employees/EmployeesView';
 import { AppShell } from './components/layout/AppShell';
-import { parseStoredNavKey, type NavKey } from './navigation/navKeys';
+import type { LeaveManagementViewTab } from './components/leave/LeaveManagementView';
 import {
-  LeaveManagementView,
-  type LeaveManagementViewTab,
-} from './components/leave/LeaveManagementView';
+  employeesTabFromPathname,
+  leaveTabFromPathname,
+  navKeyFromPathname,
+} from './navigation/appPaths';
+import type { NavKey } from './navigation/navKeys';
+import { EmployeesSection, LeaveSection } from './navigation/routedSections';
 import { strings } from './i18n';
 import { useLocale } from './i18n/useLocale';
 import { useColorMode } from './theme/useColorMode';
-
-const NAV_STORAGE_KEY = 'hr-dashboard-nav';
-
-function readStoredNavKey(): NavKey {
-  if (typeof window === 'undefined') return 'dashboard';
-  try {
-    const raw = window.localStorage.getItem(NAV_STORAGE_KEY);
-    return parseStoredNavKey(raw) ?? 'dashboard';
-  } catch {
-    /* ignore quota / private mode */
-  }
-  return 'dashboard';
-}
 
 function navLabel(key: NavKey): string {
   switch (key) {
@@ -64,59 +55,50 @@ function leaveTabLabel(tab: LeaveManagementViewTab): string {
   }
 }
 
-export default function App() {
-  const { status, user, replaceUser } = useAuth();
+function AuthenticatedApp() {
+  const { user, replaceUser } = useAuth();
   const { mode } = useColorMode();
   const { locale } = useLocale();
+  const navigate = useNavigate();
+  const { pathname } = useLocation();
 
-  const [navKey, setNavKey] = useState<NavKey>(readStoredNavKey);
-  const [employeesViewTab, setEmployeesViewTab] = useState<EmployeesViewTab>('directory');
-  const [leaveViewTab, setLeaveViewTab] = useState<LeaveManagementViewTab>('ledger');
+  const navKey = useMemo(() => navKeyFromPathname(pathname), [pathname]);
 
-  const hydratedUserIdRef = useRef<number | null>(null);
-  const [leavePreferencesReady, setLeavePreferencesReady] = useState(false);
+  const breadcrumbItems = useMemo(() => {
+    void locale;
+    const items: string[] = [navLabel(navKey)];
+    if (navKey === 'employees') {
+      items.push(employeesTabLabel(employeesTabFromPathname(pathname)));
+    }
+    if (navKey === 'leave') {
+      items.push(leaveTabLabel(leaveTabFromPathname(pathname)));
+    }
+    return items;
+  }, [locale, pathname, navKey]);
+
+  const leaveTabForPersistence = useMemo((): LeaveManagementViewTab => {
+    if (pathname.startsWith('/leave')) {
+      return leaveTabFromPathname(pathname);
+    }
+    const s = user?.settings.leaveManagementTab;
+    return s === 'lookup' || s === 'calendar' ? 'lookup' : 'ledger';
+  }, [pathname, user?.settings.leaveManagementTab]);
 
   useEffect(() => {
     document.title = strings.app.documentTitle;
   }, [locale]);
 
   useEffect(() => {
-    try {
-      window.localStorage.setItem(NAV_STORAGE_KEY, navKey);
-    } catch {
-      /* ignore */
-    }
-  }, [navKey]);
-
-  useEffect(() => {
-    if (status !== 'authenticated') {
-      hydratedUserIdRef.current = null;
-      setLeavePreferencesReady(false);
-    }
-  }, [status]);
-
-  useEffect(() => {
-    if (status !== 'authenticated' || !user) {
-      return;
-    }
-    if (hydratedUserIdRef.current === user.id) {
-      return;
-    }
-    hydratedUserIdRef.current = user.id;
-    const s = user.settings;
-    setLeaveViewTab(
-      s.leaveManagementTab === 'lookup' || s.leaveManagementTab === 'calendar' ? 'lookup' : 'ledger',
-    );
-    setLeavePreferencesReady(true);
-  }, [status, user]);
-
-  useEffect(() => {
-    if (status !== 'authenticated' || !user || !leavePreferencesReady) {
+    if (!user) {
       return;
     }
     const cur = user.settings;
     const themeStr = mode === 'dark' ? 'dark' : 'light';
-    if (cur.theme === themeStr && cur.uiLocale === locale && cur.leaveManagementTab === leaveViewTab) {
+    if (
+      cur.theme === themeStr &&
+      cur.uiLocale === locale &&
+      cur.leaveManagementTab === leaveTabForPersistence
+    ) {
       return;
     }
 
@@ -124,49 +106,67 @@ export default function App() {
       void patchAccountSettings({
         theme: themeStr,
         uiLocale: locale,
-        leaveManagementTab: leaveViewTab,
+        leaveManagementTab: leaveTabForPersistence,
       })
         .then(replaceUser)
         .catch(() => {});
     }, 450);
 
     return () => window.clearTimeout(handle);
-  }, [
-    status,
-    user,
-    leavePreferencesReady,
-    mode,
-    locale,
-    leaveViewTab,
-    replaceUser,
-  ]);
+  }, [user, mode, locale, leaveTabForPersistence, replaceUser]);
 
-  const breadcrumbItems = useMemo(() => {
-    void locale;
-    const items: string[] = [navLabel(navKey)];
-    if (navKey === 'employees') {
-      items.push(employeesTabLabel(employeesViewTab));
-    }
-    if (navKey === 'leave') {
-      items.push(leaveTabLabel(leaveViewTab));
-    }
-    return items;
-  }, [locale, navKey, employeesViewTab, leaveViewTab]);
+  const handleNavKeyChange = useCallback(
+    (key: NavKey) => {
+      switch (key) {
+        case 'dashboard':
+          navigate('/dashboard');
+          return;
+        case 'employees':
+          navigate('/employees');
+          return;
+        case 'departments':
+          navigate('/departments');
+          return;
+        case 'leave': {
+          const pref = user?.settings.leaveManagementTab;
+          const tab = pref === 'lookup' || pref === 'calendar' ? 'lookup' : 'ledger';
+          navigate(tab === 'lookup' ? '/leave/lookup' : '/leave');
+          return;
+        }
+        default: {
+          const _exhaustive: never = key;
+          return _exhaustive;
+        }
+      }
+    },
+    [navigate, user?.settings.leaveManagementTab],
+  );
 
-  const handleNavKeyChange = useCallback((key: NavKey) => {
-    setNavKey(key);
-    if (key !== 'employees') {
-      setEmployeesViewTab('directory');
-    }
-  }, []);
+  return (
+    <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, width: '100%' }}>
+      <AppShell activeNavKey={navKey} onNavKeyChange={handleNavKeyChange} breadcrumbItems={breadcrumbItems}>
+        <Routes>
+          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          <Route path="/dashboard" element={<DashboardView />} />
+          <Route path="/employees" element={<EmployeesSection />} />
+          <Route path="/employees/:tab" element={<EmployeesSection />} />
+          <Route path="/departments" element={<DepartmentsView />} />
+          <Route path="/leave" element={<LeaveSection />} />
+          <Route path="/leave/:tab" element={<LeaveSection />} />
+          <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        </Routes>
+      </AppShell>
+    </Box>
+  );
+}
 
-  const handleEmployeesViewTabChange = useCallback((tab: EmployeesViewTab) => {
-    setEmployeesViewTab(tab);
-  }, []);
+export default function App() {
+  const { status } = useAuth();
+  const { locale } = useLocale();
 
-  const handleLeaveViewTabChange = useCallback((tab: LeaveManagementViewTab) => {
-    setLeaveViewTab(tab);
-  }, []);
+  useEffect(() => {
+    document.title = strings.app.documentTitle;
+  }, [locale]);
 
   if (status === 'loading') {
     return (
@@ -189,19 +189,5 @@ export default function App() {
     return <LoginView />;
   }
 
-  return (
-    <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, width: '100%' }}>
-      <AppShell activeNavKey={navKey} onNavKeyChange={handleNavKeyChange} breadcrumbItems={breadcrumbItems}>
-        {navKey === 'employees' ? (
-          <EmployeesView onViewTabChange={handleEmployeesViewTabChange} />
-        ) : navKey === 'departments' ? (
-          <DepartmentsView />
-        ) : navKey === 'leave' ? (
-          <LeaveManagementView viewTab={leaveViewTab} onViewTabChange={handleLeaveViewTabChange} />
-        ) : (
-          <DashboardView />
-        )}
-      </AppShell>
-    </Box>
-  );
+  return <AuthenticatedApp />;
 }

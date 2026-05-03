@@ -30,8 +30,8 @@ type DetailTab = 'profile' | 'pto';
 export type EmployeesViewTab = 'directory' | 'onboard' | 'edit' | 'remove';
 
 type EmployeesViewProps = {
-  /** Fires when the top-level area tab changes (and once on mount). */
-  onViewTabChange?: (tab: EmployeesViewTab) => void;
+  viewTab: EmployeesViewTab;
+  onViewTabChange: (tab: EmployeesViewTab) => void;
 };
 
 /** Resolves MUI Data Grid row ids (include / exclude selection semantics). */
@@ -124,8 +124,7 @@ const detailPanelTitleTypographySx = {
 /**
  * Employees area: directory (grid + profile/PTO), onboard, edit, or remove.
  */
-export function EmployeesView({ onViewTabChange }: EmployeesViewProps) {
-  const [viewTab, setViewTab] = useState<EmployeesViewTab>('directory');
+export function EmployeesView({ viewTab, onViewTabChange }: EmployeesViewProps) {
   const [rows, setRows] = useState<EmployeeReadDto[]>([]);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -184,19 +183,15 @@ export function EmployeesView({ onViewTabChange }: EmployeesViewProps) {
     return () => ac.abort();
   }, [reloadEmployees]);
 
-  useEffect(() => {
-    onViewTabChange?.(viewTab);
-  }, [viewTab, onViewTabChange]);
-
   const handleEmployeeCreated = useCallback(
     (created: EmployeeReadDto) => {
       void (async () => {
         await reloadEmployees();
-        setViewTab('directory');
+        onViewTabChange('directory');
         setSelectionModel({ type: 'include', ids: new Set([created.id]) });
       })();
     },
-    [reloadEmployees],
+    [reloadEmployees, onViewTabChange],
   );
 
   const handleEmployeeUpdated = useCallback(() => {
@@ -288,9 +283,12 @@ export function EmployeesView({ onViewTabChange }: EmployeesViewProps) {
     [],
   );
 
-  const handleViewTabChange = useCallback((_: SyntheticEvent, value: EmployeesViewTab) => {
-    setViewTab(value);
-  }, []);
+  const handleViewTabChange = useCallback(
+    (_: SyntheticEvent, value: EmployeesViewTab) => {
+      onViewTabChange(value);
+    },
+    [onViewTabChange],
+  );
 
   const onSelectionChange = useCallback((model: GridRowSelectionModel) => {
     setSelectionModel(model);
