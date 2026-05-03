@@ -29,6 +29,7 @@ public class HrDashboardDbContext : DbContext
         modelBuilder.Entity<Department>(entity =>
         {
             entity.Property(d => d.Name).HasMaxLength(128).IsRequired();
+            entity.HasIndex(d => d.Name).IsUnique();
         });
 
         modelBuilder.Entity<Employee>(entity =>
@@ -48,6 +49,7 @@ public class HrDashboardDbContext : DbContext
         modelBuilder.Entity<LeaveRequest>(entity =>
         {
             entity.Property(l => l.Notes).HasMaxLength(500);
+            entity.HasIndex(l => new { l.EmployeeId, l.Status });
             entity.HasOne(l => l.Employee)
                 .WithMany(e => e.LeaveRequests)
                 .HasForeignKey(l => l.EmployeeId)
@@ -61,10 +63,15 @@ public class HrDashboardDbContext : DbContext
             entity.Property(p => p.CreatedBy).HasMaxLength(128);
             entity.HasIndex(p => p.EffectiveDate);
             entity.HasIndex(p => p.BatchId);
+            entity.HasIndex(p => p.CreatedByUserId);
             entity.HasOne(p => p.Employee)
                 .WithMany(e => e.PtoLedgerEntries)
                 .HasForeignKey(p => p.EmployeeId)
                 .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(p => p.CreatedByUser)
+                .WithMany()
+                .HasForeignKey(p => p.CreatedByUserId)
+                .OnDelete(DeleteBehavior.SetNull);
         });
 
         modelBuilder.Entity<AppUser>(entity =>
@@ -72,12 +79,17 @@ public class HrDashboardDbContext : DbContext
             entity.Property(u => u.Email).HasMaxLength(256).IsRequired();
             entity.Property(u => u.EmailNormalized).HasMaxLength(256).IsRequired();
             entity.HasIndex(u => u.EmailNormalized).IsUnique();
+            entity.HasIndex(u => u.EmployeeId).IsUnique();
             entity.Property(u => u.PasswordHash).HasMaxLength(512).IsRequired();
             entity.Property(u => u.DisplayName).HasMaxLength(128).IsRequired();
             entity.Property(u => u.Theme).HasMaxLength(16).IsRequired();
             entity.Property(u => u.UiLocale).HasMaxLength(8).IsRequired();
             entity.Property(u => u.LeaveManagementTab).HasMaxLength(32).IsRequired();
             entity.Property(u => u.LeaveCalendarView).HasMaxLength(32).IsRequired();
+            entity.HasOne(u => u.Employee)
+                .WithOne(e => e.AppUser)
+                .HasForeignKey<AppUser>(u => u.EmployeeId)
+                .OnDelete(DeleteBehavior.SetNull);
         });
     }
 }

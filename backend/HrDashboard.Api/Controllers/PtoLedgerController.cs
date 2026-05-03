@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using HrDashboard.Api.Contracts;
 using HrDashboard.Api.Entities;
 using HrDashboard.Api.Services;
@@ -67,7 +68,8 @@ public sealed class PtoLedgerController : ControllerBase
         [FromBody] PtoLedgerCreateDto dto,
         CancellationToken cancellationToken)
     {
-        var (entries, error) = await _ledger.CreateAsync(dto, cancellationToken).ConfigureAwait(false);
+        var userId = ParseUserId(User);
+        var (entries, error) = await _ledger.CreateAsync(dto, userId, cancellationToken).ConfigureAwait(false);
         return error switch
         {
             "employee_not_found" => NotFound("Employee does not exist."),
@@ -83,5 +85,11 @@ public sealed class PtoLedgerController : ControllerBase
             null => StatusCode(StatusCodes.Status201Created, entries!),
             _ => BadRequest()
         };
+    }
+
+    private static int? ParseUserId(ClaimsPrincipal user)
+    {
+        var v = user.FindFirstValue(ClaimTypes.NameIdentifier);
+        return int.TryParse(v, out var id) ? id : null;
     }
 }

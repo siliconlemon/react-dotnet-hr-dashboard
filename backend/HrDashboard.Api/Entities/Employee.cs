@@ -35,4 +35,7 @@ public class Employee
     public ICollection<LeaveRequest> LeaveRequests { get; set; } = new List<LeaveRequest>();
 
     public ICollection<PtoLedgerEntry> PtoLedgerEntries { get; set; } = new List<PtoLedgerEntry>();
+
+    /// <summary>At most one login account may be linked to this employee.</summary>
+    public AppUser? AppUser { get; set; }
 }

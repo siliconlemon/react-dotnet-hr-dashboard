@@ -33,4 +33,9 @@ public sealed class AppUser
 
     /// <summary>Leave calendar sub-view: <c>month</c> or <c>agenda</c>.</summary>
     public string LeaveCalendarView { get; set; } = "month";
+
+    /// <summary>Optional link to an <see cref="Employee"/> record when the account represents that person in HR data.</summary>
+    public int? EmployeeId { get; set; }
+
+    public Employee? Employee { get; set; }
 }

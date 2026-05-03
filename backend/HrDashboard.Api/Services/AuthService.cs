@@ -151,6 +151,7 @@ public sealed class AuthService : IAuthService
             Email = user.Email,
             DisplayName = user.DisplayName,
             EmailConfirmed = user.EmailConfirmed,
+            LinkedEmployeeId = user.EmployeeId,
             Settings = new UserSettingsDto
             {
                 Theme = user.Theme,

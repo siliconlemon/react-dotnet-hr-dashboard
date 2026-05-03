@@ -140,16 +140,19 @@ public sealed class EmployeeService : IEmployeeService
         DateOnly? asOfDate,
         CancellationToken cancellationToken = default)
     {
+        var asOf = asOfDate ?? DateOnly.FromDateTime(DateTime.UtcNow.Date);
+        var year = asOf.Year;
+        var yearStart = new DateOnly(year, 1, 1);
+        var yearEnd = new DateOnly(year, 12, 31);
+
         var employee = await _db.Employees
             .AsNoTracking()
-            .Include(e => e.LeaveRequests)
-            .Include(e => e.PtoLedgerEntries)
+            .Include(e => e.LeaveRequests.Where(r => r.StartDate <= yearEnd && r.EndDate >= yearStart))
+            .Include(e => e.PtoLedgerEntries.Where(p => p.EffectiveDate.Year == year && p.EffectiveDate <= asOf))
             .FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
 
         if (employee is null)
             return null;
-
-        var asOf = asOfDate ?? DateOnly.FromDateTime(DateTime.UtcNow.Date);
         return await ComputePtoBalanceAsync(employee, asOf, cancellationToken).ConfigureAwait(false);
     }
 
@@ -159,6 +162,9 @@ public sealed class EmployeeService : IEmployeeService
         CancellationToken cancellationToken = default)
     {
         var asOf = asOfDate ?? DateOnly.FromDateTime(DateTime.UtcNow.Date);
+        var year = asOf.Year;
+        var yearStart = new DateOnly(year, 1, 1);
+        var yearEnd = new DateOnly(year, 12, 31);
 
         var departments = await _db.Departments
             .AsNoTracking()
@@ -168,8 +174,8 @@ public sealed class EmployeeService : IEmployeeService
 
         var employees = await _db.Employees
             .AsNoTracking()
-            .Include(e => e.LeaveRequests)
-            .Include(e => e.PtoLedgerEntries)
+            .Include(e => e.LeaveRequests.Where(r => r.StartDate <= yearEnd && r.EndDate >= yearStart))
+            .Include(e => e.PtoLedgerEntries.Where(p => p.EffectiveDate.Year == year && p.EffectiveDate <= asOf))
             .ToListAsync(cancellationToken)
             .ConfigureAwait(false);
 

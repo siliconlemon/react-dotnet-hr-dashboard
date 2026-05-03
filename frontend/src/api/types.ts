@@ -137,6 +137,7 @@ export type UserAccountDto = {
   email: string;
   displayName: string;
   emailConfirmed: boolean;
+  linkedEmployeeId?: number | null;
   settings: UserSettingsDto;
 };
 

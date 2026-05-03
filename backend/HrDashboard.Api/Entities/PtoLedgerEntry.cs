@@ -25,9 +25,14 @@ public class PtoLedgerEntry
     public DateTimeOffset CreatedAt { get; set; }
 
     /// <summary>
-    /// Actor label when authentication exists; otherwise null or a stub such as <c>local</c>.
+    /// Legacy/free-form actor label when no user FK is set (e.g. <c>local</c>, imports).
     /// </summary>
     public string? CreatedBy { get; set; }
+
+    /// <summary>Optional FK to the app user who created this row (preferred over <see cref="CreatedBy"/>).</summary>
+    public int? CreatedByUserId { get; set; }
+
+    public AppUser? CreatedByUser { get; set; }
 
     /// <summary>
     /// Optional link for bulk posts (e.g. one department grant applied to many employees).

@@ -23,5 +23,6 @@ public interface IPtoLedgerService
     /// </summary>
     Task<(IReadOnlyList<PtoLedgerEntryReadDto>? Entries, string? Error)> CreateAsync(
         PtoLedgerCreateDto dto,
+        int? createdByUserId,
         CancellationToken cancellationToken = default);
 }

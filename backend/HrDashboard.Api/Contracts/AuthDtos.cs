@@ -37,6 +37,9 @@ public sealed class UserAccountDto
 
     public bool EmailConfirmed { get; set; }
 
+    /// <summary>When set, this login is bound to the HR employee row with the same id.</summary>
+    public int? LinkedEmployeeId { get; set; }
+
     public UserSettingsDto Settings { get; set; } = new();
 }
 

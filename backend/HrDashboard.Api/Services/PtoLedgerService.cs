@@ -10,8 +10,6 @@ public sealed class PtoLedgerService : IPtoLedgerService
 {
     private const decimal MaxAbsAmount = 999.99m;
 
-    private static readonly string StubActor = "local";
-
     private readonly HrDashboardDbContext _db;
 
     public PtoLedgerService(HrDashboardDbContext db)
@@ -35,6 +33,7 @@ public sealed class PtoLedgerService : IPtoLedgerService
 
         var query = _db.PtoLedgerEntries
             .AsNoTracking()
+            .Include(p => p.CreatedByUser)
             .Include(p => p.Employee!)
             .ThenInclude(e => e.Department)
             .AsQueryable();
@@ -76,6 +75,7 @@ public sealed class PtoLedgerService : IPtoLedgerService
     /// <inheritdoc />
     public async Task<(IReadOnlyList<PtoLedgerEntryReadDto>? Entries, string? Error)> CreateAsync(
         PtoLedgerCreateDto dto,
+        int? createdByUserId,
         CancellationToken cancellationToken = default)
     {
         var validation = ValidateCreate(dto);
@@ -104,7 +104,8 @@ public sealed class PtoLedgerService : IPtoLedgerService
                     EffectiveDate = dto.EffectiveDate,
                     Note = NormalizeNote(dto.Note),
                     CreatedAt = createdAt,
-                    CreatedBy = StubActor,
+                    CreatedByUserId = createdByUserId,
+                    CreatedBy = LedgerActorLabel(createdByUserId),
                     BatchId = batchId
                 }
             ];
@@ -136,7 +137,8 @@ public sealed class PtoLedgerService : IPtoLedgerService
                     EffectiveDate = dto.EffectiveDate,
                     Note = note,
                     CreatedAt = createdAt,
-                    CreatedBy = StubActor,
+                    CreatedByUserId = createdByUserId,
+                    CreatedBy = LedgerActorLabel(createdByUserId),
                     BatchId = batchId
                 })
                 .ToList();
@@ -148,6 +150,7 @@ public sealed class PtoLedgerService : IPtoLedgerService
         var ids = entities.Select(e => e.Id).ToList();
         var saved = await _db.PtoLedgerEntries
             .AsNoTracking()
+            .Include(p => p.CreatedByUser)
             .Include(p => p.Employee!)
             .ThenInclude(e => e.Department)
             .Where(p => ids.Contains(p.Id))
@@ -204,6 +207,9 @@ public sealed class PtoLedgerService : IPtoLedgerService
         return t.Length > 500 ? t[..500] : t;
     }
 
+    private static string? LedgerActorLabel(int? createdByUserId) =>
+        createdByUserId is null ? "local" : null;
+
     private static PtoLedgerEntryReadDto ToReadDto(PtoLedgerEntry p)
     {
         var emp = p.Employee!;
@@ -222,7 +228,7 @@ public sealed class PtoLedgerService : IPtoLedgerService
             EffectiveDate = p.EffectiveDate,
             Note = p.Note,
             CreatedAt = p.CreatedAt,
-            CreatedBy = p.CreatedBy,
+            CreatedBy = p.CreatedByUser?.DisplayName ?? p.CreatedBy,
             BatchId = p.BatchId
         };
     }
