@@ -212,6 +212,9 @@ export function DrawerLanguageSwitcher({ collapsed, mobile, trailingFade }: Draw
               ...(compact ? { mt: -0.5 } : { mb: 0.5 }),
             },
           },
+          list: {
+            sx: { py: 0 },
+          },
         }}
       >
         {menuItems}

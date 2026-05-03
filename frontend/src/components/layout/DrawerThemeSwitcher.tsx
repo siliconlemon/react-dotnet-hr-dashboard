@@ -137,6 +137,9 @@ export function DrawerThemeSwitcher({ collapsed, mobile, trailingFade }: DrawerT
                 elevation: 3,
                 sx: { minWidth: 200, mt: -0.5 },
               },
+              list: {
+                sx: { py: 0 },
+              },
             }}
           >
             <MenuItem
