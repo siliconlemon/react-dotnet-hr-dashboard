@@ -3,17 +3,21 @@ using HrDashboard.Api.Entities;
 namespace HrDashboard.Api.Data;
 
 /// <summary>
-/// Inserts mock HR data when the database is empty.
+/// Inserts demo HR data when the database has no departments (fresh install after migrate).
+/// Dates anchor to UTC "today" so leave and ledger rows stay visible in list, matrix, and calendar views.
 /// </summary>
 public static class HrDashboardDbInitializer
 {
     /// <summary>
-    /// Seeds departments, employees, and sample leave requests if no rows exist.
+    /// Seeds departments, employees, leave requests, and PTO ledger lines.
     /// </summary>
     public static void Seed(HrDashboardDbContext context)
     {
         if (context.Departments.Any())
             return;
+
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        var rng = new Random(42);
 
         var engineering = new Department { Name = "Engineering" };
         var hr = new Department { Name = "Human Resources" };
@@ -22,7 +26,23 @@ public static class HrDashboardDbInitializer
         context.Departments.AddRange(engineering, hr, sales);
         context.SaveChanges();
 
-        var employees = new List<Employee>
+        var employees = BuildEmployees(engineering.Id, hr.Id, sales.Id);
+        foreach (var e in employees)
+            e.AnnualPtoDays = rng.Next(100) < 84 ? 15m : 20m;
+
+        context.Employees.AddRange(employees);
+        context.SaveChanges();
+
+        context.LeaveRequests.AddRange(BuildSampleLeaveRequests(employees, rng, today));
+        context.SaveChanges();
+
+        context.PtoLedgerEntries.AddRange(BuildSamplePtoLedgerEntries(employees, today, rng));
+        context.SaveChanges();
+    }
+
+    private static List<Employee> BuildEmployees(int engineeringId, int hrId, int salesId)
+    {
+        return new List<Employee>
         {
             new()
             {
@@ -31,7 +51,7 @@ public static class HrDashboardDbInitializer
                 Email = "alex.novak@example.com",
                 JobTitle = "Senior Developer",
                 HireDate = new DateOnly(2021, 3, 15),
-                DepartmentId = engineering.Id
+                DepartmentId = engineeringId
             },
             new()
             {
@@ -40,7 +60,7 @@ public static class HrDashboardDbInitializer
                 Email = "jordan.lee@example.com",
                 JobTitle = "Engineering Manager",
                 HireDate = new DateOnly(2019, 7, 1),
-                DepartmentId = engineering.Id
+                DepartmentId = engineeringId
             },
             new()
             {
@@ -49,7 +69,7 @@ public static class HrDashboardDbInitializer
                 Email = "sam.rivera@example.com",
                 JobTitle = "HR Business Partner",
                 HireDate = new DateOnly(2020, 1, 20),
-                DepartmentId = hr.Id
+                DepartmentId = hrId
             },
             new()
             {
@@ -58,7 +78,7 @@ public static class HrDashboardDbInitializer
                 Email = "taylor.chen@example.com",
                 JobTitle = "Account Executive",
                 HireDate = new DateOnly(2022, 5, 9),
-                DepartmentId = sales.Id
+                DepartmentId = salesId
             },
             new()
             {
@@ -67,7 +87,7 @@ public static class HrDashboardDbInitializer
                 Email = "morgan.patel@example.com",
                 JobTitle = "Sales Director",
                 HireDate = new DateOnly(2018, 11, 12),
-                DepartmentId = sales.Id
+                DepartmentId = salesId
             },
             new()
             {
@@ -76,7 +96,7 @@ public static class HrDashboardDbInitializer
                 Email = "riley.okonkwo@example.com",
                 JobTitle = "Backend Developer",
                 HireDate = new DateOnly(2023, 2, 6),
-                DepartmentId = engineering.Id
+                DepartmentId = engineeringId
             },
             new()
             {
@@ -85,7 +105,7 @@ public static class HrDashboardDbInitializer
                 Email = "casey.kim@example.com",
                 JobTitle = "Frontend Developer",
                 HireDate = new DateOnly(2022, 9, 19),
-                DepartmentId = engineering.Id
+                DepartmentId = engineeringId
             },
             new()
             {
@@ -94,7 +114,7 @@ public static class HrDashboardDbInitializer
                 Email = "drew.martinez@example.com",
                 JobTitle = "QA Engineer",
                 HireDate = new DateOnly(2024, 1, 8),
-                DepartmentId = engineering.Id
+                DepartmentId = engineeringId
             },
             new()
             {
@@ -103,7 +123,7 @@ public static class HrDashboardDbInitializer
                 Email = "jamie.singh@example.com",
                 JobTitle = "DevOps Engineer",
                 HireDate = new DateOnly(2020, 6, 22),
-                DepartmentId = engineering.Id
+                DepartmentId = engineeringId
             },
             new()
             {
@@ -112,7 +132,7 @@ public static class HrDashboardDbInitializer
                 Email = "quinn.berg@example.com",
                 JobTitle = "Product Engineer",
                 HireDate = new DateOnly(2023, 11, 13),
-                DepartmentId = engineering.Id
+                DepartmentId = engineeringId
             },
             new()
             {
@@ -121,7 +141,7 @@ public static class HrDashboardDbInitializer
                 Email = "avery.nakamura@example.com",
                 JobTitle = "Junior Developer",
                 HireDate = new DateOnly(2025, 3, 3),
-                DepartmentId = engineering.Id
+                DepartmentId = engineeringId
             },
             new()
             {
@@ -130,7 +150,7 @@ public static class HrDashboardDbInitializer
                 Email = "reese.hansen@example.com",
                 JobTitle = "Tech Lead",
                 HireDate = new DateOnly(2017, 4, 17),
-                DepartmentId = engineering.Id
+                DepartmentId = engineeringId
             },
             new()
             {
@@ -139,7 +159,7 @@ public static class HrDashboardDbInitializer
                 Email = "skyler.dubois@example.com",
                 JobTitle = "Security Engineer",
                 HireDate = new DateOnly(2021, 10, 4),
-                DepartmentId = engineering.Id
+                DepartmentId = engineeringId
             },
             new()
             {
@@ -148,7 +168,7 @@ public static class HrDashboardDbInitializer
                 Email = "blair.fischer@example.com",
                 JobTitle = "People Operations",
                 HireDate = new DateOnly(2022, 8, 1),
-                DepartmentId = hr.Id
+                DepartmentId = hrId
             },
             new()
             {
@@ -157,7 +177,7 @@ public static class HrDashboardDbInitializer
                 Email = "cameron.yilmaz@example.com",
                 JobTitle = "Recruiter",
                 HireDate = new DateOnly(2024, 5, 20),
-                DepartmentId = hr.Id
+                DepartmentId = hrId
             },
             new()
             {
@@ -166,7 +186,7 @@ public static class HrDashboardDbInitializer
                 Email = "dana.costa@example.com",
                 JobTitle = "HR Coordinator",
                 HireDate = new DateOnly(2023, 7, 10),
-                DepartmentId = hr.Id
+                DepartmentId = hrId
             },
             new()
             {
@@ -175,7 +195,7 @@ public static class HrDashboardDbInitializer
                 Email = "emerson.varga@example.com",
                 JobTitle = "Compensation Analyst",
                 HireDate = new DateOnly(2019, 2, 25),
-                DepartmentId = hr.Id
+                DepartmentId = hrId
             },
             new()
             {
@@ -184,7 +204,7 @@ public static class HrDashboardDbInitializer
                 Email = "finley.osei@example.com",
                 JobTitle = "L&D Specialist",
                 HireDate = new DateOnly(2021, 12, 6),
-                DepartmentId = hr.Id
+                DepartmentId = hrId
             },
             new()
             {
@@ -193,7 +213,7 @@ public static class HrDashboardDbInitializer
                 Email = "harper.silva@example.com",
                 JobTitle = "SDR",
                 HireDate = new DateOnly(2024, 9, 9),
-                DepartmentId = sales.Id
+                DepartmentId = salesId
             },
             new()
             {
@@ -202,7 +222,7 @@ public static class HrDashboardDbInitializer
                 Email = "indigo.kowalski@example.com",
                 JobTitle = "Account Executive",
                 HireDate = new DateOnly(2022, 3, 14),
-                DepartmentId = sales.Id
+                DepartmentId = salesId
             },
             new()
             {
@@ -211,7 +231,7 @@ public static class HrDashboardDbInitializer
                 Email = "jules.antonov@example.com",
                 JobTitle = "Sales Engineer",
                 HireDate = new DateOnly(2020, 11, 30),
-                DepartmentId = sales.Id
+                DepartmentId = salesId
             },
             new()
             {
@@ -220,7 +240,7 @@ public static class HrDashboardDbInitializer
                 Email = "kendall.mensah@example.com",
                 JobTitle = "Regional Manager",
                 HireDate = new DateOnly(2016, 5, 2),
-                DepartmentId = sales.Id
+                DepartmentId = salesId
             },
             new()
             {
@@ -229,7 +249,7 @@ public static class HrDashboardDbInitializer
                 Email = "logan.petrovic@example.com",
                 JobTitle = "BDR",
                 HireDate = new DateOnly(2025, 1, 13),
-                DepartmentId = sales.Id
+                DepartmentId = salesId
             },
             new()
             {
@@ -238,7 +258,7 @@ public static class HrDashboardDbInitializer
                 Email = "marlowe.ibrahim@example.com",
                 JobTitle = "Key Account Manager",
                 HireDate = new DateOnly(2019, 8, 26),
-                DepartmentId = sales.Id
+                DepartmentId = salesId
             },
             new()
             {
@@ -247,7 +267,7 @@ public static class HrDashboardDbInitializer
                 Email = "nico.watanabe@example.com",
                 JobTitle = "Channel Partner Manager",
                 HireDate = new DateOnly(2023, 4, 24),
-                DepartmentId = sales.Id
+                DepartmentId = salesId
             },
             new()
             {
@@ -256,7 +276,7 @@ public static class HrDashboardDbInitializer
                 Email = "oakley.rossi@example.com",
                 JobTitle = "Account Executive",
                 HireDate = new DateOnly(2021, 6, 7),
-                DepartmentId = sales.Id
+                DepartmentId = salesId
             },
             new()
             {
@@ -265,7 +285,7 @@ public static class HrDashboardDbInitializer
                 Email = "parker.lindqvist@example.com",
                 JobTitle = "Sales Operations",
                 HireDate = new DateOnly(2022, 12, 12),
-                DepartmentId = sales.Id
+                DepartmentId = salesId
             },
             new()
             {
@@ -274,7 +294,7 @@ public static class HrDashboardDbInitializer
                 Email = "rowan.alvarez@example.com",
                 JobTitle = "Enterprise AE",
                 HireDate = new DateOnly(2018, 4, 3),
-                DepartmentId = sales.Id
+                DepartmentId = salesId
             },
             new()
             {
@@ -283,7 +303,7 @@ public static class HrDashboardDbInitializer
                 Email = "sage.thompson@example.com",
                 JobTitle = "Customer Success",
                 HireDate = new DateOnly(2023, 8, 21),
-                DepartmentId = sales.Id
+                DepartmentId = salesId
             },
             new()
             {
@@ -292,70 +312,83 @@ public static class HrDashboardDbInitializer
                 Email = "tatum.nwosu@example.com",
                 JobTitle = "SDR",
                 HireDate = new DateOnly(2024, 11, 4),
-                DepartmentId = sales.Id
+                DepartmentId = salesId
             }
         };
-
-        var rng = new Random(42);
-        foreach (var e in employees)
-        {
-            // Most staff share the standard annual; a minority have a higher seniority/role grant.
-            e.AnnualPtoDays = rng.Next(100) < 84 ? 15m : 20m;
-        }
-
-        context.Employees.AddRange(employees);
-        context.SaveChanges();
-
-        context.LeaveRequests.AddRange(BuildSampleLeaveRequests(employees, rng));
-        context.SaveChanges();
     }
 
     /// <summary>
-    /// Deterministic PTO usage for the mock year (2026): approved days in Q1–Q2, pending in H2, some rejections.
+    /// Leave spanning the current calendar year: past approved usage, upcoming approved/pending (visible near "today"),
+    /// and a few rejections for variety.
     /// </summary>
     private static IEnumerable<LeaveRequest> BuildSampleLeaveRequests(
         IReadOnlyList<Employee> employees,
-        Random rng)
+        Random rng,
+        DateOnly today)
     {
-        var approvedPool = DatesOnWeekday(new DateOnly(2026, 1, 1), new DateOnly(2026, 5, 15), DayOfWeek.Wednesday);
-        var pendingPool = DatesOnWeekday(new DateOnly(2026, 7, 1), new DateOnly(2026, 11, 30), DayOfWeek.Wednesday);
         var leaves = new List<LeaveRequest>();
+        var year = today.Year;
+        var yearStart = new DateOnly(year, 1, 1);
+        var pastEnd = today.AddDays(-1);
 
-        foreach (var emp in employees)
+        // Approved leave already taken this year (before today)
+        if (pastEnd >= yearStart)
         {
-            var approvedPick = approvedPool.OrderBy(_ => rng.Next()).ToList();
-            var nApproved = rng.Next(0, 8);
-            for (var i = 0; i < nApproved && i < approvedPick.Count; i++)
+            var pastPool = DatesOnWeekday(yearStart, pastEnd, DayOfWeek.Wednesday);
+            foreach (var emp in employees)
             {
-                var d = approvedPick[i];
-                leaves.Add(
-                    new LeaveRequest
-                    {
-                        EmployeeId = emp.Id,
-                        StartDate = d,
-                        EndDate = d,
-                        Status = LeaveRequestStatus.Approved
-                    });
+                var n = rng.Next(0, 6);
+                foreach (var d in pastPool.OrderBy(_ => rng.Next()).Take(n))
+                {
+                    leaves.Add(
+                        new LeaveRequest
+                        {
+                            EmployeeId = emp.Id,
+                            StartDate = d,
+                            EndDate = d,
+                            Status = LeaveRequestStatus.Approved
+                        });
+                }
             }
+        }
 
-            var pendingPick = pendingPool.OrderBy(_ => rng.Next()).ToList();
-            var nPending = rng.Next(0, 4);
-            for (var j = 0; j < nPending && j < pendingPick.Count; j++)
-            {
-                var d = pendingPick[j];
-                leaves.Add(
-                    new LeaveRequest
-                    {
-                        EmployeeId = emp.Id,
-                        StartDate = d,
-                        EndDate = d,
-                        Status = LeaveRequestStatus.Pending
-                    });
-            }
+        // Upcoming approved — staggered over the next ~3 weeks so the matrix shows near-term approved days
+        var upcomingHorizon = today.AddDays(21);
+        for (var i = 0; i < employees.Count; i++)
+        {
+            var d = today.AddDays(i % 22);
+            if (d > upcomingHorizon)
+                d = upcomingHorizon;
+            leaves.Add(
+                new LeaveRequest
+                {
+                    EmployeeId = employees[i].Id,
+                    StartDate = d,
+                    EndDate = d,
+                    Status = LeaveRequestStatus.Approved
+                });
+        }
 
-            if (rng.Next(100) < 30)
+        // Upcoming pending — next two weeks, overlapping requests for visibility on pending totals
+        for (var i = 0; i < employees.Count; i++)
+        {
+            var d = today.AddDays((i * 2) % 14);
+            leaves.Add(
+                new LeaveRequest
+                {
+                    EmployeeId = employees[i].Id,
+                    StartDate = d,
+                    EndDate = d.AddDays(1),
+                    Status = LeaveRequestStatus.Pending
+                });
+        }
+
+        // Rejections (past)
+        foreach (var emp in employees.Where(_ => rng.Next(100) < 35))
+        {
+            var d = today.AddDays(-rng.Next(10, 60));
+            if (d >= yearStart && d < today)
             {
-                var d = new DateOnly(2026, 3, 11);
                 leaves.Add(
                     new LeaveRequest
                     {
@@ -363,7 +396,7 @@ public static class HrDashboardDbInitializer
                         StartDate = d,
                         EndDate = d,
                         Status = LeaveRequestStatus.Rejected,
-                        Notes = "Blackout / coverage"
+                        Notes = "Coverage / blackout"
                     });
             }
         }
@@ -371,9 +404,94 @@ public static class HrDashboardDbInitializer
         return leaves;
     }
 
+    /// <summary>
+    /// Ledger accrual (batch), usage on rolling upcoming days (calendar + ledger tab), and adjustments.
+    /// </summary>
+    private static IEnumerable<PtoLedgerEntry> BuildSamplePtoLedgerEntries(
+        IReadOnlyList<Employee> employees,
+        DateOnly today,
+        Random rng)
+    {
+        var list = new List<PtoLedgerEntry>();
+        var now = DateTimeOffset.UtcNow;
+        var year = today.Year;
+        var yearStart = new DateOnly(year, 1, 1);
+
+        var accrualEffective = today.AddDays(-45);
+        if (accrualEffective < yearStart)
+            accrualEffective = yearStart.AddDays(3);
+        if (accrualEffective > today)
+            accrualEffective = today.AddDays(-10);
+
+        var accrualBatch = Guid.NewGuid();
+        foreach (var emp in employees.Where((_, i) => i % 3 == 0))
+        {
+            list.Add(
+                new PtoLedgerEntry
+                {
+                    EmployeeId = emp.Id,
+                    EntryType = PtoLedgerEntryType.Accrual,
+                    Amount = 1m,
+                    EffectiveDate = accrualEffective,
+                    Note = "Policy accrual (demo)",
+                    CreatedAt = now.AddDays(-14),
+                    BatchId = accrualBatch
+                });
+        }
+
+        // Usage entries — next several weeks so month/agenda calendar views show events starting today
+        const int usageDays = 24;
+        for (var k = 0; k < usageDays; k++)
+        {
+            var d = today.AddDays(k);
+            var emp = employees[k % employees.Count];
+            var half = k % 3 != 0;
+            list.Add(
+                new PtoLedgerEntry
+                {
+                    EmployeeId = emp.Id,
+                    EntryType = PtoLedgerEntryType.Usage,
+                    Amount = half ? 0.5m : 1m,
+                    EffectiveDate = d,
+                    Note = k % 7 == 0 ? "Scheduled PTO (demo)" : null,
+                    CreatedAt = now.AddMinutes(-k * 13 - rng.Next(120))
+                });
+        }
+
+        // Adjustments — mix of past corrections in the current year
+        var adjDate = today.AddDays(-rng.Next(5, 40));
+        if (adjDate < yearStart)
+            adjDate = yearStart.AddDays(10);
+        list.Add(
+            new PtoLedgerEntry
+            {
+                EmployeeId = employees[1].Id,
+                EntryType = PtoLedgerEntryType.Adjustment,
+                Amount = -0.5m,
+                EffectiveDate = adjDate,
+                Note = "Correction (demo)",
+                CreatedAt = now.AddDays(-3)
+            });
+        list.Add(
+            new PtoLedgerEntry
+            {
+                EmployeeId = employees[Math.Min(5, employees.Count - 1)].Id,
+                EntryType = PtoLedgerEntryType.Adjustment,
+                Amount = 1m,
+                EffectiveDate = today.AddDays(-2),
+                Note = "Manual grant (demo)",
+                CreatedAt = now.AddDays(-1)
+            });
+
+        return list;
+    }
+
     private static List<DateOnly> DatesOnWeekday(DateOnly from, DateOnly to, DayOfWeek weekday)
     {
         var list = new List<DateOnly>();
+        if (from > to)
+            return list;
+
         for (var d = from; d <= to; d = d.AddDays(1))
         {
             if (d.DayOfWeek == weekday)

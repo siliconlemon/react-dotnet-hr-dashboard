@@ -24,9 +24,7 @@ public class PtoLedgerEntry
 
     public DateTimeOffset CreatedAt { get; set; }
 
-    /// <summary>
-    /// Legacy/free-form actor label when no user FK is set (e.g. <c>local</c>, imports).
-    /// </summary>
+    /// <summary>Optional label when <see cref="CreatedByUserId"/> is null (imports, seeded rows).</summary>
     public string? CreatedBy { get; set; }
 
     /// <summary>Optional FK to the app user who created this row (preferred over <see cref="CreatedBy"/>).</summary>

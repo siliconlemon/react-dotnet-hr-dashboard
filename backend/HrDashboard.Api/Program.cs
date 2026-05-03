@@ -84,6 +84,12 @@ app.MapControllers();
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<HrDashboardDbContext>();
+    if (app.Environment.IsDevelopment()
+        && app.Configuration.GetValue<bool>("Database:ResetOnStartup"))
+    {
+        db.Database.EnsureDeleted();
+    }
+
     db.Database.Migrate();
     HrDashboardDbInitializer.Seed(db);
     AppUserSeed.EnsureDemoUser(db);
