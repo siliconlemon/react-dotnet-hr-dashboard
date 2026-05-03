@@ -12,6 +12,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type SyntheticEvent 
 import { fetchEmployees, fetchPtoBalance } from '../../api/employeesApi';
 import type { EmployeeReadDto, PtoBalanceDto } from '../../api/types';
 import { strings } from '../../i18n';
+import { useDataGridLocaleText } from '../../i18n/useDataGridLocaleText';
 import { formatDateOnly } from '../../utils/formatDate';
 import { EmployeeDetailCards } from './EmployeeDetailCards';
 import { EmployeeDetailFieldsPicker } from './EmployeeDetailFieldsPicker';
@@ -149,6 +150,8 @@ export function EmployeesView({ onViewTabChange }: EmployeesViewProps) {
     resetProfile: resetDetailProfileFields,
     resetPto: resetDetailPtoFields,
   } = useEmployeeDetailFieldVisibility();
+
+  const dataGridLocaleText = useDataGridLocaleText();
 
   const reloadEmployees = useCallback(async (signal?: AbortSignal) => {
     setLoading(true);
@@ -474,6 +477,7 @@ export function EmployeesView({ onViewTabChange }: EmployeesViewProps) {
                   loading={loading}
                   getRowId={(row) => row.id}
                   density="compact"
+                  localeText={dataGridLocaleText}
                   label={strings.employees.title}
                   showToolbar
                   filterModel={filterModel}

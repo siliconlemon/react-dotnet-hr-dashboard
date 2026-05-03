@@ -1,7 +1,9 @@
 import type {} from '@mui/x-data-grid/themeAugmentation';
 import type {} from '@mui/x-date-pickers/themeAugmentation';
 import type { PaletteMode } from '@mui/material';
+import { csCZ, enUS } from '@mui/material/locale';
 import { alpha, createTheme, type Theme } from '@mui/material/styles';
+import type { Locale } from '../i18n';
 import { EMPLOYEE_CARD_ACCENTS } from './employeeCardPalette';
 
 /**
@@ -162,7 +164,9 @@ function baselineScrollbarChrome(theme: Theme) {
  * Compact enterprise theme: navy primary in light mode, sky primary in dark mode; gold warnings;
  * cool blue-gray surfaces (light) or navy-tinted dark surfaces.
  */
-export function createEnterpriseTheme(mode: PaletteMode = 'light') {
+export function createEnterpriseTheme(mode: PaletteMode = 'light', uiLocale: Locale = 'en') {
+  const materialLocale = uiLocale === 'cs' ? csCZ : enUS;
+
   return createTheme({
     employeeCard: {
       accents: EMPLOYEE_CARD_ACCENTS,
@@ -626,5 +630,5 @@ export function createEnterpriseTheme(mode: PaletteMode = 'light') {
       },
     },
   },
-});
+}, materialLocale);
 }

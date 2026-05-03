@@ -8,11 +8,11 @@ import { ColorModeProvider } from './theme/ColorModeProvider';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <ColorModeProvider>
-      <LocaleProvider>
+    <LocaleProvider>
+      <ColorModeProvider>
         <CssBaseline />
         <AppWithPickers />
-      </LocaleProvider>
-    </ColorModeProvider>
+      </ColorModeProvider>
+    </LocaleProvider>
   </StrictMode>,
 );

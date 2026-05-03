@@ -14,6 +14,7 @@ import { forwardRef, useCallback, useEffect, useMemo, useState } from 'react';
 import { fetchDepartmentPtoMatrix } from '../../api/departmentsApi';
 import type { DepartmentPtoMatrixResponseDto } from '../../api/types';
 import { strings } from '../../i18n';
+import { useDataGridLocaleText } from '../../i18n/useDataGridLocaleText';
 import { EMPLOYEE_CARD_ACCENTS, getDepartmentAccent, getDepartmentAccentIndex } from '../../theme/employeeCardPalette';
 import { formatDateOnly } from '../../utils/formatDate';
 import { formatPtoDays } from '../../utils/formatPto';
@@ -264,6 +265,7 @@ const DepartmentsPagination = forwardRef<HTMLDivElement, DepartmentsPaginationPr
 
 export function DepartmentsView() {
   const theme = useTheme();
+  const dataGridLocaleText = useDataGridLocaleText();
   const [matrix, setMatrix] = useState<DepartmentPtoMatrixResponseDto | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -540,6 +542,7 @@ export function DepartmentsView() {
           pageSizeOptions={pageSizeOptions}
           slots={{ basePagination: DepartmentsPagination }}
           localeText={{
+            ...dataGridLocaleText,
             paginationDisplayedRows: ({ from, to, count }) => {
               if (count == null || count < 0) {
                 return `${from}–${to}`;

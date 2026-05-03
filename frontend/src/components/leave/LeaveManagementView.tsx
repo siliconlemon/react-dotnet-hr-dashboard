@@ -42,6 +42,7 @@ import type {
   PtoLedgerEntryTypeDto,
 } from '../../api/types';
 import { dayjsPickerDateFormat, strings } from '../../i18n';
+import { useDataGridLocaleText } from '../../i18n/useDataGridLocaleText';
 import { EmployeePickerField } from '../employees/EmployeePickerField';
 import { formatDateOnly, formatDateTime } from '../../utils/formatDate';
 import { formatPtoDays } from '../../utils/formatPto';
@@ -99,6 +100,8 @@ export function LeaveManagementView() {
   const [dialogNote, setDialogNote] = useState('');
   const [dialogSubmitting, setDialogSubmitting] = useState(false);
   const [dialogError, setDialogError] = useState<string | null>(null);
+
+  const dataGridLocaleText = useDataGridLocaleText();
 
   useEffect(() => {
     const ac = new AbortController();
@@ -582,6 +585,7 @@ export function LeaveManagementView() {
             columns={columns}
             getRowId={(r) => r.id}
             density="compact"
+            localeText={dataGridLocaleText}
             label={strings.leave.title}
             loading={gridLoading}
             paginationMode="server"

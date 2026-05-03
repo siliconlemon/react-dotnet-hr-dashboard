@@ -8,6 +8,7 @@ import {
   useState,
   type ReactNode,
 } from 'react';
+import { useLocale } from '../i18n/useLocale';
 import { createEnterpriseTheme } from './enterpriseTheme';
 
 export const COLOR_MODE_STORAGE_KEY = 'hr-dashboard-color-mode';
@@ -44,6 +45,7 @@ export type ColorModeContextValue = {
 export const ColorModeContext = createContext<ColorModeContextValue | undefined>(undefined);
 
 export function ColorModeProvider({ children }: { children: ReactNode }) {
+  const { locale } = useLocale();
   const [mode, setModeState] = useState<PaletteMode>(() => readStoredColorMode());
 
   const setMode = useCallback((next: PaletteMode) => {
@@ -55,7 +57,7 @@ export function ColorModeProvider({ children }: { children: ReactNode }) {
     setModeState(next);
   }, []);
 
-  const theme = useMemo(() => createEnterpriseTheme(mode), [mode]);
+  const theme = useMemo(() => createEnterpriseTheme(mode, locale), [mode, locale]);
 
   useLayoutEffect(() => {
     applyDocumentColorScheme(mode);
