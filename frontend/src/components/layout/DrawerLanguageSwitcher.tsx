@@ -30,14 +30,18 @@ function localePrimaryLabel(id: Locale): string {
   return labels[id];
 }
 
+import type { DrawerTrailingFade } from './DrawerThemeSwitcher';
+
 type DrawerLanguageSwitcherProps = {
   /** Desktop drawer collapsed to icon rail — compact trigger + menu. */
   collapsed: boolean;
   /** Mobile temporary drawer — always show expanded control. */
   mobile: boolean;
+  /** Expanded desktop row: fade only the language control while the drawer rail collapses. */
+  trailingFade?: DrawerTrailingFade;
 };
 
-export function DrawerLanguageSwitcher({ collapsed, mobile }: DrawerLanguageSwitcherProps) {
+export function DrawerLanguageSwitcher({ collapsed, mobile, trailingFade }: DrawerLanguageSwitcherProps) {
   const { locale, setLocale } = useLocale();
   const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null);
   const menuOpen = Boolean(menuAnchor);
@@ -141,7 +145,17 @@ export function DrawerLanguageSwitcher({ collapsed, mobile }: DrawerLanguageSwit
               }}
             />
           </Box>
-          <Box sx={{ flex: 1, minWidth: 0 }}>
+          <Box
+            sx={{
+              flex: 1,
+              minWidth: 0,
+              ...(trailingFade != null && {
+                opacity: trailingFade.active ? 0 : 1,
+                transition: trailingFade.transition,
+                pointerEvents: trailingFade.active ? 'none' : 'auto',
+              }),
+            }}
+          >
             <Button
               fullWidth
               variant="outlined"

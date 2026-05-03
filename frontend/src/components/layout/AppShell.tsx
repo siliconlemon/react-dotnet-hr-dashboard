@@ -22,8 +22,10 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material';
+import { useMediaQuery } from '@mui/material';
+import type { PaperProps } from '@mui/material/Paper';
 import { useTheme, type Theme } from '@mui/material/styles';
-import { Fragment, useState, type ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { faviconHrefForMode } from '../../constants/faviconUrl';
 import { strings } from '../../i18n';
 import { DrawerLanguageSwitcher } from './DrawerLanguageSwitcher';
@@ -144,13 +146,61 @@ export function AppShell({ children, activeNavKey, onNavKeyChange, breadcrumbIte
   const theme = useTheme();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
+  /**
+   * Nav/header chrome stays “expanded” until the drawer `width` transition ends so labels clip with the rail.
+   * When minimizing, nav labels and theme/locale trailing use the same opacity fade (half `enteringScreen`); on
+   * expand (after width finishes), nav labels swipe in with translate/scale and footer trailing fades in.
+   */
+  const [iconRailMode, setIconRailMode] = useState(false);
+  /** One-shot after expand: paint expanded chrome “hidden” then transition in (sync with footer trailing fade-in). */
+  const [expandChromeRevealPending, setExpandChromeRevealPending] = useState(false);
+  const prefersReducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)');
+  /** Icon-only drawer chrome: follows `collapsed` immediately when reduced motion; otherwise after width transition. */
+  const drawerRailLayout = prefersReducedMotion ? collapsed : iconRailMode;
 
   const drawerWidth = collapsed ? DRAWER_COLLAPSED_PX : DRAWER_EXPANDED_PX;
+
+  const collapseDesktopDrawer = () => {
+    setExpandChromeRevealPending(false);
+    setCollapsed(true);
+  };
+
+  const handleDesktopDrawerPaperTransitionEnd: NonNullable<PaperProps['onTransitionEnd']> = (e) => {
+    if (prefersReducedMotion) return;
+    if (e.target !== e.currentTarget) return;
+    if (e.propertyName !== 'width') return;
+    if (collapsed) {
+      setExpandChromeRevealPending(false);
+    }
+    const wasRail = iconRailMode;
+    setIconRailMode(collapsed);
+    if (!collapsed && wasRail) {
+      setExpandChromeRevealPending(true);
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => setExpandChromeRevealPending(false));
+      });
+    }
+  };
 
   const drawerPaperTransition = theme.transitions.create('width', {
     easing: theme.transitions.easing.sharp,
     duration: theme.transitions.duration.enteringScreen,
   });
+
+  const drawerFooterFadeMs = Math.round(theme.transitions.duration.enteringScreen / 2);
+  const drawerFooterFadeTransition = prefersReducedMotion
+    ? 'none'
+    : theme.transitions.create('opacity', {
+        easing: theme.transitions.easing.sharp,
+        duration: drawerFooterFadeMs,
+      });
+
+  const navLabelRevealTransition = prefersReducedMotion
+    ? 'none'
+    : theme.transitions.create(['opacity', 'transform'], {
+        easing: theme.transitions.easing.sharp,
+        duration: drawerFooterFadeMs,
+      });
 
   const appBarShift = theme.transitions.create(['width', 'margin'], {
     easing: theme.transitions.easing.sharp,
@@ -159,7 +209,9 @@ export function AppShell({ children, activeNavKey, onNavKeyChange, breadcrumbIte
 
   const renderNavList = (options: { mobile: boolean }) => {
     const { mobile } = options;
-    const iconOnly = !mobile && collapsed;
+    const iconOnly = !mobile && drawerRailLayout;
+    const navLabelMinimizeFadeOut = !mobile && collapsed && !drawerRailLayout;
+    const navLabelExpandReveal = !mobile && expandChromeRevealPending;
 
     const navItems: Array<{ key: NavKey; label: string; icon: React.ReactElement }> = [
       { key: 'dashboard', label: strings.nav.dashboard, icon: <DashboardOutlined fontSize="small" /> },
@@ -247,29 +299,51 @@ export function AppShell({ children, activeNavKey, onNavKeyChange, breadcrumbIte
                 {item.icon}
               </ListItemIcon>
               {!iconOnly && (
-                <ListItemText
-                  primary={item.label}
-                  slotProps={{
-                    primary: {
-                      variant: 'body2',
-                      noWrap: true,
-                      sx: { fontWeight: 600, letterSpacing: '0.04em' },
-                    },
+                <Box
+                  sx={{
+                    flex: '1 1 auto',
+                    minWidth: 0,
+                    ...(!mobile && {
+                      opacity: navLabelMinimizeFadeOut || navLabelExpandReveal ? 0 : 1,
+                      transform: navLabelExpandReveal
+                        ? 'translateX(-8px) scale(0.98)'
+                        : 'translateX(0) scale(1)',
+                      transition: prefersReducedMotion
+                        ? 'none'
+                        : navLabelMinimizeFadeOut
+                          ? drawerFooterFadeTransition
+                          : navLabelRevealTransition,
+                      transformOrigin: 'left center',
+                    }),
                   }}
-                  sx={{ flex: '1 1 auto', minWidth: 0 }}
-                />
+                >
+                  <ListItemText
+                    primary={item.label}
+                    slotProps={{
+                      primary: {
+                        variant: 'body2',
+                        noWrap: true,
+                        sx: { fontWeight: 600, letterSpacing: '0.04em' },
+                      },
+                    }}
+                    sx={{ flex: '1 1 auto', minWidth: 0 }}
+                  />
+                </Box>
               )}
             </ListItemButton>
           );
-          if (iconOnly) {
-            return (
-              <Tooltip key={item.key} title={item.label} placement="right" arrow>
-                {button}
-              </Tooltip>
-            );
-          }
           return (
-            <Fragment key={item.key}>{button}</Fragment>
+            <Tooltip
+              key={item.key}
+              title={iconOnly ? item.label : ''}
+              placement="right"
+              arrow
+              disableHoverListener={!iconOnly}
+              disableFocusListener={!iconOnly}
+              disableTouchListener={!iconOnly}
+            >
+              {button}
+            </Tooltip>
           );
         })}
       </List>
@@ -280,6 +354,11 @@ export function AppShell({ children, activeNavKey, onNavKeyChange, breadcrumbIte
     <Drawer
       variant="permanent"
       open
+      slotProps={{
+        paper: {
+          onTransitionEnd: handleDesktopDrawerPaperTransitionEnd,
+        },
+      }}
       sx={{
         display: { xs: 'none', md: 'block' },
         '& .MuiDrawer-paper': {
@@ -305,13 +384,14 @@ export function AppShell({ children, activeNavKey, onNavKeyChange, breadcrumbIte
         sx={{
           minHeight: 48,
           pl: 1,
-          pr: collapsed ? 0.5 : drawerToolbarInsetX,
-          justifyContent: collapsed ? 'flex-start' : 'space-between',
+          pr: drawerRailLayout ? 0.5 : drawerToolbarInsetX,
+          justifyContent: drawerRailLayout ? 'flex-start' : 'space-between',
           alignItems: 'center',
           flexShrink: 0,
+          overflow: 'hidden',
         }}
       >
-        {collapsed ? (
+        {drawerRailLayout ? (
           <IconButton
             onClick={() => setCollapsed(false)}
             aria-label={strings.shell.expandSidebar}
@@ -325,7 +405,7 @@ export function AppShell({ children, activeNavKey, onNavKeyChange, breadcrumbIte
             title={strings.shell.brandFull}
             endSlot={
               <IconButton
-                onClick={() => setCollapsed(true)}
+                onClick={collapseDesktopDrawer}
                 aria-label={strings.shell.collapseSidebar}
                 size="small"
               >
@@ -346,9 +426,32 @@ export function AppShell({ children, activeNavKey, onNavKeyChange, breadcrumbIte
       >
         {renderNavList({ mobile: false })}
       </Box>
-      <Box sx={{ px: DRAWER_NAV_LIST_OUTER_GUTTER_SPACING, flexShrink: 0 }}>
-        <DrawerThemeSwitcher collapsed={collapsed} mobile={false} />
-        <DrawerLanguageSwitcher collapsed={collapsed} mobile={false} />
+      <Box sx={{ px: DRAWER_NAV_LIST_OUTER_GUTTER_SPACING, flexShrink: 0, position: 'relative' }}>
+        {!drawerRailLayout ? (
+          <>
+            <DrawerThemeSwitcher
+              collapsed={false}
+              mobile={false}
+              trailingFade={{
+                active: collapsed || expandChromeRevealPending,
+                transition: drawerFooterFadeTransition,
+              }}
+            />
+            <DrawerLanguageSwitcher
+              collapsed={false}
+              mobile={false}
+              trailingFade={{
+                active: collapsed || expandChromeRevealPending,
+                transition: drawerFooterFadeTransition,
+              }}
+            />
+          </>
+        ) : (
+          <>
+            <DrawerThemeSwitcher collapsed mobile={false} />
+            <DrawerLanguageSwitcher collapsed mobile={false} />
+          </>
+        )}
       </Box>
     </Drawer>
   );

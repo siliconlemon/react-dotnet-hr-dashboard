@@ -23,12 +23,20 @@ import { useColorMode } from '../../theme/useColorMode';
 const NAV_ICON_SLOT_PX = 40;
 const NAV_SVG_ICON_PX = 20;
 
+export type DrawerTrailingFade = {
+  /** When true, trailing controls (not the leading icon) render at opacity 0. */
+  active: boolean;
+  transition: string;
+};
+
 type DrawerThemeSwitcherProps = {
   collapsed: boolean;
   mobile: boolean;
+  /** Expanded desktop row: fade only the toggle group while the drawer rail collapses. */
+  trailingFade?: DrawerTrailingFade;
 };
 
-export function DrawerThemeSwitcher({ collapsed, mobile }: DrawerThemeSwitcherProps) {
+export function DrawerThemeSwitcher({ collapsed, mobile, trailingFade }: DrawerThemeSwitcherProps) {
   const { mode, setMode } = useColorMode();
   const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null);
   const menuOpen = Boolean(menuAnchor);
@@ -210,7 +218,19 @@ export function DrawerThemeSwitcher({ collapsed, mobile }: DrawerThemeSwitcherPr
               }}
             />
           </Box>
-          <Box sx={{ flex: 1, minWidth: 0 }}>{toggleGroup}</Box>
+          <Box
+            sx={{
+              flex: 1,
+              minWidth: 0,
+              ...(trailingFade != null && {
+                opacity: trailingFade.active ? 0 : 1,
+                transition: trailingFade.transition,
+                pointerEvents: trailingFade.active ? 'none' : 'auto',
+              }),
+            }}
+          >
+            {toggleGroup}
+          </Box>
         </Box>
       )}
     </Box>
