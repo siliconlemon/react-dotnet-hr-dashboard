@@ -89,11 +89,18 @@ const leaveFilterFieldLineHeight = 1.5;
 export type LeaveManagementViewTab = 'ledger' | 'calendar';
 
 type LeaveManagementViewProps = {
-  onViewTabChange?: (tab: LeaveManagementViewTab) => void;
+  viewTab: LeaveManagementViewTab;
+  onViewTabChange: (tab: LeaveManagementViewTab) => void;
+  leaveCalendarView: 'month' | 'agenda';
+  onLeaveCalendarViewChange: (view: 'month' | 'agenda') => void;
 };
 
-export function LeaveManagementView({ onViewTabChange }: LeaveManagementViewProps) {
-  const [viewTab, setViewTab] = useState<LeaveManagementViewTab>('ledger');
+export function LeaveManagementView({
+  viewTab,
+  onViewTabChange,
+  leaveCalendarView,
+  onLeaveCalendarViewChange,
+}: LeaveManagementViewProps) {
   const [employees, setEmployees] = useState<EmployeeReadDto[]>([]);
   const [departments, setDepartments] = useState<DepartmentReadDto[]>([]);
   const [loadMetaError, setLoadMetaError] = useState<string | null>(null);
@@ -128,13 +135,12 @@ export function LeaveManagementView({ onViewTabChange }: LeaveManagementViewProp
 
   const dataGridLocaleText = useDataGridLocaleText();
 
-  useEffect(() => {
-    onViewTabChange?.(viewTab);
-  }, [viewTab, onViewTabChange]);
-
-  const handleViewTabChange = useCallback((_: SyntheticEvent, value: LeaveManagementViewTab) => {
-    setViewTab(value);
-  }, []);
+  const handleViewTabChange = useCallback(
+    (_: SyntheticEvent, value: LeaveManagementViewTab) => {
+      onViewTabChange(value);
+    },
+    [onViewTabChange],
+  );
 
   useEffect(() => {
     const ac = new AbortController();
@@ -760,7 +766,11 @@ export function LeaveManagementView({ onViewTabChange }: LeaveManagementViewProp
                 theme.transitions.create(['opacity', 'visibility'], { duration: 120 }),
             }}
           >
-            <LeaveCalendarTab onSelectDaysForLedger={openDialogFromCalendarRange} />
+            <LeaveCalendarTab
+              onSelectDaysForLedger={openDialogFromCalendarRange}
+              calendarView={leaveCalendarView}
+              onCalendarViewChange={onLeaveCalendarViewChange}
+            />
           </Box>
         </Box>
 

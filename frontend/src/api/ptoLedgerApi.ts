@@ -1,3 +1,4 @@
+import { apiFetch } from './http';
 import type {
   PtoLedgerCreateDto,
   PtoLedgerEntryReadDto,
@@ -61,7 +62,7 @@ export async function fetchPtoLedgerPage(
   if (params.entryType) qs.set('entryType', params.entryType);
   qs.set('page', String(params.page));
   qs.set('pageSize', String(params.pageSize));
-  const res = await fetch(`/api/pto-ledger?${qs.toString()}`, { headers: jsonHeaders, signal });
+  const res = await apiFetch(`/api/pto-ledger?${qs.toString()}`, { headers: jsonHeaders, signal });
   if (!res.ok) {
     throw new Error('pto_ledger_fetch_failed');
   }
@@ -75,7 +76,7 @@ export async function createPtoLedgerEntries(
   body: PtoLedgerCreateDto,
   signal?: AbortSignal,
 ): Promise<PtoLedgerEntryReadDto[]> {
-  const res = await fetch('/api/pto-ledger', {
+  const res = await apiFetch('/api/pto-ledger', {
     method: 'POST',
     headers: { ...jsonHeaders, 'Content-Type': 'application/json' },
     body: JSON.stringify(body),

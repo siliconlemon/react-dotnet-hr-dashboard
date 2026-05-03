@@ -1,5 +1,8 @@
-import { Box } from '@mui/material';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Box, CircularProgress } from '@mui/material';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { patchAccountSettings } from './api/accountApi';
+import { useAuth } from './auth/AuthContext';
+import { LoginView } from './components/auth/LoginView';
 import { DashboardView } from './components/dashboard/DashboardView';
 import { DepartmentsView } from './components/departments/DepartmentsView';
 import { EmployeesView, type EmployeesViewTab } from './components/employees/EmployeesView';
@@ -10,6 +13,7 @@ import {
 } from './components/leave/LeaveManagementView';
 import { strings } from './i18n';
 import { useLocale } from './i18n/useLocale';
+import { useColorMode } from './theme/useColorMode';
 
 const NAV_STORAGE_KEY = 'hr-dashboard-nav';
 
@@ -61,11 +65,18 @@ function leaveTabLabel(tab: LeaveManagementViewTab): string {
   }
 }
 
-function App() {
+export default function App() {
+  const { status, user, replaceUser } = useAuth();
+  const { mode } = useColorMode();
   const { locale } = useLocale();
+
   const [navKey, setNavKey] = useState<NavKey>(readStoredNavKey);
   const [employeesViewTab, setEmployeesViewTab] = useState<EmployeesViewTab>('directory');
   const [leaveViewTab, setLeaveViewTab] = useState<LeaveManagementViewTab>('ledger');
+  const [leaveCalendarView, setLeaveCalendarView] = useState<'month' | 'agenda'>('month');
+
+  const hydratedUserIdRef = useRef<number | null>(null);
+  const [leavePreferencesReady, setLeavePreferencesReady] = useState(false);
 
   useEffect(() => {
     document.title = strings.app.documentTitle;
@@ -78,6 +89,65 @@ function App() {
       /* ignore */
     }
   }, [navKey]);
+
+  useEffect(() => {
+    if (status !== 'authenticated') {
+      hydratedUserIdRef.current = null;
+      setLeavePreferencesReady(false);
+    }
+  }, [status]);
+
+  useEffect(() => {
+    if (status !== 'authenticated' || !user) {
+      return;
+    }
+    if (hydratedUserIdRef.current === user.id) {
+      return;
+    }
+    hydratedUserIdRef.current = user.id;
+    const s = user.settings;
+    setLeaveViewTab(s.leaveManagementTab === 'calendar' ? 'calendar' : 'ledger');
+    setLeaveCalendarView(s.leaveCalendarView === 'agenda' ? 'agenda' : 'month');
+    setLeavePreferencesReady(true);
+  }, [status, user]);
+
+  useEffect(() => {
+    if (status !== 'authenticated' || !user || !leavePreferencesReady) {
+      return;
+    }
+    const cur = user.settings;
+    const themeStr = mode === 'dark' ? 'dark' : 'light';
+    if (
+      cur.theme === themeStr &&
+      cur.uiLocale === locale &&
+      cur.leaveManagementTab === leaveViewTab &&
+      cur.leaveCalendarView === leaveCalendarView
+    ) {
+      return;
+    }
+
+    const handle = window.setTimeout(() => {
+      void patchAccountSettings({
+        theme: themeStr,
+        uiLocale: locale,
+        leaveManagementTab: leaveViewTab,
+        leaveCalendarView,
+      })
+        .then(replaceUser)
+        .catch(() => {});
+    }, 450);
+
+    return () => window.clearTimeout(handle);
+  }, [
+    status,
+    user,
+    leavePreferencesReady,
+    mode,
+    locale,
+    leaveViewTab,
+    leaveCalendarView,
+    replaceUser,
+  ]);
 
   const breadcrumbItems = useMemo(() => {
     void locale;
@@ -96,9 +166,6 @@ function App() {
     if (key !== 'employees') {
       setEmployeesViewTab('directory');
     }
-    if (key !== 'leave') {
-      setLeaveViewTab('ledger');
-    }
   }, []);
 
   const handleEmployeesViewTabChange = useCallback((tab: EmployeesViewTab) => {
@@ -109,19 +176,45 @@ function App() {
     setLeaveViewTab(tab);
   }, []);
 
+  const handleLeaveCalendarViewChange = useCallback((next: 'month' | 'agenda') => {
+    setLeaveCalendarView(next);
+  }, []);
+
+  if (status === 'loading') {
+    return (
+      <Box
+        sx={{
+          flex: 1,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          minHeight: '100%',
+          width: '100%',
+        }}
+      >
+        <CircularProgress aria-label={strings.auth.loadingSession} />
+      </Box>
+    );
+  }
+
+  if (status === 'unauthenticated') {
+    return <LoginView />;
+  }
+
   return (
     <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, width: '100%' }}>
-      <AppShell
-        activeNavKey={navKey}
-        onNavKeyChange={handleNavKeyChange}
-        breadcrumbItems={breadcrumbItems}
-      >
+      <AppShell activeNavKey={navKey} onNavKeyChange={handleNavKeyChange} breadcrumbItems={breadcrumbItems}>
         {navKey === 'employees' ? (
           <EmployeesView onViewTabChange={handleEmployeesViewTabChange} />
         ) : navKey === 'departments' ? (
           <DepartmentsView />
         ) : navKey === 'leave' ? (
-          <LeaveManagementView onViewTabChange={handleLeaveViewTabChange} />
+          <LeaveManagementView
+            viewTab={leaveViewTab}
+            onViewTabChange={handleLeaveViewTabChange}
+            leaveCalendarView={leaveCalendarView}
+            onLeaveCalendarViewChange={handleLeaveCalendarViewChange}
+          />
         ) : (
           <DashboardView />
         )}
@@ -129,5 +222,3 @@ function App() {
     </Box>
   );
 }
-
-export default App;

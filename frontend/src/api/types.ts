@@ -122,3 +122,35 @@ export type PtoLedgerCreateDto = {
   effectiveDate: string;
   note?: string | null;
 };
+
+/** Mirrors {@link HrDashboard.Api.Contracts.UserSettingsDto}. */
+export type UserSettingsDto = {
+  theme: string;
+  uiLocale: string;
+  leaveManagementTab: string;
+  leaveCalendarView: string;
+};
+
+/** Mirrors {@link HrDashboard.Api.Contracts.UserAccountDto}. */
+export type UserAccountDto = {
+  id: number;
+  email: string;
+  displayName: string;
+  emailConfirmed: boolean;
+  settings: UserSettingsDto;
+};
+
+/** Mirrors {@link HrDashboard.Api.Contracts.AuthResponseDto}. */
+export type AuthResponseDto = {
+  accessToken: string;
+  expiresAtUtc: string;
+  user: UserAccountDto;
+};
+
+/** Mirrors {@link HrDashboard.Api.Contracts.PatchUserSettingsDto}. */
+export type PatchUserSettingsDto = {
+  theme?: string | null;
+  uiLocale?: string | null;
+  leaveManagementTab?: string | null;
+  leaveCalendarView?: string | null;
+};

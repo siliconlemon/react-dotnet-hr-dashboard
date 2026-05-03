@@ -1,5 +1,6 @@
 using HrDashboard.Api.Contracts;
 using HrDashboard.Api.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HrDashboard.Api.Controllers;
@@ -9,6 +10,7 @@ namespace HrDashboard.Api.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/employees")]
+[Authorize]
 public sealed class EmployeesController : ControllerBase
 {
     private readonly IEmployeeService _employees;

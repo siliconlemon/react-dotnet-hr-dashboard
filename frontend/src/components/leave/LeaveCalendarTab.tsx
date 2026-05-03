@@ -67,16 +67,31 @@ const INITIAL_CALENDAR_PREFERENCES = sanitizeCalendarPreferences({
 export type LeaveCalendarTabProps = {
   /** When set, month view supports click / drag on days to open the ledger dialog with those dates prefilled. */
   onSelectDaysForLedger?: (range: { start: Dayjs; endInclusive: Dayjs }) => void;
+  /** When both are provided, the parent owns view state (e.g. persisted account settings). */
+  calendarView?: 'month' | 'agenda';
+  onCalendarViewChange?: (view: 'month' | 'agenda') => void;
 };
 
-export function LeaveCalendarTab({ onSelectDaysForLedger }: LeaveCalendarTabProps) {
+export function LeaveCalendarTab({
+  onSelectDaysForLedger,
+  calendarView: controlledView,
+  onCalendarViewChange,
+}: LeaveCalendarTabProps) {
   const theme = useTheme();
   const { locale } = useLocale();
   const dateLocale = locale === 'cs' ? cs : enUS;
   const calendarMountRef = useRef<HTMLDivElement | null>(null);
 
-  /** Controlled so defaults are not overridden by partial internal merges or remounts. Day/week hidden — see `views`. */
-  const [calendarView, setCalendarView] = useState<'month' | 'agenda'>('month');
+  const [uncontrolledView, setUncontrolledView] = useState<'month' | 'agenda'>('month');
+  let calendarView: 'month' | 'agenda';
+  let setCalendarView: (next: 'month' | 'agenda') => void;
+  if (controlledView !== undefined && onCalendarViewChange !== undefined) {
+    calendarView = controlledView;
+    setCalendarView = onCalendarViewChange;
+  } else {
+    calendarView = uncontrolledView;
+    setCalendarView = setUncontrolledView;
+  }
   const [calendarPreferences, setCalendarPreferences] =
     useState<EventCalendarPreferences>(INITIAL_CALENDAR_PREFERENCES);
 

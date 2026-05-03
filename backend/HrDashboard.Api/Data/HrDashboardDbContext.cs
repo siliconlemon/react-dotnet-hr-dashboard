@@ -21,6 +21,8 @@ public class HrDashboardDbContext : DbContext
 
     public DbSet<PtoLedgerEntry> PtoLedgerEntries => Set<PtoLedgerEntry>();
 
+    public DbSet<AppUser> AppUsers => Set<AppUser>();
+
     /// <inheritdoc />
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -63,6 +65,19 @@ public class HrDashboardDbContext : DbContext
                 .WithMany(e => e.PtoLedgerEntries)
                 .HasForeignKey(p => p.EmployeeId)
                 .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<AppUser>(entity =>
+        {
+            entity.Property(u => u.Email).HasMaxLength(256).IsRequired();
+            entity.Property(u => u.EmailNormalized).HasMaxLength(256).IsRequired();
+            entity.HasIndex(u => u.EmailNormalized).IsUnique();
+            entity.Property(u => u.PasswordHash).HasMaxLength(512).IsRequired();
+            entity.Property(u => u.DisplayName).HasMaxLength(128).IsRequired();
+            entity.Property(u => u.Theme).HasMaxLength(16).IsRequired();
+            entity.Property(u => u.UiLocale).HasMaxLength(8).IsRequired();
+            entity.Property(u => u.LeaveManagementTab).HasMaxLength(32).IsRequired();
+            entity.Property(u => u.LeaveCalendarView).HasMaxLength(32).IsRequired();
         });
     }
 }

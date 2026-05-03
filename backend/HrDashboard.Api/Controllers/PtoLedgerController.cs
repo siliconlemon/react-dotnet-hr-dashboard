@@ -1,6 +1,7 @@
 using HrDashboard.Api.Contracts;
 using HrDashboard.Api.Entities;
 using HrDashboard.Api.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HrDashboard.Api.Controllers;
@@ -10,6 +11,7 @@ namespace HrDashboard.Api.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/pto-ledger")]
+[Authorize]
 public sealed class PtoLedgerController : ControllerBase
 {
     private readonly IPtoLedgerService _ledger;

@@ -1,3 +1,4 @@
+import { apiFetch } from './http';
 import type {
   EmployeeCreateDto,
   EmployeeReadDto,
@@ -11,7 +12,7 @@ const jsonHeaders = { Accept: 'application/json' } as const;
  * Loads all employees (list endpoint returns full collection; grid paginates client-side).
  */
 export async function fetchEmployees(signal?: AbortSignal): Promise<EmployeeReadDto[]> {
-  const res = await fetch('/api/employees', { headers: jsonHeaders, signal });
+  const res = await apiFetch('/api/employees', { headers: jsonHeaders, signal });
   if (!res.ok) {
     throw new Error('employees_fetch_failed');
   }
@@ -25,7 +26,7 @@ export async function createEmployee(
   body: EmployeeCreateDto,
   signal?: AbortSignal,
 ): Promise<EmployeeReadDto> {
-  const res = await fetch('/api/employees', {
+  const res = await apiFetch('/api/employees', {
     method: 'POST',
     headers: { ...jsonHeaders, 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
@@ -48,7 +49,7 @@ export async function updateEmployee(
   body: EmployeeUpdateDto,
   signal?: AbortSignal,
 ): Promise<EmployeeReadDto> {
-  const res = await fetch(`/api/employees/${id}`, {
+  const res = await apiFetch(`/api/employees/${id}`, {
     method: 'PUT',
     headers: { ...jsonHeaders, 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
@@ -67,7 +68,7 @@ export async function updateEmployee(
  * Deletes an employee and related leave requests. Throws if not found.
  */
 export async function deleteEmployee(id: number, signal?: AbortSignal): Promise<void> {
-  const res = await fetch(`/api/employees/${id}`, { method: 'DELETE', signal });
+  const res = await apiFetch(`/api/employees/${id}`, { method: 'DELETE', signal });
   if (res.status === 204) {
     return;
   }
@@ -86,7 +87,7 @@ export async function fetchPtoBalance(
   asOf?: string,
 ): Promise<PtoBalanceDto> {
   const qs = asOf ? `?asOf=${encodeURIComponent(asOf)}` : '';
-  const res = await fetch(`/api/employees/${employeeId}/pto-balance${qs}`, {
+  const res = await apiFetch(`/api/employees/${employeeId}/pto-balance${qs}`, {
     headers: jsonHeaders,
     signal,
   });

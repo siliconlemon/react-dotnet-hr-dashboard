@@ -7,6 +7,7 @@ import {
   NavigateNext,
   PeopleOutlined,
 } from '@mui/icons-material';
+import { AccountToolbarMenu } from './AccountToolbarMenu';
 import {
   AppBar,
   Box,
@@ -513,6 +514,7 @@ export function AppShell({ children, activeNavKey, onNavKeyChange, breadcrumbIte
               );
             })}
           </Breadcrumbs>
+          <AccountToolbarMenu />
         </Toolbar>
       </AppBar>
 

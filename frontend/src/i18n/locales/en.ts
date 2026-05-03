@@ -31,6 +31,24 @@ export const en = {
     themeLight: 'Light',
     themeDark: 'Dark',
   },
+  auth: {
+    loginTitle: 'Sign in',
+    loginSubtitle: 'Use the showcase account to explore the dashboard.',
+    emailLabel: 'Email',
+    passwordLabel: 'Password',
+    submitLogin: 'Sign in',
+    demoTrayTitle: 'Signed-in users',
+    demoRowAriaLabel: 'Sign in as Demo',
+    formBlockedHint:
+      'Email / password entry is disabled in this build.',
+    loadingSession: 'Loading session…',
+    demoLoading: 'Signing in…',
+    demoError: 'Could not start the demo session. Is the API running?',
+    accountMenuAria: 'Account menu',
+    accountMenuTooltip: 'Account',
+    signedInAs: 'Signed in as',
+    logout: 'Sign out',
+  },
   dashboard: {
     title: 'Dashboard',
     subtitle: (calendarYear: number, asOfFormatted: string) =>

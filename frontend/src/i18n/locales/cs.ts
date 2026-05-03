@@ -41,6 +41,24 @@ export const cs = {
     themeLight: 'Světlé',
     themeDark: 'Tmavé',
   },
+  auth: {
+    loginTitle: 'Přihlášení',
+    loginSubtitle: 'Pro prohlížení použijte ukázkový účet.',
+    emailLabel: 'E-mail',
+    passwordLabel: 'Heslo',
+    submitLogin: 'Přihlásit se',
+    demoTrayTitle: 'Přihlášení uživatelé',
+    demoRowAriaLabel: 'Přihlásit jako Demo',
+    formBlockedHint:
+      'Zadání e-mailu a hesla je v této verzi uzavřené: nové účty vyžadují potvrzení před povolením přihlášení heslem.',
+    loadingSession: 'Načítání relace…',
+    demoLoading: 'Přihlašování…',
+    demoError: 'Nepodařilo se spustit demo relaci. Běží API?',
+    accountMenuAria: 'Nabídka účtu',
+    accountMenuTooltip: 'Účet',
+    signedInAs: 'Přihlášen jako',
+    logout: 'Odhlásit se',
+  },
   dashboard: {
     title: 'Přehled',
     subtitle: (calendarYear: number, asOfFormatted: string) =>

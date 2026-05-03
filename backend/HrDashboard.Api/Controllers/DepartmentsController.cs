@@ -1,6 +1,7 @@
 using HrDashboard.Api.Contracts;
 using HrDashboard.Api.Data;
 using HrDashboard.Api.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -11,6 +12,7 @@ namespace HrDashboard.Api.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/departments")]
+[Authorize]
 public sealed class DepartmentsController : ControllerBase
 {
     private readonly HrDashboardDbContext _db;
