@@ -1,9 +1,7 @@
 using HrDashboard.Api.Contracts;
-using HrDashboard.Api.Data;
 using HrDashboard.Api.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace HrDashboard.Api.Controllers;
 
@@ -15,13 +13,13 @@ namespace HrDashboard.Api.Controllers;
 [Authorize]
 public sealed class DepartmentsController : ControllerBase
 {
-    private readonly HrDashboardDbContext _db;
+    private readonly IDepartmentService _departments;
 
     private readonly IEmployeeService _employees;
 
-    public DepartmentsController(HrDashboardDbContext db, IEmployeeService employees)
+    public DepartmentsController(IDepartmentService departments, IEmployeeService employees)
     {
-        _db = db;
+        _departments = departments;
         _employees = employees;
     }
 
@@ -32,11 +30,7 @@ public sealed class DepartmentsController : ControllerBase
     [ProducesResponseType(typeof(IReadOnlyList<DepartmentReadDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<IReadOnlyList<DepartmentReadDto>>> GetAll(CancellationToken cancellationToken)
     {
-        var list = await _db.Departments
-            .AsNoTracking()
-            .OrderBy(d => d.Name)
-            .Select(d => new DepartmentReadDto { Id = d.Id, Name = d.Name })
-            .ToListAsync(cancellationToken);
+        var list = await _departments.GetAllAsync(cancellationToken);
         return Ok(list);
     }
 

@@ -12,6 +12,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection(JwtOptions.SectionName));
 
+builder.Services.AddProblemDetails();
 builder.Services.AddControllers()
     .AddJsonOptions(o =>
     {
@@ -27,6 +28,7 @@ builder.Services.AddHttpClient(
         client.Timeout = TimeSpan.FromSeconds(15);
     });
 builder.Services.AddSingleton<ICzechWorkdayCalculator, CzechWorkdayCalculator>();
+builder.Services.AddScoped<IDepartmentService, DepartmentService>();
 builder.Services.AddScoped<IEmployeeService, EmployeeService>();
 builder.Services.AddScoped<IPtoLedgerService, PtoLedgerService>();
 builder.Services.AddSingleton<IJwtTokenService, JwtTokenService>();
@@ -42,6 +44,14 @@ if (jwtSigningKey.Length < 32)
         "Jwt:SigningKey must be at least 32 characters. Configure a strong secret before deployment.");
 }
 
+var jwtIssuer = jwtSection.GetValue<string>("Issuer") ?? string.Empty;
+var jwtAudience = jwtSection.GetValue<string>("Audience") ?? string.Empty;
+if (string.IsNullOrWhiteSpace(jwtIssuer) || string.IsNullOrWhiteSpace(jwtAudience))
+{
+    throw new InvalidOperationException(
+        "Jwt:Issuer and Jwt:Audience must be non-empty. Configure them in appsettings or environment.");
+}
+
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -51,8 +61,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateAudience = true,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
-            ValidIssuer = jwtSection.GetValue<string>("Issuer"),
-            ValidAudience = jwtSection.GetValue<string>("Audience"),
+            ValidIssuer = jwtIssuer,
+            ValidAudience = jwtAudience,
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSigningKey)),
             ClockSkew = TimeSpan.FromMinutes(2),
         };

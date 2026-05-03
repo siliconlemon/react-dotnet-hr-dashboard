@@ -1,5 +1,5 @@
-using System.Security.Claims;
 using HrDashboard.Api.Contracts;
+using HrDashboard.Api.Extensions;
 using HrDashboard.Api.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -23,7 +23,7 @@ public sealed class AccountController : ControllerBase
     [ProducesResponseType(typeof(UserAccountDto), StatusCodes.Status200OK)]
     public async Task<ActionResult<UserAccountDto>> Me(CancellationToken cancellationToken)
     {
-        var userId = GetUserId();
+        var userId = User.TryGetUserId();
         if (userId == null)
             return Unauthorized();
 
@@ -38,7 +38,7 @@ public sealed class AccountController : ControllerBase
         [FromBody] PatchUserSettingsDto body,
         CancellationToken cancellationToken)
     {
-        var userId = GetUserId();
+        var userId = User.TryGetUserId();
         if (userId == null)
             return Unauthorized();
 
@@ -53,9 +53,4 @@ public sealed class AccountController : ControllerBase
         }
     }
 
-    private int? GetUserId()
-    {
-        var idClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        return idClaim != null && int.TryParse(idClaim, out var id) ? id : null;
-    }
 }

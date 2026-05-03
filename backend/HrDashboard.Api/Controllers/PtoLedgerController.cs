@@ -1,6 +1,6 @@
-using System.Security.Claims;
 using HrDashboard.Api.Contracts;
 using HrDashboard.Api.Entities;
+using HrDashboard.Api.Extensions;
 using HrDashboard.Api.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -62,13 +62,13 @@ public sealed class PtoLedgerController : ControllerBase
     /// </summary>
     [HttpPost]
     [ProducesResponseType(typeof(IReadOnlyList<PtoLedgerEntryReadDto>), StatusCodes.Status201Created)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<IReadOnlyList<PtoLedgerEntryReadDto>>> Create(
         [FromBody] PtoLedgerCreateDto dto,
         CancellationToken cancellationToken)
     {
-        var userId = ParseUserId(User);
+        var userId = User.TryGetUserId();
         var (entries, error) = await _ledger.CreateAsync(dto, userId, cancellationToken).ConfigureAwait(false);
         return error switch
         {
@@ -83,13 +83,10 @@ public sealed class PtoLedgerController : ControllerBase
             "amount_out_of_range" => BadRequest("Amount is outside the allowed range."),
             "invalid_entry_type" => BadRequest("Invalid entry type."),
             null => StatusCode(StatusCodes.Status201Created, entries!),
-            _ => BadRequest()
+            _ => Problem(
+                detail: error,
+                title: "Could not create ledger entries.",
+                statusCode: StatusCodes.Status400BadRequest)
         };
-    }
-
-    private static int? ParseUserId(ClaimsPrincipal user)
-    {
-        var v = user.FindFirstValue(ClaimTypes.NameIdentifier);
-        return int.TryParse(v, out var id) ? id : null;
     }
 }
