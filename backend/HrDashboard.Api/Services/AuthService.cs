@@ -115,8 +115,10 @@ public sealed class AuthService : IAuthService
         if (patch.LeaveManagementTab != null)
         {
             var v = patch.LeaveManagementTab.Trim().ToLowerInvariant();
-            if (v is not ("ledger" or "calendar"))
-                throw new ArgumentException("LeaveManagementTab must be 'ledger' or 'calendar'.");
+            if (v == "calendar")
+                v = "lookup";
+            if (v is not ("ledger" or "lookup"))
+                throw new ArgumentException("LeaveManagementTab must be 'ledger' or 'lookup'.");
             user.LeaveManagementTab = v;
         }
 
@@ -143,6 +145,10 @@ public sealed class AuthService : IAuthService
         };
     }
 
+    /// <summary>Maps legacy <c>calendar</c> tab id to <c>lookup</c> for API clients.</summary>
+    private static string NormalizeLeaveManagementTab(string stored) =>
+        string.Equals(stored, "calendar", StringComparison.OrdinalIgnoreCase) ? "lookup" : stored;
+
     private static UserAccountDto MapUser(AppUser user)
     {
         return new UserAccountDto
@@ -156,7 +162,7 @@ public sealed class AuthService : IAuthService
             {
                 Theme = user.Theme,
                 UiLocale = user.UiLocale,
-                LeaveManagementTab = user.LeaveManagementTab,
+                LeaveManagementTab = NormalizeLeaveManagementTab(user.LeaveManagementTab),
                 LeaveCalendarView = user.LeaveCalendarView,
             },
         };

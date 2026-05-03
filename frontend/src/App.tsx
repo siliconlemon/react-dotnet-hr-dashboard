@@ -60,8 +60,8 @@ function leaveTabLabel(tab: LeaveManagementViewTab): string {
   switch (tab) {
     case 'ledger':
       return strings.leave.tabLedger;
-    case 'calendar':
-      return strings.leave.tabCalendar;
+    case 'lookup':
+      return strings.leave.tabLookup;
   }
 }
 
@@ -73,7 +73,6 @@ export default function App() {
   const [navKey, setNavKey] = useState<NavKey>(readStoredNavKey);
   const [employeesViewTab, setEmployeesViewTab] = useState<EmployeesViewTab>('directory');
   const [leaveViewTab, setLeaveViewTab] = useState<LeaveManagementViewTab>('ledger');
-  const [leaveCalendarView, setLeaveCalendarView] = useState<'month' | 'agenda'>('month');
 
   const hydratedUserIdRef = useRef<number | null>(null);
   const [leavePreferencesReady, setLeavePreferencesReady] = useState(false);
@@ -106,8 +105,9 @@ export default function App() {
     }
     hydratedUserIdRef.current = user.id;
     const s = user.settings;
-    setLeaveViewTab(s.leaveManagementTab === 'calendar' ? 'calendar' : 'ledger');
-    setLeaveCalendarView(s.leaveCalendarView === 'agenda' ? 'agenda' : 'month');
+    setLeaveViewTab(
+      s.leaveManagementTab === 'lookup' || s.leaveManagementTab === 'calendar' ? 'lookup' : 'ledger',
+    );
     setLeavePreferencesReady(true);
   }, [status, user]);
 
@@ -117,12 +117,7 @@ export default function App() {
     }
     const cur = user.settings;
     const themeStr = mode === 'dark' ? 'dark' : 'light';
-    if (
-      cur.theme === themeStr &&
-      cur.uiLocale === locale &&
-      cur.leaveManagementTab === leaveViewTab &&
-      cur.leaveCalendarView === leaveCalendarView
-    ) {
+    if (cur.theme === themeStr && cur.uiLocale === locale && cur.leaveManagementTab === leaveViewTab) {
       return;
     }
 
@@ -131,7 +126,6 @@ export default function App() {
         theme: themeStr,
         uiLocale: locale,
         leaveManagementTab: leaveViewTab,
-        leaveCalendarView,
       })
         .then(replaceUser)
         .catch(() => {});
@@ -145,7 +139,6 @@ export default function App() {
     mode,
     locale,
     leaveViewTab,
-    leaveCalendarView,
     replaceUser,
   ]);
 
@@ -174,10 +167,6 @@ export default function App() {
 
   const handleLeaveViewTabChange = useCallback((tab: LeaveManagementViewTab) => {
     setLeaveViewTab(tab);
-  }, []);
-
-  const handleLeaveCalendarViewChange = useCallback((next: 'month' | 'agenda') => {
-    setLeaveCalendarView(next);
   }, []);
 
   if (status === 'loading') {
@@ -209,12 +198,7 @@ export default function App() {
         ) : navKey === 'departments' ? (
           <DepartmentsView />
         ) : navKey === 'leave' ? (
-          <LeaveManagementView
-            viewTab={leaveViewTab}
-            onViewTabChange={handleLeaveViewTabChange}
-            leaveCalendarView={leaveCalendarView}
-            onLeaveCalendarViewChange={handleLeaveCalendarViewChange}
-          />
+          <LeaveManagementView viewTab={leaveViewTab} onViewTabChange={handleLeaveViewTabChange} />
         ) : (
           <DashboardView />
         )}

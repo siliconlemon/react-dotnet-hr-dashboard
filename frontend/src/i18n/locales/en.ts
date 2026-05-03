@@ -80,7 +80,7 @@ export const en = {
   leave: {
     title: 'Leave Management',
     tabLedger: 'Ledger',
-    tabCalendar: 'Calendar',
+    tabLookup: 'Lookup',
     ledgerTitle: 'PTO Ledger',
     ledgerSubtitle:
       'Change logs of changes in PTO balances for individual employees or teams.',
@@ -128,11 +128,59 @@ export const en = {
     validationAmountAdjustment: 'Adjustment cannot be zero.',
     validationAmountRange: 'Amount is outside the allowed range.',
     createFailed: 'Could not save the entry.',
-    calendarTitle: 'Leave Calendar',
-    calendarHint:
-      'Click a day or drag across days to add a ledger entry with those dates prefilled.',
-    calendarLoadError: 'Could not load usage for the calendar. Is the API running?',
+    calendarTitle: 'Absence lookup',
+    calendarHintDayGrid:
+      'Each weekday cell is how many distinct people have usage logged that workday. Hover for a quick list; click a non-zero cell for names and departments.',
+    calendarHintWeekGrid:
+      'Each row is one calendar week. The number is distinct people with usage on any weekday that week. Hover for per-person totals; click for details.',
+    calendarViewWeek: 'Week',
+    calendarViewMonth: 'Month',
+    calendarViewToggleAria: 'Lookup layout',
+    calendarWeekSummaryCol: 'Week total',
+    calendarAwayCountWeek: (people: number) =>
+      `${people} ${people === 1 ? 'employee' : 'employees'} with usage this week (weekdays)`,
+    calendarDetailTitleWeek: (weekRangeLabel: string) => `Away · Week of ${weekRangeLabel}`,
+    calendarWeekCellAria: (
+      weekRangeLabel: string,
+      uniqueWorkers: number,
+      ctx: { weekContainsToday: boolean },
+    ) => {
+      const today = ctx.weekContainsToday ? ' Current week.' : '';
+      if (uniqueWorkers === 0) {
+        return `Week ${weekRangeLabel}. No usage on weekdays.${today}`;
+      }
+      return `Week ${weekRangeLabel}. ${uniqueWorkers} ${uniqueWorkers === 1 ? 'employee' : 'employees'} with usage on weekdays. Click for details.${today}`;
+    },
+    calendarLoadError: 'Could not load usage for this view. Is the API running?',
     calendarToday: 'Today',
+    calendarPrevMonthAria: 'Previous month',
+    calendarNextMonthAria: 'Next month',
+    calendarWeekCol: 'Week',
+    calendarEmptyMonth: 'No usage logged this month.',
+    calendarTooltipMore: (n: number) => `+${n} more`,
+    calendarDetailTitle: (longDate: string) => `Away · ${longDate}`,
+    calendarAwayCount: (people: number) =>
+      `${people} ${people === 1 ? 'employee' : 'employees'} with usage this day`,
+    calendarCellAria: (
+      isoDisplayDate: string,
+      away: number,
+      ctx: { isToday: boolean; outsideSelectedMonth: boolean; isWeekend: boolean },
+    ) => {
+      const today = ctx.isToday ? ' Today.' : '';
+      if (ctx.isWeekend) {
+        if (ctx.outsideSelectedMonth) {
+          return `${isoDisplayDate}, weekend — usage not shown (adjacent month).${today}`;
+        }
+        return `${isoDisplayDate}, weekend — usage not counted.${today}`;
+      }
+      if (ctx.outsideSelectedMonth) {
+        return away > 0
+          ? `${isoDisplayDate}, ${away} ${away === 1 ? 'employee' : 'employees'} away (adjacent month). Click for details.${today}`
+          : `${isoDisplayDate}, outside selected month.${today}`;
+      }
+      if (away === 0) return `${isoDisplayDate}. No employees away.${today}`;
+      return `${isoDisplayDate}, ${away} ${away === 1 ? 'employee' : 'employees'} away. Click for details.${today}`;
+    },
   },
   departments: {
     title: 'Departments',

@@ -28,7 +28,7 @@ public sealed class AppUser
     /// <summary>UI locale: <c>en</c> or <c>cs</c>.</summary>
     public string UiLocale { get; set; } = "en";
 
-    /// <summary>Leave area primary tab: <c>ledger</c> or <c>calendar</c>.</summary>
+    /// <summary>Leave area primary tab: <c>ledger</c> or <c>lookup</c> (legacy DB values may store <c>calendar</c>).</summary>
     public string LeaveManagementTab { get; set; } = "ledger";
 
     /// <summary>Leave calendar sub-view: <c>month</c> or <c>agenda</c>.</summary>

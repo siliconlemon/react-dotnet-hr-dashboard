@@ -90,7 +90,7 @@ export const cs = {
   leave: {
     title: 'Správa dovolené',
     tabLedger: 'Kniha',
-    tabCalendar: 'Kalendář',
+    tabLookup: 'Vyhledávání',
     ledgerTitle: 'Kniha dovolené (PTO)',
     ledgerSubtitle:
       'Záznamy o změnách stavů na kontech dovolené u jednotlivých zaměstnanců, případně týmů.',
@@ -138,11 +138,59 @@ export const cs = {
     validationAmountAdjustment: 'Úprava nesmí být nulová.',
     validationAmountRange: 'Hodnota je mimo povolený rozsah.',
     createFailed: 'Záznam se nepodařilo uložit.',
-    calendarTitle: 'Kalendář dovolené',
-    calendarHint:
-      'Klikněte na den nebo táhněte přes více dnů pro předvyplnění nového záznamu v knize.',
-    calendarLoadError: 'Kalendáři se nepodařilo načíst čerpání. Je spuštěné API?',
+    calendarTitle: 'Docházka – přehled',
+    calendarHintDayGrid:
+      'Buňka pro pracovní den ukazuje počet osob s čerpáním. Najetím zobrazíte stručný výpis; kliknutím na nenulovou buňku jména a oddělení.',
+    calendarHintWeekGrid:
+      'Každý řádek je jeden kalendářní týden. Číslo je počet různých osob s čerpáním v kterýkoliv pracovní den v týdnu. Najetím součty za osobu; kliknutím podrobnosti.',
+    calendarViewWeek: 'Týden',
+    calendarViewMonth: 'Měsíc',
+    calendarViewToggleAria: 'Rozložení zobrazení',
+    calendarWeekSummaryCol: 'Týden celkem',
+    calendarAwayCountWeek: (people: number) =>
+      `Osob s čerpáním v tomto týdnu (pracovní dny): ${people}`,
+    calendarDetailTitleWeek: (weekRangeLabel: string) => `Nepřítomnost · týden ${weekRangeLabel}`,
+    calendarWeekCellAria: (
+      weekRangeLabel: string,
+      uniqueWorkers: number,
+      ctx: { weekContainsToday: boolean },
+    ) => {
+      const today = ctx.weekContainsToday ? ' Aktuální týden.' : '';
+      if (uniqueWorkers === 0) {
+        return `Týden ${weekRangeLabel}. Žádné čerpání v pracovní dny.${today}`;
+      }
+      return `Týden ${weekRangeLabel}. Osob s čerpáním v pracovní dny: ${uniqueWorkers}. Klikněte pro podrobnosti.${today}`;
+    },
+    calendarLoadError: 'Nepodařilo se načíst čerpání pro tento přehled. Je spuštěné API?',
     calendarToday: 'Dnes',
+    calendarPrevMonthAria: 'Předchozí měsíc',
+    calendarNextMonthAria: 'Další měsíc',
+    calendarWeekCol: 'Týden',
+    calendarEmptyMonth: 'V tomto měsíci není žádné čerpání.',
+    calendarTooltipMore: (n: number) => `+${n} další`,
+    calendarDetailTitle: (longDate: string) => `Nepřítomnost · ${longDate}`,
+    calendarAwayCount: (people: number) =>
+      `Počet osob s čerpáním v tento den: ${people}`,
+    calendarCellAria: (
+      isoDisplayDate: string,
+      away: number,
+      ctx: { isToday: boolean; outsideSelectedMonth: boolean; isWeekend: boolean },
+    ) => {
+      const today = ctx.isToday ? ' Dnes.' : '';
+      if (ctx.isWeekend) {
+        if (ctx.outsideSelectedMonth) {
+          return `${isoDisplayDate}, víkend — čerpání se nezobrazuje (sousední měsíc).${today}`;
+        }
+        return `${isoDisplayDate}, víkend — čerpání se nepočítá.${today}`;
+      }
+      if (ctx.outsideSelectedMonth) {
+        return away > 0
+          ? `${isoDisplayDate}, nepřítomných osob: ${away} (sousední měsíc). Klikněte pro podrobnosti.${today}`
+          : `${isoDisplayDate}, mimo vybraný měsíc.${today}`;
+      }
+      if (away === 0) return `${isoDisplayDate}. Žádné čerpání.${today}`;
+      return `${isoDisplayDate}, nepřítomných osob: ${away}. Klikněte pro podrobnosti.${today}`;
+    },
   },
   departments: {
     title: 'Oddělení',

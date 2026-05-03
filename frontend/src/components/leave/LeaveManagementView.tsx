@@ -56,11 +56,6 @@ import { EmployeePickerField } from '../employees/EmployeePickerField';
 import { LeaveCalendarTab } from './LeaveCalendarTab';
 import { formatDateOnly, formatDateTime } from '../../utils/formatDate';
 import { formatPtoDays } from '../../utils/formatPto';
-import {
-  countWeekdaysInclusive,
-  firstWeekdayInInclusiveRange,
-} from '../../utils/weekdayCalendar';
-
 function formatEmployeeNameEmail(row: PtoLedgerEntryReadDto, rosterEmail?: string): string {
   const name = `${row.employeeFirstName} ${row.employeeLastName}`.trim();
   const email = row.employeeEmail?.trim() || rosterEmail?.trim() || '';
@@ -86,21 +81,14 @@ const filterSelectFormControlSx = {
 const leaveFilterFieldFontSize = '0.8125rem';
 const leaveFilterFieldLineHeight = 1.5;
 
-export type LeaveManagementViewTab = 'ledger' | 'calendar';
+export type LeaveManagementViewTab = 'ledger' | 'lookup';
 
 type LeaveManagementViewProps = {
   viewTab: LeaveManagementViewTab;
   onViewTabChange: (tab: LeaveManagementViewTab) => void;
-  leaveCalendarView: 'month' | 'agenda';
-  onLeaveCalendarViewChange: (view: 'month' | 'agenda') => void;
 };
 
-export function LeaveManagementView({
-  viewTab,
-  onViewTabChange,
-  leaveCalendarView,
-  onLeaveCalendarViewChange,
-}: LeaveManagementViewProps) {
+export function LeaveManagementView({ viewTab, onViewTabChange }: LeaveManagementViewProps) {
   const [employees, setEmployees] = useState<EmployeeReadDto[]>([]);
   const [departments, setDepartments] = useState<DepartmentReadDto[]>([]);
   const [loadMetaError, setLoadMetaError] = useState<string | null>(null);
@@ -336,23 +324,6 @@ export function LeaveManagementView({
     setDialogOpen(true);
   };
 
-  const openDialogFromCalendarRange = useCallback(
-    ({ start, endInclusive }: { start: Dayjs; endInclusive: Dayjs }) => {
-      setDialogError(null);
-      setDialogScope('employee');
-      setDialogDepartmentId('');
-      setDialogEntryType('usage');
-      const spanDays = countWeekdaysInclusive(start, endInclusive);
-      setDialogAmount(String(spanDays));
-      const firstWd = firstWeekdayInInclusiveRange(start, endInclusive);
-      setDialogEffective((firstWd ?? start).startOf('day'));
-      setDialogNote('');
-      setDialogEmployeeId(filterEmployeeId === '' ? '' : filterEmployeeId);
-      setDialogOpen(true);
-    },
-    [filterEmployeeId],
-  );
-
   const validateDialog = (): string | null => {
     if (dialogScope === 'employee' && dialogEmployeeId === '') {
       return strings.leave.validationEmployee;
@@ -429,7 +400,7 @@ export function LeaveManagementView({
         sx={{ borderBottom: 1, borderColor: 'divider', flexShrink: 0 }}
       >
         <Tab value="ledger" label={strings.leave.tabLedger} />
-        <Tab value="calendar" label={strings.leave.tabCalendar} />
+        <Tab value="lookup" label={strings.leave.tabLookup} />
       </Tabs>
 
       <Box
@@ -761,26 +732,22 @@ export function LeaveManagementView({
           </Paper>
           </Box>
           <Box
-            aria-hidden={viewTab !== 'calendar'}
+            aria-hidden={viewTab !== 'lookup'}
             sx={{
               position: 'absolute',
               inset: 0,
               display: 'flex',
               flexDirection: 'column',
               overflow: 'hidden',
-              opacity: viewTab === 'calendar' ? 1 : 0,
-              visibility: viewTab === 'calendar' ? 'visible' : 'hidden',
-              pointerEvents: viewTab === 'calendar' ? 'auto' : 'none',
-              zIndex: viewTab === 'calendar' ? 1 : 0,
+              opacity: viewTab === 'lookup' ? 1 : 0,
+              visibility: viewTab === 'lookup' ? 'visible' : 'hidden',
+              pointerEvents: viewTab === 'lookup' ? 'auto' : 'none',
+              zIndex: viewTab === 'lookup' ? 1 : 0,
               transition: (theme) =>
                 theme.transitions.create(['opacity', 'visibility'], { duration: 120 }),
             }}
           >
-            <LeaveCalendarTab
-              onSelectDaysForLedger={openDialogFromCalendarRange}
-              calendarView={leaveCalendarView}
-              onCalendarViewChange={onLeaveCalendarViewChange}
-            />
+            <LeaveCalendarTab />
           </Box>
         </Box>
 
