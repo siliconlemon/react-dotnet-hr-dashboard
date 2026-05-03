@@ -9,3 +9,8 @@ export const FAVICON_URL = `/favicon.svg?v=${FAVICON_CACHE_KEY}`;
 
 /** Drawer brand asset on dark surfaces (`public/favicon-dark.svg`). */
 export const FAVICON_DARK_URL = `/favicon-dark.svg?v=${FAVICON_CACHE_KEY}`;
+
+/** Tab + `<link rel="icon">` href for the active app theme (not OS `prefers-color-scheme`). */
+export function faviconHrefForMode(mode: 'light' | 'dark'): string {
+  return mode === 'dark' ? FAVICON_DARK_URL : FAVICON_URL;
+}

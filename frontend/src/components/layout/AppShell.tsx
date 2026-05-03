@@ -24,7 +24,7 @@ import {
 } from '@mui/material';
 import { useTheme, type Theme } from '@mui/material/styles';
 import { Fragment, useState, type ReactNode } from 'react';
-import { FAVICON_DARK_URL, FAVICON_URL } from '../../constants/faviconUrl';
+import { faviconHrefForMode } from '../../constants/faviconUrl';
 import { strings } from '../../i18n';
 import { DrawerLanguageSwitcher } from './DrawerLanguageSwitcher';
 import { DrawerThemeSwitcher } from './DrawerThemeSwitcher';
@@ -68,7 +68,7 @@ const DRAWER_BRAND_ICON_BUTTON_SX = { p: 0.5 } as const;
 
 function DrawerBrandFaviconImg() {
   const theme = useTheme();
-  const src = theme.palette.mode === 'dark' ? FAVICON_DARK_URL : FAVICON_URL;
+  const src = faviconHrefForMode(theme.palette.mode);
   return (
     <Box
       component="img"
