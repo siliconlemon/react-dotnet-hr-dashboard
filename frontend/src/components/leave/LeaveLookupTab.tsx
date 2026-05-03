@@ -33,6 +33,7 @@ import { strings } from '../../i18n';
 import { useLocale } from '../../i18n/useLocale';
 import { getDepartmentAccent, type EmployeeCardAccent } from '../../theme/employeeCardPalette';
 import { formatDateOnly } from '../../utils/formatDate';
+import { formatEmployeeLedgerDisplay } from '../../utils/formatEmployeeLedger';
 
 /** Same 13px / compact row scale as PTO ledger filter Autocomplete dropdown options. */
 const LEAVE_LOOKUP_MENU_FONT_SIZE = '0.8125rem';
@@ -78,11 +79,6 @@ function weeksOverlappingMonth(month: Dayjs): Dayjs[][] {
   return rows;
 }
 
-function employeeLabel(row: PtoLedgerEntryReadDto): string {
-  const name = `${row.employeeFirstName} ${row.employeeLastName}`.trim();
-  return name || `#${row.employeeId}`;
-}
-
 function rowsForDate(rows: PtoLedgerEntryReadDto[], dateKey: string): PtoLedgerEntryReadDto[] {
   return rows.filter((r) => r.effectiveDate.slice(0, 10) === dateKey);
 }
@@ -108,7 +104,7 @@ function buildEmployeeGroups(rows: PtoLedgerEntryReadDto[]): EmployeeDayDetail[]
       const first = ledgerRows[0]!;
       return {
         employeeId,
-        label: employeeLabel(first),
+        label: formatEmployeeLedgerDisplay(first),
         departmentId: first.departmentId,
         departmentName: first.departmentName,
         ledgerRows,

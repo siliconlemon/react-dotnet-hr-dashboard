@@ -7,3 +7,11 @@ import type { SxProps, Theme } from '@mui/material/styles';
 export const shellTopTabStripSx: SxProps<Theme> = {
   mt: -1,
 };
+
+/** Tabs row directly under the app breadcrumb: tighter top + divider aligned with shell chrome. */
+export const shellUnderBarTabsSx: SxProps<Theme> = {
+  ...shellTopTabStripSx,
+  borderBottom: 1,
+  borderColor: 'divider',
+  flexShrink: 0,
+};

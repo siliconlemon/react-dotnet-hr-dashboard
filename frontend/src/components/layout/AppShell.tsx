@@ -28,6 +28,7 @@ import type { PaperProps } from '@mui/material/Paper';
 import { useTheme, type Theme } from '@mui/material/styles';
 import { useState, type ReactNode } from 'react';
 import { FAVICON_URL } from '../../constants/faviconUrl';
+import type { NavKey } from '../../navigation/navKeys';
 import { strings } from '../../i18n';
 import { DrawerLanguageSwitcher } from './DrawerLanguageSwitcher';
 import { DrawerThemeSwitcher } from './DrawerThemeSwitcher';
@@ -127,7 +128,7 @@ function DrawerTitleRow({ title, endSlot }: { title: string; endSlot?: ReactNode
   );
 }
 
-export type NavKey = 'dashboard' | 'employees' | 'departments' | 'leave';
+export type { NavKey };
 
 type AppShellProps = {
   children: React.ReactNode;

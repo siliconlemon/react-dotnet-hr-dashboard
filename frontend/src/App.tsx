@@ -6,7 +6,8 @@ import { LoginView } from './components/auth/LoginView';
 import { DashboardView } from './components/dashboard/DashboardView';
 import { DepartmentsView } from './components/departments/DepartmentsView';
 import { EmployeesView, type EmployeesViewTab } from './components/employees/EmployeesView';
-import { AppShell, type NavKey } from './components/layout/AppShell';
+import { AppShell } from './components/layout/AppShell';
+import { parseStoredNavKey, type NavKey } from './navigation/navKeys';
 import {
   LeaveManagementView,
   type LeaveManagementViewTab,
@@ -21,9 +22,7 @@ function readStoredNavKey(): NavKey {
   if (typeof window === 'undefined') return 'dashboard';
   try {
     const raw = window.localStorage.getItem(NAV_STORAGE_KEY);
-    if (raw === 'dashboard' || raw === 'employees' || raw === 'departments' || raw === 'leave') {
-      return raw;
-    }
+    return parseStoredNavKey(raw) ?? 'dashboard';
   } catch {
     /* ignore quota / private mode */
   }

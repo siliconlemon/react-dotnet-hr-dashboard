@@ -29,7 +29,7 @@ import {
   type GridColDef,
   type GridPaginationModel,
 } from '@mui/x-data-grid';
-import { shellTopTabStripSx } from '../layout/shellViewChrome';
+import { shellUnderBarTabsSx } from '../layout/shellViewChrome';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import dayjs, { type Dayjs } from 'dayjs';
 import {
@@ -56,14 +56,9 @@ import { ViewLoadingGate } from '../layout/ViewLoadingGate';
 import { EmployeePickerField } from '../employees/EmployeePickerField';
 import { LeaveLookupTab } from './LeaveLookupTab';
 import { formatDateOnly, formatDateTime } from '../../utils/formatDate';
+import { formatEmployeeLedgerDisplay } from '../../utils/formatEmployeeLedger';
 import { formatPtoDays } from '../../utils/formatPto';
-function formatEmployeeNameEmail(row: PtoLedgerEntryReadDto, rosterEmail?: string): string {
-  const name = `${row.employeeFirstName} ${row.employeeLastName}`.trim();
-  const email = row.employeeEmail?.trim() || rosterEmail?.trim() || '';
-  if (email && name) return `${name} (${email})`;
-  if (email) return email;
-  return name || `#${row.employeeId}`;
-}
+import { dataGridShellSx } from '../../theme/dataGridShellSx';
 
 /** Ledger grid default min width for columns using fixed `width`; matches effective date column. */
 const LEDGER_COL_MIN_WIDTH_PX = 107;
@@ -174,7 +169,7 @@ export function LeaveManagementView({ viewTab, onViewTabChange }: LeaveManagemen
   }, []);
 
   const reloadLedger = useCallback(async () => {
-    void refreshToken;
+    void refreshToken; // invalidation bump (dialog submit); must affect callback identity
     setGridLoading(true);
     setGridError(null);
     try {
@@ -279,7 +274,7 @@ export function LeaveManagementView({ viewTab, onViewTabChange }: LeaveManagemen
         minWidth: 219,
         sortable: false,
         valueGetter: (_, row) =>
-          formatEmployeeNameEmail(row, employeeEmailById.get(row.employeeId)),
+          formatEmployeeLedgerDisplay(row, employeeEmailById.get(row.employeeId)),
       },
       {
         field: 'departmentName',
@@ -410,7 +405,7 @@ export function LeaveManagementView({ viewTab, onViewTabChange }: LeaveManagemen
       <Tabs
         value={viewTab}
         onChange={handleViewTabChange}
-        sx={{ ...shellTopTabStripSx, borderBottom: 1, borderColor: 'divider', flexShrink: 0 }}
+        sx={shellUnderBarTabsSx}
       >
         <Tab value="ledger" label={strings.leave.tabLedger} />
         <Tab value="lookup" label={strings.leave.tabLookup} />
@@ -720,27 +715,10 @@ export function LeaveManagementView({ viewTab, onViewTabChange }: LeaveManagemen
                 disableColumnSorting
                 disableRowSelectionOnClick
                 sx={{
+                  ...dataGridShellSx,
                   border: 'none',
                   height: '100%',
                   width: '100%',
-                  '& .MuiDataGrid-columnHeaders': { bgcolor: 'action.hover' },
-                  '& .MuiDataGrid-footerContainer': {
-                    minHeight: 47,
-                    height: 47,
-                    maxHeight: 47,
-                    alignItems: 'center',
-                    py: 0,
-                    pl: 0.5,
-                    pr: 0,
-                    boxSizing: 'border-box',
-                  },
-                  '& .MuiDataGrid-footerContainer .MuiTablePagination-root': { py: 0, minHeight: 35 },
-                  '& .MuiDataGrid-footerContainer .MuiTablePagination-toolbar': {
-                    minHeight: 35,
-                    height: 35,
-                    alignItems: 'center',
-                    py: 0,
-                  },
                 }}
               />
             </Box>

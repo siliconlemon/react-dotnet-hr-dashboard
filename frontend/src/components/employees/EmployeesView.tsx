@@ -14,8 +14,9 @@ import type { EmployeeReadDto, PtoBalanceDto } from '../../api/types';
 import { strings } from '../../i18n';
 import { useDataGridLocaleText } from '../../i18n/useDataGridLocaleText';
 import { useLocale } from '../../i18n/useLocale';
+import { dataGridShellSx } from '../../theme/dataGridShellSx';
 import { formatDateOnly } from '../../utils/formatDate';
-import { shellTopTabStripSx } from '../layout/shellViewChrome';
+import { shellUnderBarTabsSx } from '../layout/shellViewChrome';
 import { ViewLoadingGate } from '../layout/ViewLoadingGate';
 import { EmployeeDetailCards } from './EmployeeDetailCards';
 import { EmployeeDetailFieldsPicker } from './EmployeeDetailFieldsPicker';
@@ -390,7 +391,7 @@ export function EmployeesView({ onViewTabChange }: EmployeesViewProps) {
       <Tabs
         value={viewTab}
         onChange={handleViewTabChange}
-        sx={{ ...shellTopTabStripSx, borderBottom: 1, borderColor: 'divider', flexShrink: 0 }}
+        sx={shellUnderBarTabsSx}
       >
         <Tab value="directory" label={strings.employees.tabDirectory} />
         <Tab value="onboard" label={strings.employees.tabOnboard} />
@@ -519,27 +520,10 @@ export function EmployeesView({ onViewTabChange }: EmployeesViewProps) {
                   rowSelectionModel={selectionModel}
                   onRowSelectionModelChange={onSelectionChange}
                   sx={{
+                    ...dataGridShellSx,
                     border: 'none',
                     height: '100%',
                     '& .MuiDataGrid-toolbarContainer': { px: 0, py: 1 },
-                    '& .MuiDataGrid-columnHeaders': { bgcolor: 'action.hover' },
-                    '& .MuiDataGrid-footerContainer': {
-                      minHeight: 47,
-                      height: 47,
-                      maxHeight: 47,
-                      alignItems: 'center',
-                      py: 0,
-                      pl: 0.5,
-                      pr: 0,
-                      boxSizing: 'border-box',
-                    },
-                    '& .MuiDataGrid-footerContainer .MuiTablePagination-root': { py: 0, minHeight: 35 },
-                    '& .MuiDataGrid-footerContainer .MuiTablePagination-toolbar': {
-                      minHeight: 35,
-                      height: 35,
-                      alignItems: 'center',
-                      py: 0,
-                    },
                   }}
                 />
               </Box>
