@@ -207,17 +207,16 @@ function weekContainsToday(weekMonday: Dayjs): boolean {
   return !today.isBefore(mon, 'day') && !today.isAfter(sun, 'day');
 }
 
-function weekAggregateTooltip(groups: EmployeeDayDetail[]): string {
-  const deptSegments = departmentAwaySegments(groups);
-  const deptSummaryLine = deptSegments.map((s) => `${s.departmentName}: ${s.count}`).join(' · ');
-  const peopleParts = groups.map((g) => {
-    const sum = g.ledgerRows.reduce((s, r) => s + r.amount, 0);
-    return `${g.label}: ${formatPtoDays(sum)}`;
-  });
-  if (groups.length <= 5) {
-    return `${deptSummaryLine}. ${peopleParts.join('; ')}`;
+/** Hover summary: `Engineering: 2 (Jordan Lee, Riley Okonkwo) • Sales: 1 (Taylor Chen)`. */
+function calendarDepartmentTooltip(groups: EmployeeDayDetail[]): string {
+  if (groups.length === 0) return '';
+  const buckets = departmentBuckets(groups);
+  const parts: string[] = [];
+  for (const [deptName, people] of buckets.entries()) {
+    const names = people.map((p) => p.label).join(', ');
+    parts.push(`${deptName}: ${people.length} (${names})`);
   }
-  return `${deptSummaryLine}. ${peopleParts.slice(0, 3).join('; ')} ${strings.leave.calendarTooltipMore(groups.length - 3)}`;
+  return parts.join(' • ');
 }
 
 export function LeaveLookupTab() {
@@ -648,18 +647,7 @@ export function LeaveLookupTab() {
 
                         const groups = buildEmployeeGroups(dateRows);
                         const deptSegments = departmentAwaySegments(groups);
-                        const deptSummaryLine = deptSegments
-                          .map((s) => `${s.departmentName}: ${s.count}`)
-                          .join(' · ');
-                        const tooltipPreview =
-                          away === 0
-                            ? ''
-                            : groups.length <= 4
-                              ? `${deptSummaryLine}. ${groups.map((g) => `${g.label} (${g.departmentName})`).join('; ')}`
-                              : `${deptSummaryLine}. ${groups
-                                  .slice(0, 3)
-                                  .map((g) => g.label)
-                                  .join(', ')} ${strings.leave.calendarTooltipMore(groups.length - 3)}`;
+                        const tooltipPreview = away === 0 ? '' : calendarDepartmentTooltip(groups);
 
                         const cellInner = (
                           <Box
@@ -808,7 +796,7 @@ export function LeaveLookupTab() {
                   bgcolorW = calendarAwayHeatWash(theme, awayW / maxAwayWeekGrid);
                 }
 
-                const tooltipWeek = awayW > 0 ? weekAggregateTooltip(groupsW) : '';
+                const tooltipWeek = awayW > 0 ? calendarDepartmentTooltip(groupsW) : '';
 
                 const cellWeekInner = (
                   <Box
