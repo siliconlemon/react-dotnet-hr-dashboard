@@ -14,8 +14,8 @@ function osobySklonění(n: number): string {
 
 export const cs = {
   app: {
-    documentTitle: 'HR Dashboard',
-    shellTitle: 'HR Dashboard',
+    documentTitle: 'Smatch HR',
+    shellTitle: 'Smatch HR',
   },
   nav: {
     listAriaLabel: 'Hlavní nabídka',
@@ -26,8 +26,8 @@ export const cs = {
     drawerTitle: 'Navigace',
   },
   shell: {
-    brandShort: 'HR',
-    brandFull: 'Acme HR',
+    brandShort: 'Smatch',
+    brandFull: 'Smatch HR',
     expandSidebar: 'Rozšířit postranní panel',
     collapseSidebar: 'Sbalit postranní panel',
     openMenu: 'Otevřít navigační nabídku',

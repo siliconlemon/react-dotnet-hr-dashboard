@@ -6,23 +6,21 @@
       id="app-favicon"
       rel="icon"
       type="image/svg+xml"
-      href="__FAVICON_LIGHT_HREF__"
+      sizes="any"
+      href="__FAVICON_HREF__"
     />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <!-- Match `COLOR_MODE_STORAGE_KEY` + applyDocumentColorScheme / favicon (ColorModeProvider). Runs before paint. -->
+    <!-- Match `COLOR_MODE_STORAGE_KEY` + applyDocumentColorScheme (ColorModeProvider). Runs before paint. -->
     <script>
       (function () {
         try {
           var k = 'hr-dashboard-color-mode';
           var m = localStorage.getItem(k);
           document.documentElement.style.colorScheme = m === 'dark' ? 'dark' : 'light';
-          var link = document.getElementById('app-favicon');
-          if (link)
-            link.href = m === 'dark' ? '__FAVICON_DARK_HREF__' : '__FAVICON_LIGHT_HREF__';
         } catch (e) {}
       })();
     </script>
-    <title>HR Dashboard</title>
+    <title>Smatch HR</title>
   </head>
   <body>
     <div id="root"></div>

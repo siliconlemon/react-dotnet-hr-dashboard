@@ -9,11 +9,8 @@ export default defineConfig({
     {
       name: 'inject-favicon-href',
       transformIndexHtml(html) {
-        const light = `/favicon.svg?v=${FAVICON_CACHE_KEY}`
-        const dark = `/favicon-dark.svg?v=${FAVICON_CACHE_KEY}`
-        return html
-          .replaceAll('__FAVICON_LIGHT_HREF__', light)
-          .replaceAll('__FAVICON_DARK_HREF__', dark)
+        const href = `/favicon.svg?v=${FAVICON_CACHE_KEY}`
+        return html.replaceAll('__FAVICON_HREF__', href)
       },
     },
   ],

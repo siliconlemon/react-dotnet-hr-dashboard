@@ -26,7 +26,7 @@ import { useMediaQuery } from '@mui/material';
 import type { PaperProps } from '@mui/material/Paper';
 import { useTheme, type Theme } from '@mui/material/styles';
 import { useState, type ReactNode } from 'react';
-import { faviconHrefForMode } from '../../constants/faviconUrl';
+import { FAVICON_URL } from '../../constants/faviconUrl';
 import { strings } from '../../i18n';
 import { DrawerLanguageSwitcher } from './DrawerLanguageSwitcher';
 import { DrawerThemeSwitcher } from './DrawerThemeSwitcher';
@@ -64,12 +64,10 @@ const NAV_TITLE_STRONG_SX = {
 const DRAWER_BRAND_ICON_BUTTON_SX = { p: 1 } as const;
 
 function DrawerBrandFaviconImg() {
-  const theme = useTheme();
-  const src = faviconHrefForMode(theme.palette.mode);
   return (
     <Box
       component="img"
-      src={src}
+      src={FAVICON_URL}
       alt=""
       aria-hidden
       sx={{
@@ -503,15 +501,11 @@ export function AppShell({ children, activeNavKey, onNavKeyChange, breadcrumbIte
                   component={isLast ? 'h1' : 'span'}
                   color={isLast ? 'text.primary' : 'text.secondary'}
                   aria-current={isLast ? 'page' : undefined}
-                  sx={
-                    isLast
-                      ? NAV_TITLE_STRONG_SX
-                      : {
-                          fontWeight: 500,
-                          fontSize: '0.875rem',
-                          lineHeight: 1.3,
-                        }
-                  }
+                  sx={{
+                    fontWeight: 600,
+                    lineHeight: 1.3,
+                    ...(!isLast && { fontSize: '0.875rem' }),
+                  }}
                   noWrap
                 >
                   {label}

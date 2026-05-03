@@ -8,7 +8,6 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import { faviconHrefForMode } from '../constants/faviconUrl';
 import { createEnterpriseTheme } from './enterpriseTheme';
 
 export const COLOR_MODE_STORAGE_KEY = 'hr-dashboard-color-mode';
@@ -23,14 +22,6 @@ function applyDocumentColorScheme(mode: PaletteMode) {
   document.documentElement.style.setProperty('color-scheme', scheme);
   if (document.body) {
     document.body.style.setProperty('color-scheme', scheme);
-  }
-}
-
-function applyTabFavicon(mode: PaletteMode) {
-  if (typeof document === 'undefined') return;
-  const link = document.getElementById('app-favicon');
-  if (link instanceof HTMLLinkElement) {
-    link.href = faviconHrefForMode(mode);
   }
 }
 
@@ -68,7 +59,6 @@ export function ColorModeProvider({ children }: { children: ReactNode }) {
 
   useLayoutEffect(() => {
     applyDocumentColorScheme(mode);
-    applyTabFavicon(mode);
   }, [mode]);
 
   const value = useMemo(() => ({ mode, setMode }), [mode, setMode]);

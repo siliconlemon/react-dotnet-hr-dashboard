@@ -4,8 +4,8 @@
  */
 export const en = {
   app: {
-    documentTitle: 'HR Dashboard',
-    shellTitle: 'HR Dashboard',
+    documentTitle: 'Smatch HR',
+    shellTitle: 'Smatch HR',
   },
   nav: {
     listAriaLabel: 'Main',
@@ -16,8 +16,8 @@ export const en = {
     drawerTitle: 'Navigation',
   },
   shell: {
-    brandShort: 'HR',
-    brandFull: 'Acme HR',
+    brandShort: 'Smatch',
+    brandFull: 'Smatch HR',
     expandSidebar: 'Expand sidebar',
     collapseSidebar: 'Collapse sidebar',
     openMenu: 'Open navigation menu',
