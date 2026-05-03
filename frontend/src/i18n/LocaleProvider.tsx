@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useState, type ReactNode } from 'react';
-import { applyLocale, readStoredLocale, type Locale } from './index';
+import { applyLocale, messagesByLocale, readStoredLocale, type Locale } from './index';
+import type { EnMessages } from './locales/en';
 import { LocaleContext } from './localeContext';
 
 export function LocaleProvider({ children }: { children: ReactNode }) {
@@ -10,7 +11,12 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
     setLocaleState(next);
   }, []);
 
-  const value = useMemo(() => ({ locale, setLocale }), [locale, setLocale]);
+  const strings = useMemo((): EnMessages => messagesByLocale[locale], [locale]);
+
+  const value = useMemo(
+    () => ({ locale, setLocale, strings }),
+    [locale, setLocale, strings],
+  );
 
   return <LocaleContext.Provider value={value}>{children}</LocaleContext.Provider>;
 }

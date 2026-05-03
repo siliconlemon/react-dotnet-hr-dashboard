@@ -11,14 +11,15 @@ import {
   Typography,
 } from '@mui/material';
 import { useCallback, useMemo, useState } from 'react';
-import { strings } from '../../i18n';
 import { useAuth } from '../../auth/AuthContext';
+import { useLocale } from '../../i18n/useLocale';
 import { initialsFromAccount } from '../../utils/accountDisplay';
 
 /**
  * App bar account control: avatar trigger with sign-out. Uses MUI patterns (Avatar + Menu).
  */
 export function AccountToolbarMenu() {
+  const { strings } = useLocale();
   const { user, logout } = useAuth();
   const [anchor, setAnchor] = useState<HTMLElement | null>(null);
   const open = Boolean(anchor);

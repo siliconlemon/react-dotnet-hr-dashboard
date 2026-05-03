@@ -16,7 +16,7 @@ import { getEmployeeById } from './getEmployeeById';
 import { useMemo, useState } from 'react';
 import { deleteEmployee } from '../../api/employeesApi';
 import type { EmployeeReadDto } from '../../api/types';
-import { strings } from '../../i18n';
+import { useLocale } from '../../i18n/useLocale';
 
 type EmployeeRemoveFormProps = {
   employees: EmployeeReadDto[];
@@ -31,6 +31,7 @@ function displayName(e: EmployeeReadDto) {
  * Select an employee and confirm permanent deletion (DELETE /api/employees/:id).
  */
 export function EmployeeRemoveForm({ employees, onRemoved }: EmployeeRemoveFormProps) {
+  const { strings } = useLocale();
   const employeeListKey = useMemo(
     () => JSON.stringify(employees.map((e) => e.id)),
     [employees],

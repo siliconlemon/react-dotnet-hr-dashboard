@@ -18,7 +18,8 @@ import { Controller, useForm } from 'react-hook-form';
 import { fetchDepartments } from '../../api/departmentsApi';
 import { createEmployee } from '../../api/employeesApi';
 import type { DepartmentReadDto, EmployeeReadDto } from '../../api/types';
-import { dayjsCalendarMonthFormat, dayjsPickerDateFormat, strings } from '../../i18n';
+import { dayjsCalendarMonthFormat, dayjsPickerDateFormat } from '../../i18n';
+import { useLocale } from '../../i18n/useLocale';
 
 function todayLocalIsoDate(): string {
   const d = new Date();
@@ -55,6 +56,7 @@ type OnboardingFormProps = {
  * Create-employee form using react-hook-form and MUI fields (POST /api/employees).
  */
 export function OnboardingForm({ onCreated }: OnboardingFormProps) {
+  const { strings } = useLocale();
   const [departments, setDepartments] = useState<DepartmentReadDto[]>([]);
   const [deptError, setDeptError] = useState<string | null>(null);
   const [deptLoading, setDeptLoading] = useState(true);
@@ -102,7 +104,7 @@ export function OnboardingForm({ onCreated }: OnboardingFormProps) {
       }
     })();
     return () => ac.abort();
-  }, []);
+  }, [strings.onboard.departmentsLoadError]);
 
   const onSubmit = handleSubmit(async (values) => {
     setSubmitError(null);

@@ -6,75 +6,73 @@ import { useAuth } from './auth/AuthContext';
 import { LoginView } from './components/auth/LoginView';
 import { DashboardView } from './components/dashboard/DashboardView';
 import { DepartmentsView } from './components/departments/DepartmentsView';
-import type { EmployeesViewTab } from './components/employees/EmployeesView';
 import { AppShell } from './components/layout/AppShell';
-import type { LeaveManagementViewTab } from './components/leave/LeaveManagementView';
 import {
   employeesTabFromPathname,
   leaveTabFromPathname,
   navKeyFromPathname,
 } from './navigation/appPaths';
 import type { NavKey } from './navigation/navKeys';
+import type { EmployeesViewTab, LeaveManagementViewTab } from './navigation/viewTabs';
 import { EmployeesSection, LeaveSection } from './navigation/routedSections';
-import { strings } from './i18n';
+import type { EnMessages } from './i18n/locales/en';
 import { useLocale } from './i18n/useLocale';
 import { useColorMode } from './theme/useColorMode';
 
-function navLabel(key: NavKey): string {
+function navLabel(key: NavKey, s: EnMessages): string {
   switch (key) {
     case 'dashboard':
-      return strings.nav.dashboard;
+      return s.nav.dashboard;
     case 'employees':
-      return strings.nav.employees;
+      return s.nav.employees;
     case 'departments':
-      return strings.nav.departments;
+      return s.nav.departments;
     case 'leave':
-      return strings.nav.leave;
+      return s.nav.leave;
   }
 }
 
-function employeesTabLabel(tab: EmployeesViewTab): string {
+function employeesTabLabel(tab: EmployeesViewTab, s: EnMessages): string {
   switch (tab) {
     case 'directory':
-      return strings.employees.tabDirectory;
+      return s.employees.tabDirectory;
     case 'onboard':
-      return strings.employees.tabOnboard;
+      return s.employees.tabOnboard;
     case 'edit':
-      return strings.employees.tabEdit;
+      return s.employees.tabEdit;
     case 'remove':
-      return strings.employees.tabRemove;
+      return s.employees.tabRemove;
   }
 }
 
-function leaveTabLabel(tab: LeaveManagementViewTab): string {
+function leaveTabLabel(tab: LeaveManagementViewTab, s: EnMessages): string {
   switch (tab) {
     case 'ledger':
-      return strings.leave.tabLedger;
+      return s.leave.tabLedger;
     case 'lookup':
-      return strings.leave.tabLookup;
+      return s.leave.tabLookup;
   }
 }
 
 function AuthenticatedApp() {
   const { user, replaceUser } = useAuth();
   const { mode } = useColorMode();
-  const { locale } = useLocale();
+  const { locale, strings } = useLocale();
   const navigate = useNavigate();
   const { pathname } = useLocation();
 
   const navKey = useMemo(() => navKeyFromPathname(pathname), [pathname]);
 
   const breadcrumbItems = useMemo(() => {
-    void locale;
-    const items: string[] = [navLabel(navKey)];
+    const items: string[] = [navLabel(navKey, strings)];
     if (navKey === 'employees') {
-      items.push(employeesTabLabel(employeesTabFromPathname(pathname)));
+      items.push(employeesTabLabel(employeesTabFromPathname(pathname), strings));
     }
     if (navKey === 'leave') {
-      items.push(leaveTabLabel(leaveTabFromPathname(pathname)));
+      items.push(leaveTabLabel(leaveTabFromPathname(pathname), strings));
     }
     return items;
-  }, [locale, pathname, navKey]);
+  }, [strings, pathname, navKey]);
 
   const leaveTabForPersistence = useMemo((): LeaveManagementViewTab => {
     if (pathname.startsWith('/leave')) {
@@ -86,7 +84,7 @@ function AuthenticatedApp() {
 
   useEffect(() => {
     document.title = strings.app.documentTitle;
-  }, [locale]);
+  }, [strings.app.documentTitle]);
 
   useEffect(() => {
     if (!user) {
@@ -162,11 +160,11 @@ function AuthenticatedApp() {
 
 export default function App() {
   const { status } = useAuth();
-  const { locale } = useLocale();
+  const { strings } = useLocale();
 
   useEffect(() => {
     document.title = strings.app.documentTitle;
-  }, [locale]);
+  }, [strings.app.documentTitle]);
 
   if (status === 'loading') {
     return (

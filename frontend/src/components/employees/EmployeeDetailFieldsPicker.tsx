@@ -16,7 +16,8 @@ import { inputBaseClasses } from '@mui/material/InputBase';
 import { useTheme } from '@mui/material/styles';
 import type { MouseEvent } from 'react';
 import { useCallback, useMemo, useState } from 'react';
-import { strings } from '../../i18n';
+import type { EnMessages } from '../../i18n/locales/en';
+import { useLocale } from '../../i18n/useLocale';
 import {
   EMPLOYEE_PROFILE_FIELD_IDS,
   EMPLOYEE_PTO_FIELD_IDS,
@@ -39,7 +40,7 @@ export type EmployeeDetailFieldsPickerProps = {
   onResetPto: () => void;
 };
 
-function profileLabel(id: EmployeeProfileFieldId): string {
+function profileLabel(id: EmployeeProfileFieldId, strings: EnMessages): string {
   switch (id) {
     case 'email':
       return strings.employees.fieldEmail;
@@ -54,7 +55,7 @@ function profileLabel(id: EmployeeProfileFieldId): string {
   }
 }
 
-function ptoLabel(id: EmployeePtoFieldId): string {
+function ptoLabel(id: EmployeePtoFieldId, strings: EnMessages): string {
   switch (id) {
     case 'calendarYear':
       return strings.employees.ptoYear;
@@ -84,6 +85,7 @@ function EmployeeDetailFieldsPickerPanel({
   onResetProfile,
   onResetPto,
 }: EmployeeDetailFieldsPickerProps) {
+  const { strings } = useLocale();
   const theme = useTheme();
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const [search, setSearch] = useState('');
@@ -103,18 +105,18 @@ function EmployeeDetailFieldsPickerPanel({
     () =>
       EMPLOYEE_PROFILE_FIELD_IDS.map((id) => ({
         id,
-        label: profileLabel(id),
+        label: profileLabel(id, strings),
       })),
-    [],
+    [strings],
   );
 
   const ptoItems = useMemo(
     () =>
       EMPLOYEE_PTO_FIELD_IDS.map((id) => ({
         id,
-        label: ptoLabel(id),
+        label: ptoLabel(id, strings),
       })),
-    [],
+    [strings],
   );
 
   const items =

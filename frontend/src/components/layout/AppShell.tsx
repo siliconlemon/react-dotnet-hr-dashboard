@@ -25,108 +25,23 @@ import {
 } from '@mui/material';
 import { useMediaQuery } from '@mui/material';
 import type { PaperProps } from '@mui/material/Paper';
-import { useTheme, type Theme } from '@mui/material/styles';
-import { useState, type ReactNode } from 'react';
-import { FAVICON_URL } from '../../constants/faviconUrl';
+import { useTheme } from '@mui/material/styles';
+import { useState } from 'react';
 import type { NavKey } from '../../navigation/navKeys';
-import { strings } from '../../i18n';
+import { useLocale } from '../../i18n/useLocale';
+import {
+  DRAWER_BRAND_ICON_BUTTON_SX,
+  DRAWER_COLLAPSED_PX,
+  DRAWER_EXPANDED_PX,
+  DRAWER_NAV_LIST_OUTER_GUTTER_SPACING,
+  drawerToolbarInsetX,
+  NAV_ICON_SLOT_PX,
+  NAV_ITEM_MIN_HEIGHT_PX,
+  NAV_SVG_ICON_PX,
+} from './appShellConstants';
+import { DrawerBrandFaviconImg, DrawerTitleRow } from './AppShellDrawerBrand';
 import { DrawerLanguageSwitcher } from './DrawerLanguageSwitcher';
 import { DrawerThemeSwitcher } from './DrawerThemeSwitcher';
-
-const DRAWER_EXPANDED_PX = 240;
-const DRAWER_COLLAPSED_PX = 64;
-/**
- * Outer list inset (expanded, collapsed, mobile). Nav buttons use `padding: 0` and no extra horizontal inset so the
- * icon column lines up when toggling collapsed ↔ expanded (same offset: list gutter + button border).
- */
-const DRAWER_NAV_LIST_OUTER_GUTTER_SPACING = 1;
-/**
- * Drawer header row horizontal inset: left uses `spacing(2)` (16px); right uses `calc(spacing(2) − 2px)` when expanded
- * so the brand favicon alignment stays consistent when toggling width; right inset may be tighter when collapsed so the
- * control still fits in `DRAWER_COLLAPSED_PX`. Drawer `Toolbar` uses `disableGutters`.
- */
-const drawerToolbarInsetX = (theme: Theme) => `calc(${theme.spacing(2)} - 2px)`;
-/** Favicon in drawer header: same size expanded, collapsed rail, and mobile. */
-const DRAWER_FAVICON_PX = 28;
-
-/** Single row height for nav items in expanded drawer (collapsed uses the same for the square touch target). */
-const NAV_ITEM_MIN_HEIGHT_PX = 44;
-/** Icon slot: centered in the row; collapsed mode uses a fixed square button this tall/wide. */
-const NAV_ICON_SLOT_PX = 40;
-/** Match `fontSize="small"` on nav SvgIcons: lock size so dense rows + flex don’t shrink glyphs when labels appear. */
-const NAV_SVG_ICON_PX = 20;
-
-/** Strong nav title: matches breadcrumb current-page segment (`subtitle1` + weight + line height). */
-const NAV_TITLE_STRONG_SX = {
-  fontWeight: 600,
-  lineHeight: 1.3,
-} as const;
-
-/** Same slot as collapsed rail: small IconButton + `p: 1` (not a plain Box; IconButton has fixed min size). */
-const DRAWER_BRAND_ICON_BUTTON_SX = { p: 1 } as const;
-
-function DrawerBrandFaviconImg() {
-  return (
-    <Box
-      component="img"
-      src={FAVICON_URL}
-      alt=""
-      aria-hidden
-      sx={{
-        width: DRAWER_FAVICON_PX,
-        height: DRAWER_FAVICON_PX,
-        display: 'block',
-      }}
-    />
-  );
-}
-
-/**
- * Brand row: icon + title + optional trailing control in one flex row.
- * Title uses `flex: 1` + `minWidth: 0` so it truncates against the trailing slot. Avoid a stretched
- * empty band between name and control (that read as “padding growing” when the drawer widened).
- */
-function DrawerTitleRow({ title, endSlot }: { title: string; endSlot?: ReactNode }) {
-  return (
-    <Box
-      sx={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: 1,
-        width: '100%',
-        minWidth: 0,
-      }}
-    >
-      <IconButton
-        component="span"
-        size="small"
-        disableRipple
-        tabIndex={-1}
-        aria-hidden
-        sx={{
-          ...DRAWER_BRAND_ICON_BUTTON_SX,
-          cursor: 'default',
-          flexShrink: 0,
-        }}
-      >
-        <DrawerBrandFaviconImg />
-      </IconButton>
-      <Typography
-        variant="subtitle1"
-        color="text.primary"
-        sx={{ ...NAV_TITLE_STRONG_SX, flex: 1, minWidth: 0 }}
-        noWrap
-      >
-        {title}
-      </Typography>
-      {endSlot != null ? (
-        <Box component="span" sx={{ display: 'flex', flexShrink: 0 }}>
-          {endSlot}
-        </Box>
-      ) : null}
-    </Box>
-  );
-}
 
 export type { NavKey };
 
@@ -143,6 +58,7 @@ type AppShellProps = {
  * temporary drawer on small screens.
  */
 export function AppShell({ children, activeNavKey, onNavKeyChange, breadcrumbItems }: AppShellProps) {
+  const { strings } = useLocale();
   const theme = useTheme();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);

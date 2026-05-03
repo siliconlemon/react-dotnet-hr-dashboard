@@ -1,124 +1,28 @@
-import { KeyboardArrowDown, KeyboardArrowUp } from '@mui/icons-material';
-import { Alert, Box, IconButton, Paper, Tab, Tabs, Tooltip, Typography } from '@mui/material';
-import {
-  DataGrid,
-  type GridColDef,
-  type GridFilterItem,
-  type GridFilterModel,
-  type GridPaginationModel,
-  type GridRowSelectionModel,
-} from '@mui/x-data-grid';
+import { Box, Tab, Tabs } from '@mui/material';
+import type { GridFilterModel, GridPaginationModel, GridRowSelectionModel } from '@mui/x-data-grid';
 import { useCallback, useEffect, useMemo, useRef, useState, type SyntheticEvent } from 'react';
 import { fetchEmployees, fetchPtoBalance } from '../../api/employeesApi';
 import type { EmployeeReadDto, PtoBalanceDto } from '../../api/types';
-import { strings } from '../../i18n';
-import { useDataGridLocaleText } from '../../i18n/useDataGridLocaleText';
 import { useLocale } from '../../i18n/useLocale';
-import { dataGridShellSx } from '../../theme/dataGridShellSx';
-import { formatDateOnly } from '../../utils/formatDate';
+import type { EmployeesViewTab } from '../../navigation/viewTabs';
 import { shellUnderBarTabsSx } from '../layout/shellViewChrome';
-import { ViewLoadingGate } from '../layout/ViewLoadingGate';
-import { EmployeeDetailCards } from './EmployeeDetailCards';
-import { EmployeeDetailFieldsPicker } from './EmployeeDetailFieldsPicker';
-import { useEmployeeDetailFieldVisibility } from './useEmployeeDetailFieldVisibility';
 import { EmployeeEditForm } from './EmployeeEditForm';
 import { EmployeeRemoveForm } from './EmployeeRemoveForm';
+import { EmployeesDirectoryTab } from './EmployeesDirectoryTab';
+import {
+  SPLIT_DEFAULT,
+  SPLIT_MAX,
+  SPLIT_MIN,
+  type DetailPanelTier,
+  type EmployeeDirectoryDetailTab,
+} from './employeesDirectoryChrome';
+import { effectiveSelectedRowIds } from './employeesDirectoryGridModel';
 import { OnboardingForm } from './OnboardingForm';
-
-type DetailTab = 'profile' | 'pto';
-
-export type EmployeesViewTab = 'directory' | 'onboard' | 'edit' | 'remove';
+import { useEmployeeDetailFieldVisibility } from './useEmployeeDetailFieldVisibility';
 
 type EmployeesViewProps = {
   viewTab: EmployeesViewTab;
   onViewTabChange: (tab: EmployeesViewTab) => void;
-};
-
-/** Resolves MUI Data Grid row ids (include / exclude selection semantics). */
-function effectiveSelectedRowIds(
-  rows: EmployeeReadDto[],
-  model: GridRowSelectionModel,
-): number[] {
-  const rowIds = rows.map((r) => r.id);
-  if (model.type === 'exclude') {
-    const excluded = new Set(
-      Array.from(model.ids, (id) => Number(id)).filter((n) => !Number.isNaN(n)),
-    );
-    return rowIds.filter((id) => !excluded.has(id));
-  }
-  return Array.from(model.ids, (id) => Number(id)).filter((n) => !Number.isNaN(n));
-}
-
-const NAME_COLUMN_FIELD = 'fullName';
-
-function hasActiveQuickFilter(model: GridFilterModel): boolean {
-  const vals = model.quickFilterValues;
-  if (!vals?.length) return false;
-  return vals.some((v) => String(v ?? '').trim().length > 0);
-}
-
-function isActiveColumnFilterItem(item: GridFilterItem): boolean {
-  if (!item.field) return false;
-  const op = item.operator;
-  if (op === 'isEmpty' || op === 'isNotEmpty') return true;
-  const v = item.value;
-  if (v == null) return false;
-  if (typeof v === 'string' && v.trim() === '') return false;
-  if (Array.isArray(v) && v.length === 0) return false;
-  return true;
-}
-
-function activeColumnFilterFields(model: GridFilterModel): Set<string> {
-  const set = new Set<string>();
-  for (const item of model.items ?? []) {
-    if (isActiveColumnFilterItem(item)) set.add(item.field);
-  }
-  return set;
-}
-
-/** Name is never hideable; while quick filter is on, no column may be hidden; column filters lock their fields. */
-function employeeColumnHideable(
-  field: string,
-  hasQuickFilter: boolean,
-  filteredFields: Set<string>,
-): boolean {
-  if (field === NAME_COLUMN_FIELD) return false;
-  if (hasQuickFilter) return false;
-  if (filteredFields.has(field)) return false;
-  return true;
-}
-
-const SPLIT_MIN = 0.2;
-const SPLIT_MAX = 0.78;
-const SPLIT_DEFAULT = 0.48;
-
-/** Directory detail panel: full overlay, split view, or one-line bar. */
-type DetailPanelTier = 'expanded' | 'normal' | 'collapsed';
-
-const DETAIL_COLLAPSED_PX = 48;
-
-/** Matches split gutter: splitter `py: 0.75` + 1px line + `py: 0.75` ≈ 13px at default spacing. */
-const DETAIL_PANEL_COLLAPSED_TOP_GAP = 1.625;
-
-const detailPanelHeaderRowSx = {
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'space-between',
-  gap: 1,
-  flexShrink: 0,
-  pl: 2.75,
-  pr: 2.25,
-  py: 1,
-  borderBottom: 1,
-  borderColor: 'divider' as const,
-};
-
-const detailPanelTitleTypographySx = {
-  fontWeight: 600,
-  fontSize: '20px',
-  lineHeight: 1.2,
-  minWidth: 0,
-  mt: -0.25,
 };
 
 /**
@@ -132,7 +36,7 @@ export function EmployeesView({ viewTab, onViewTabChange }: EmployeesViewProps) 
     type: 'include',
     ids: new Set(),
   });
-  const [detailTab, setDetailTab] = useState<DetailTab>('profile');
+  const [detailTab, setDetailTab] = useState<EmployeeDirectoryDetailTab>('profile');
   const [ptoByEmployeeId, setPtoByEmployeeId] = useState<Partial<Record<number, PtoBalanceDto>>>({});
   const [ptoErrorByEmployeeId, setPtoErrorByEmployeeId] = useState<Partial<Record<number, boolean>>>(
     {},
@@ -155,8 +59,7 @@ export function EmployeesView({ viewTab, onViewTabChange }: EmployeesViewProps) 
     resetPto: resetDetailPtoFields,
   } = useEmployeeDetailFieldVisibility();
 
-  const dataGridLocaleText = useDataGridLocaleText();
-  const { locale } = useLocale();
+  const { strings } = useLocale();
 
   const reloadEmployees = useCallback(async (signal?: AbortSignal) => {
     setLoading(true);
@@ -172,6 +75,7 @@ export function EmployeesView({ viewTab, onViewTabChange }: EmployeesViewProps) 
     } finally {
       setLoading(false);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- stable fetch identity (same as previous empty-deps behavior)
   }, []);
 
   useEffect(() => {
@@ -272,7 +176,7 @@ export function EmployeesView({ viewTab, onViewTabChange }: EmployeesViewProps) 
   }, [detailTab, selectedKey, selectedIdsSorted]);
 
   const handleDetailTabChange = useCallback(
-    (_: SyntheticEvent, value: DetailTab) => {
+    (_: SyntheticEvent, value: EmployeeDirectoryDetailTab) => {
       setDetailTab(value);
       if (value !== 'pto') {
         setPtoByEmployeeId({});
@@ -325,55 +229,6 @@ export function EmployeesView({ viewTab, onViewTabChange }: EmployeesViewProps) 
     };
   }, [splitDragging]);
 
-  const hasQuickFilter = useMemo(() => hasActiveQuickFilter(filterModel), [filterModel]);
-  const columnFilterFields = useMemo(
-    () => activeColumnFilterFields(filterModel),
-    [filterModel],
-  );
-
-  const columns: GridColDef<EmployeeReadDto>[] = useMemo(
-    () => [
-      {
-        field: 'fullName',
-        headerName: strings.employees.colName,
-        flex: 1,
-        minWidth: 160,
-        sortable: true,
-        hideable: false,
-        valueGetter: (_v, row) => `${row.firstName} ${row.lastName}`.trim(),
-      },
-      {
-        field: 'email',
-        headerName: strings.employees.colEmail,
-        flex: 1.2,
-        minWidth: 200,
-        hideable: employeeColumnHideable('email', hasQuickFilter, columnFilterFields),
-      },
-      {
-        field: 'jobTitle',
-        headerName: strings.employees.colJobTitle,
-        flex: 1,
-        minWidth: 120,
-        hideable: employeeColumnHideable('jobTitle', hasQuickFilter, columnFilterFields),
-      },
-      {
-        field: 'departmentName',
-        headerName: strings.employees.colDepartment,
-        flex: 0.9,
-        minWidth: 130,
-        hideable: employeeColumnHideable('departmentName', hasQuickFilter, columnFilterFields),
-      },
-      {
-        field: 'hireDate',
-        headerName: strings.employees.colHireDate,
-        width: 130,
-        valueFormatter: (value: string) => formatDateOnly(value),
-        hideable: employeeColumnHideable('hireDate', hasQuickFilter, columnFilterFields),
-      },
-    ],
-    [columnFilterFields, hasQuickFilter, locale],
-  );
-
   return (
     <Box
       sx={{
@@ -421,347 +276,37 @@ export function EmployeesView({ viewTab, onViewTabChange }: EmployeesViewProps) 
               theme.transitions.create(['opacity', 'visibility'], { duration: 120 }),
           }}
         >
-          <ViewLoadingGate rawPending={loading}>
-            <Box
-              ref={splitContainerRef}
-              sx={{
-                flex: 1,
-                minHeight: 0,
-                display: 'flex',
-                flexDirection: 'column',
-                overflow: 'hidden',
-              }}
-            >
-            <Box
-              sx={{
-                position: 'relative',
-                flex: 1,
-                minHeight: 0,
-                minWidth: 0,
-                display: 'flex',
-                flexDirection: 'column',
-                overflow: 'hidden',
-                width: '100%',
-                maxWidth: (theme) =>
-                  detailPanelTier === 'expanded' ? 'none' : theme.spacing(125),
-                alignSelf: detailPanelTier === 'expanded' ? 'stretch' : 'flex-start',
-                boxSizing: 'border-box',
-              }}
-            >
-            <Paper
-              sx={{
-                flex:
-                  detailPanelTier === 'normal' ? '0 0 auto' : '1 1 auto',
-                ...(detailPanelTier === 'normal'
-                  ? { height: `${splitFraction * 100}%` }
-                  : {}),
-                minHeight: 140,
-                px: 2,
-                pb: 0,
-                pt: 0,
-                display: 'flex',
-                flexDirection: 'column',
-                overflow: 'hidden',
-                width: '100%',
-                boxSizing: 'border-box',
-                opacity: detailPanelTier === 'expanded' ? 0 : 1,
-                pointerEvents: detailPanelTier === 'expanded' ? 'none' : 'auto',
-                transition: (theme) => theme.transitions.create('opacity', { duration: 160 }),
-              }}
-              variant="outlined"
-            >
-              {loadError && (
-                <Alert
-                  severity="error"
-                  sx={{ mt: 2, mb: 0 }}
-                  onClose={() => setLoadError(null)}
-                >
-                  {loadError}
-                </Alert>
-              )}
-              <Box sx={{ flex: 1, minHeight: 0, minWidth: 0, width: '100%' }}>
-                <DataGrid
-                  rows={rows}
-                  columns={columns}
-                  loading={false}
-                  getRowId={(row) => row.id}
-                  density="compact"
-                  localeText={dataGridLocaleText}
-                  label={strings.employees.title}
-                  showToolbar
-                  filterModel={filterModel}
-                  onFilterModelChange={setFilterModel}
-                  slotProps={{
-                    toolbar: {
-                      showQuickFilter: true,
-                      showHistoryControls: false,
-                      csvOptions: { disableToolbarButton: true },
-                      printOptions: { disableToolbarButton: true },
-                      quickFilterProps: {
-                        debounceMs: 200,
-                        slotProps: {
-                          root: {
-                            placeholder: strings.employees.quickFilterPlaceholder,
-                            size: 'small',
-                          },
-                        },
-                      },
-                    },
-                  }}
-                  paginationModel={paginationModel}
-                  onPaginationModelChange={setPaginationModel}
-                  pageSizeOptions={[5, 10, 25]}
-                  initialState={{
-                    sorting: { sortModel: [{ field: 'fullName', sort: 'asc' }] },
-                  }}
-                  checkboxSelection
-                  rowSelectionModel={selectionModel}
-                  onRowSelectionModelChange={onSelectionChange}
-                  sx={{
-                    ...dataGridShellSx,
-                    border: 'none',
-                    height: '100%',
-                    '& .MuiDataGrid-toolbarContainer': { px: 0, py: 1 },
-                  }}
-                />
-              </Box>
-            </Paper>
-
-            {detailPanelTier === 'normal' && (
-              <Box
-                role="separator"
-                aria-orientation="horizontal"
-                aria-valuemin={Math.round(SPLIT_MIN * 100)}
-                aria-valuemax={Math.round(SPLIT_MAX * 100)}
-                aria-valuenow={Math.round(splitFraction * 100)}
-                onPointerDown={(e) => {
-                  e.preventDefault();
-                  setSplitDragging(true);
-                }}
-                sx={(theme) => ({
-                  flexShrink: 0,
-                  py: 0.75,
-                  px: 1,
-                  display: 'flex',
-                  alignItems: 'center',
-                  cursor: 'row-resize',
-                  touchAction: 'none',
-                  userSelect: 'none',
-                  /** Page backdrop only on middle 2/3 height so `Paper` halo does not tint full gutter. */
-                  background: `linear-gradient(to bottom, transparent 0% 16.67%, ${theme.palette.background.default} 16.67% 83.33%, transparent 83.33% 100%)`,
-                  boxShadow: 'none',
-                  filter: 'none',
-                  '&:hover .EmployeesView-splitterLine': {
-                    opacity: 1,
-                  },
-                  ...(splitDragging && {
-                    '& .EmployeesView-splitterLine': { opacity: 1 },
-                  }),
-                })}
-              >
-                <Box
-                  className="EmployeesView-splitterLine"
-                  sx={(theme) => ({
-                    height: '1px',
-                    width: '100%',
-                    bgcolor: theme.palette.divider,
-                    opacity: 0,
-                    transition: theme.transitions.create('opacity', { duration: 100 }),
-                  })}
-                />
-              </Box>
-            )}
-
-            <Paper
-              sx={{
-                ...(detailPanelTier === 'expanded'
-                  ? {
-                      position: 'absolute',
-                      left: 0,
-                      right: 0,
-                      top: 0,
-                      bottom: 0,
-                      zIndex: 2,
-                      flex: 'none',
-                      maxWidth: 'none',
-                    }
-                  : detailPanelTier === 'collapsed'
-                    ? {
-                        flex: '0 0 auto',
-                        height: DETAIL_COLLAPSED_PX,
-                        minHeight: DETAIL_COLLAPSED_PX,
-                        mt: DETAIL_PANEL_COLLAPSED_TOP_GAP,
-                      }
-                    : {
-                        flex: 1,
-                        minHeight: 0,
-                      }),
-                p: 0,
-                display: 'flex',
-                flexDirection: 'column',
-                overflow: 'hidden',
-                width: '100%',
-                boxSizing: 'border-box',
-              }}
-              variant="outlined"
-            >
-              {detailPanelTier === 'collapsed' ? (
-                <Box sx={{ ...detailPanelHeaderRowSx, height: DETAIL_COLLAPSED_PX, boxSizing: 'border-box' }}>
-                  <Typography
-                    variant="subtitle1"
-                    component="h2"
-                    sx={detailPanelTitleTypographySx}
-                  >
-                    {strings.employees.detailTitle}
-                  </Typography>
-                  <Box sx={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
-                    <Tooltip title={strings.employees.detailPanelRestoreSplit}>
-                      <span>
-                        <IconButton
-                          size="small"
-                          onClick={moveDetailPanelUp}
-                          aria-label={strings.employees.detailPanelRestoreSplit}
-                        >
-                          <KeyboardArrowUp />
-                        </IconButton>
-                      </span>
-                    </Tooltip>
-                    <Tooltip title={strings.employees.detailPanelMinimize}>
-                      <span>
-                        <IconButton
-                          size="small"
-                          disabled
-                          aria-label={strings.employees.detailPanelMinimize}
-                        >
-                          <KeyboardArrowDown />
-                        </IconButton>
-                      </span>
-                    </Tooltip>
-                  </Box>
-                </Box>
-              ) : (
-                <>
-                  <Box sx={detailPanelHeaderRowSx}>
-                    <Typography variant="subtitle1" component="h2" sx={detailPanelTitleTypographySx}>
-                      {strings.employees.detailTitle}
-                    </Typography>
-                    <Box sx={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
-                    <Tooltip
-                      title={
-                        detailPanelTier === 'expanded'
-                          ? strings.employees.detailPanelAlreadyFull
-                          : strings.employees.detailPanelFullHeight
-                      }
-                    >
-                      <span>
-                        <IconButton
-                          size="small"
-                          onClick={moveDetailPanelUp}
-                          disabled={detailPanelTier === 'expanded'}
-                          aria-label={
-                            detailPanelTier === 'expanded'
-                              ? strings.employees.detailPanelAlreadyFull
-                              : strings.employees.detailPanelFullHeight
-                          }
-                        >
-                          <KeyboardArrowUp />
-                        </IconButton>
-                      </span>
-                    </Tooltip>
-                    <Tooltip
-                      title={
-                        detailPanelTier === 'expanded'
-                          ? strings.employees.detailPanelSplitWithTable
-                          : strings.employees.detailPanelMinimize
-                      }
-                    >
-                      <span>
-                        <IconButton
-                          size="small"
-                          onClick={moveDetailPanelDown}
-                          aria-label={
-                            detailPanelTier === 'expanded'
-                              ? strings.employees.detailPanelSplitWithTable
-                              : strings.employees.detailPanelMinimize
-                          }
-                        >
-                          <KeyboardArrowDown />
-                        </IconButton>
-                      </span>
-                    </Tooltip>
-                    </Box>
-                  </Box>
-                  {selectedRows.length === 0 ? (
-                    <Box sx={{ px: 3, py: 2 }}>
-                      <Typography variant="body2" color="text.secondary">
-                        {strings.employees.selectPrompt}
-                      </Typography>
-                    </Box>
-                  ) : (
-                    <>
-                      <Box
-                        sx={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          borderBottom: 1,
-                          borderColor: 'divider',
-                          mb: 1,
-                          flexShrink: 0,
-                        }}
-                      >
-                        <Tabs
-                          value={detailTab}
-                          onChange={handleDetailTabChange}
-                          sx={{
-                            flex: 1,
-                            minWidth: 0,
-                            px: 1,
-                            borderBottom: 0,
-                            marginBlockEnd: 0,
-                          }}
-                        >
-                          <Tab value="profile" label={strings.employees.tabProfile} />
-                          <Tab value="pto" label={strings.employees.tabPto} />
-                        </Tabs>
-                        <Box
-                          sx={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            alignSelf: 'stretch',
-                            width: 48,
-                            pr: 1,
-                          }}
-                        >
-                          <EmployeeDetailFieldsPicker
-                            detailTab={detailTab}
-                            profileVisibility={detailFieldVisibility.profile}
-                            ptoVisibility={detailFieldVisibility.pto}
-                            onProfileVisibilityChange={setProfileVisibility}
-                            onPtoVisibilityChange={setPtoVisibility}
-                            onResetProfile={resetDetailProfileFields}
-                            onResetPto={resetDetailPtoFields}
-                          />
-                        </Box>
-                      </Box>
-                      <Box sx={{ flex: 1, minHeight: 0, overflowY: 'auto', pl: 2, pr: 2, pb: 2 }}>
-                        <EmployeeDetailCards
-                          employees={selectedRows}
-                          detailTab={detailTab}
-                          ptoByEmployeeId={ptoByEmployeeId}
-                          ptoErrorByEmployeeId={ptoErrorByEmployeeId}
-                          ptoLoading={detailTab === 'pto' && ptoLoading}
-                          profileFieldVisibility={detailFieldVisibility.profile}
-                          ptoFieldVisibility={detailFieldVisibility.pto}
-                        />
-                      </Box>
-                    </>
-                  )}
-                </>
-              )}
-            </Paper>
-            </Box>
-          </Box>
-          </ViewLoadingGate>
+          <EmployeesDirectoryTab
+            rows={rows}
+            loading={loading}
+            loadError={loadError}
+            onDismissLoadError={() => setLoadError(null)}
+            selectionModel={selectionModel}
+            onSelectionChange={onSelectionChange}
+            filterModel={filterModel}
+            onFilterModelChange={setFilterModel}
+            paginationModel={paginationModel}
+            onPaginationModelChange={setPaginationModel}
+            splitContainerRef={splitContainerRef}
+            splitFraction={splitFraction}
+            splitDragging={splitDragging}
+            onSplitDraggingChange={setSplitDragging}
+            detailPanelTier={detailPanelTier}
+            onMoveDetailPanelUp={moveDetailPanelUp}
+            onMoveDetailPanelDown={moveDetailPanelDown}
+            detailTab={detailTab}
+            onDetailTabChange={handleDetailTabChange}
+            selectedRows={selectedRows}
+            ptoByEmployeeId={ptoByEmployeeId}
+            ptoErrorByEmployeeId={ptoErrorByEmployeeId}
+            ptoLoading={ptoLoading}
+            profileVisibility={detailFieldVisibility.profile}
+            ptoVisibility={detailFieldVisibility.pto}
+            onProfileVisibilityChange={setProfileVisibility}
+            onPtoVisibilityChange={setPtoVisibility}
+            onResetProfileFields={resetDetailProfileFields}
+            onResetPtoFields={resetDetailPtoFields}
+          />
         </Box>
 
         <Box

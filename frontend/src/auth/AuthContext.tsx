@@ -45,7 +45,9 @@ function applyServerPreferences(
 export function AuthProvider({ children }: { children: ReactNode }) {
   const { setMode } = useColorMode();
   const { setLocale } = useLocale();
-  const [status, setStatus] = useState<AuthStatus>('loading');
+  const [status, setStatus] = useState<AuthStatus>(() =>
+    readStoredAccessToken() ? 'loading' : 'unauthenticated',
+  );
   const [user, setUser] = useState<UserAccountDto | null>(null);
 
   const replaceUser = useCallback((next: UserAccountDto) => {
@@ -55,7 +57,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const token = readStoredAccessToken();
     if (!token) {
-      setStatus('unauthenticated');
       return;
     }
 

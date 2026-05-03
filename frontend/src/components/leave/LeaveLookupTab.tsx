@@ -22,201 +22,40 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material';
-import { alpha, useTheme, type Theme } from '@mui/material/styles';
-import { getISOWeek } from 'date-fns';
+import { alpha, useTheme } from '@mui/material/styles';
 import type { Dayjs } from 'dayjs';
 import dayjs from 'dayjs';
 import { useCallback, useEffect, useMemo, useState, type KeyboardEvent, type MouseEvent } from 'react';
 import { fetchPtoLedgerUsageInRange } from '../../api/ptoLedgerApi';
 import type { PtoLedgerEntryReadDto } from '../../api/types';
-import { strings } from '../../i18n';
 import { useLocale } from '../../i18n/useLocale';
-import { getDepartmentAccent, type EmployeeCardAccent } from '../../theme/employeeCardPalette';
+import { getDepartmentAccent } from '../../theme/employeeCardPalette';
 import { formatDateOnly } from '../../utils/formatDate';
-import { formatEmployeeLedgerDisplay } from '../../utils/formatEmployeeLedger';
+import {
+  buildEmployeeGroups,
+  calendarAwayHeatWash,
+  calendarDepartmentTooltip,
+  calendarOutsideMonthWash,
+  departmentAwaySegments,
+  departmentBuckets,
+  departmentLookupChipColors,
+  formatWeekRangeLabel,
+  isoWeekNumber,
+  isWeekend,
+  rowsForDate,
+  rowsForWeekWeekdays,
+  weekContainsToday,
+  weekendInMonthWash,
+  weeksOverlappingMonth,
+} from './leaveLookupCalendarModel';
 
 /** Same 13px / compact row scale as PTO ledger filter Autocomplete dropdown options. */
 const LEAVE_LOOKUP_MENU_FONT_SIZE = '0.8125rem';
 const LEAVE_LOOKUP_MENU_LINE_HEIGHT = 1.5;
 
-function mondayOfDate(d: Dayjs): Dayjs {
-  const dow = d.day();
-  const delta = dow === 0 ? -6 : 1 - dow;
-  return d.add(delta, 'day').startOf('day');
-}
-
-/** Sat/Sun in local time — usage is not counted on weekends. */
-function isWeekend(d: Dayjs): boolean {
-  const dow = d.day();
-  return dow === 0 || dow === 6;
-}
-
-/**
- * Muted fill for in-month weekends only. Keep visually distinct from
- * {@link Theme.palette.action.hover} used for adjacent-month spillover days.
- */
-function weekendInMonthWash(theme: Theme): string {
-  const { grey } = theme.palette;
-  return theme.palette.mode === 'dark'
-    ? alpha(grey[700], 0.38)
-    : alpha(grey[400], 0.14);
-}
-
-/** ISO weeks that overlap `[month]` (each row Mon–Sun). */
-function weeksOverlappingMonth(month: Dayjs): Dayjs[][] {
-  const y = month.year();
-  const mo = month.month();
-  let weekMon = mondayOfDate(month.startOf('month'));
-  const lastWeekMon = mondayOfDate(month.endOf('month'));
-  const rows: Dayjs[][] = [];
-  while (!weekMon.isAfter(lastWeekMon)) {
-    const days = Array.from({ length: 7 }, (_, i) => weekMon.add(i, 'day'));
-    if (days.some((d) => d.month() === mo && d.year() === y)) {
-      rows.push(days);
-    }
-    weekMon = weekMon.add(7, 'day');
-  }
-  return rows;
-}
-
-function rowsForDate(rows: PtoLedgerEntryReadDto[], dateKey: string): PtoLedgerEntryReadDto[] {
-  return rows.filter((r) => r.effectiveDate.slice(0, 10) === dateKey);
-}
-
-type EmployeeDayDetail = {
-  employeeId: number;
-  label: string;
-  departmentId: number;
-  departmentName: string;
-  ledgerRows: PtoLedgerEntryReadDto[];
-};
-
-function buildEmployeeGroups(rows: PtoLedgerEntryReadDto[]): EmployeeDayDetail[] {
-  const byId = new Map<number, PtoLedgerEntryReadDto[]>();
-  for (const r of rows) {
-    const list = byId.get(r.employeeId);
-    if (list) list.push(r);
-    else byId.set(r.employeeId, [r]);
-  }
-  return [...byId.entries()]
-    .map(([employeeId, ledgerRows]) => {
-      ledgerRows.sort((a, b) => a.id - b.id);
-      const first = ledgerRows[0]!;
-      return {
-        employeeId,
-        label: formatEmployeeLedgerDisplay(first),
-        departmentId: first.departmentId,
-        departmentName: first.departmentName,
-        ledgerRows,
-      };
-    })
-    .sort((a, b) => {
-      const d = a.departmentName.localeCompare(b.departmentName);
-      if (d !== 0) return d;
-      return a.label.localeCompare(b.label);
-    });
-}
-
-function departmentBuckets(groups: EmployeeDayDetail[]): Map<string, EmployeeDayDetail[]> {
-  const m = new Map<string, EmployeeDayDetail[]>();
-  for (const g of groups) {
-    const key = g.departmentName || '—';
-    const list = m.get(key);
-    if (list) list.push(g);
-    else m.set(key, [g]);
-  }
-  return new Map([...m.entries()].sort(([a], [b]) => a.localeCompare(b)));
-}
-
-/** Distinct employees away per department (one square per department in the cell). */
-function departmentAwaySegments(
-  groups: EmployeeDayDetail[],
-): { departmentId: number; departmentName: string; count: number }[] {
-  const m = new Map<number, { departmentName: string; count: number }>();
-  for (const g of groups) {
-    const cur = m.get(g.departmentId);
-    if (cur) cur.count += 1;
-    else m.set(g.departmentId, { departmentName: g.departmentName || '—', count: 1 });
-  }
-  return [...m.entries()]
-    .map(([departmentId, v]) => ({
-      departmentId,
-      departmentName: v.departmentName,
-      count: v.count,
-    }))
-    .sort((a, b) => a.departmentName.localeCompare(b.departmentName));
-}
-
-/** Usage rows Mon–Fri only for the given ISO week row. */
-function rowsForWeekWeekdays(days: Dayjs[], usageRows: PtoLedgerEntryReadDto[]): PtoLedgerEntryReadDto[] {
-  const keys = new Set<string>();
-  for (const d of days) {
-    if (isWeekend(d)) continue;
-    keys.add(d.format('YYYY-MM-DD'));
-  }
-  return usageRows.filter((r) => keys.has(r.effectiveDate.slice(0, 10)));
-}
-
-function formatWeekRangeLabel(weekMonday: Dayjs, localeTag: string): string {
-  const sun = weekMonday.add(6, 'day');
-  const df = new Intl.DateTimeFormat(localeTag, { month: 'short', day: 'numeric' });
-  const y = weekMonday.year();
-  return `${df.format(weekMonday.toDate())}–${df.format(sun.toDate())}, ${y}`;
-}
-
-/**
- * Department count badges: match employee card headers — light = pastel fill + deep name tone
- * (readable on primary heat tints); dark = deep fill + pastel text on `paper`.
- */
-function departmentLookupChipColors(theme: Theme, accent: EmployeeCardAccent) {
-  if (theme.palette.mode === 'dark') {
-    return { bgcolor: accent.nameColor, color: accent.headerBg };
-  }
-  return { bgcolor: accent.headerBg, color: accent.nameColor };
-}
-
-/** Normalized intensity in [0, 1] from (away / maxAway). */
-function calendarAwayHeatWash(theme: Theme, intensity: number): string {
-  const x = Math.min(1, Math.max(0, intensity));
-  if (theme.palette.mode === 'dark') {
-    const low = 0.14;
-    const high = 0.36;
-    return alpha(theme.palette.primary.main, low + x * (high - low));
-  }
-  const low = 0.06;
-  const high = 0.26;
-  return alpha(theme.palette.primary.main, low + x * (high - low));
-}
-
-/** Spillover days outside the visible month — muted but distinct in both modes. */
-function calendarOutsideMonthWash(theme: Theme): string {
-  return theme.palette.mode === 'dark'
-    ? alpha(theme.palette.primary.light, 0.06)
-    : theme.palette.action.hover;
-}
-
-function weekContainsToday(weekMonday: Dayjs): boolean {
-  const today = dayjs().startOf('day');
-  const mon = weekMonday.startOf('day');
-  const sun = weekMonday.add(6, 'day').startOf('day');
-  return !today.isBefore(mon, 'day') && !today.isAfter(sun, 'day');
-}
-
-/** Hover summary: `Engineering: 2 (Jordan Lee, Riley Okonkwo) • Sales: 1 (Taylor Chen)`. */
-function calendarDepartmentTooltip(groups: EmployeeDayDetail[]): string {
-  if (groups.length === 0) return '';
-  const buckets = departmentBuckets(groups);
-  const parts: string[] = [];
-  for (const [deptName, people] of buckets.entries()) {
-    const names = people.map((p) => p.label).join(', ');
-    parts.push(`${deptName}: ${people.length} (${names})`);
-  }
-  return parts.join(' • ');
-}
-
 export function LeaveLookupTab() {
   const theme = useTheme();
-  const { locale } = useLocale();
+  const { locale, strings } = useLocale();
   const localeTag = locale === 'cs' ? 'cs-CZ' : 'en-US';
 
   const [visibleMonth, setVisibleMonth] = useState(() => dayjs().startOf('month'));
@@ -268,7 +107,7 @@ export function LeaveLookupTab() {
       }
     })();
     return () => ac.abort();
-  }, [fetchRange.from, fetchRange.to]);
+  }, [fetchRange.from, fetchRange.to, strings.leave.calendarLoadError]);
 
   const monthTitle = useMemo(() => {
     const d = visibleMonth.toDate();
@@ -343,17 +182,20 @@ export function LeaveLookupTab() {
         title: strings.leave.calendarDetailTitle(formatDayHeading(day)),
       });
     },
-    [formatDayHeading],
+    [formatDayHeading, strings.leave],
   );
 
-  const openWeekPopover = useCallback((ev: MouseEvent<HTMLElement>, weekMonday: Dayjs, rows: PtoLedgerEntryReadDto[]) => {
-    if (rows.length === 0) return;
-    setPopover({
-      anchor: ev.currentTarget,
-      rows,
-      title: strings.leave.calendarDetailTitleWeek(formatWeekRangeLabel(weekMonday, localeTag)),
-    });
-  }, [localeTag]);
+  const openWeekPopover = useCallback(
+    (ev: MouseEvent<HTMLElement>, weekMonday: Dayjs, rows: PtoLedgerEntryReadDto[]) => {
+      if (rows.length === 0) return;
+      setPopover({
+        anchor: ev.currentTarget,
+        rows,
+        title: strings.leave.calendarDetailTitleWeek(formatWeekRangeLabel(weekMonday, localeTag)),
+      });
+    },
+    [localeTag, strings.leave],
+  );
 
   return (
     <Box
@@ -561,44 +403,44 @@ export function LeaveLookupTab() {
           }}
         >
           {layoutMode === 'week' ? (
-          <Table size="small" stickyHeader sx={{ tableLayout: 'fixed', width: '100%', minWidth: 560 }}>
-            <colgroup>
-              <col style={{ width: 72 }} />
-              <col />
-              <col />
-              <col />
-              <col />
-              <col />
-              <col />
-              <col />
-            </colgroup>
-            <TableHead>
-              <TableRow>
-                <TableCell
-                  sx={{
-                    fontWeight: 600,
-                    bgcolor: 'background.paper',
-                    width: 72,
-                    maxWidth: 72,
-                    position: 'sticky',
-                    left: 0,
-                    zIndex: 3,
-                    boxShadow: (t) => `1px 0 0 ${t.palette.divider}`,
-                  }}
-                >
-                  {strings.leave.calendarWeekCol}
-                </TableCell>
-                {weekdayLabels.map((label, wi) => (
-                  <TableCell key={`wd-${wi}`} align="center" sx={{ fontWeight: 600, bgcolor: 'background.paper' }}>
-                    {label}
+            <Table size="small" stickyHeader sx={{ tableLayout: 'fixed', width: '100%', minWidth: 560 }}>
+              <colgroup>
+                <col style={{ width: 72 }} />
+                <col />
+                <col />
+                <col />
+                <col />
+                <col />
+                <col />
+                <col />
+              </colgroup>
+              <TableHead>
+                <TableRow>
+                  <TableCell
+                    sx={{
+                      fontWeight: 600,
+                      bgcolor: 'background.paper',
+                      width: 72,
+                      maxWidth: 72,
+                      position: 'sticky',
+                      left: 0,
+                      zIndex: 3,
+                      boxShadow: (t) => `1px 0 0 ${t.palette.divider}`,
+                    }}
+                  >
+                    {strings.leave.calendarWeekCol}
                   </TableCell>
-                ))}
-              </TableRow>
-            </TableHead>
-            <TableBody>
+                  {weekdayLabels.map((label, wi) => (
+                    <TableCell key={`wd-${wi}`} align="center" sx={{ fontWeight: 600, bgcolor: 'background.paper' }}>
+                      {label}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              </TableHead>
+              <TableBody>
                 {weekRows.map((days) => {
                   const weekMonday = days[0]!;
-                  const isoWeek = getISOWeek(weekMonday.toDate());
+                  const weekNum = isoWeekNumber(weekMonday);
                   return (
                     <TableRow key={weekMonday.format('YYYY-MM-DD')}>
                       <TableCell
@@ -613,7 +455,7 @@ export function LeaveLookupTab() {
                         }}
                       >
                         <Typography variant="caption" component="span" sx={{ fontWeight: 600 }}>
-                          W{isoWeek}
+                          W{weekNum}
                         </Typography>
                       </TableCell>
                       {days.map((day) => {
@@ -741,161 +583,161 @@ export function LeaveLookupTab() {
                     </TableRow>
                   );
                 })}
-            </TableBody>
-          </Table>
+              </TableBody>
+            </Table>
           ) : (
-          <Table size="small" stickyHeader sx={{ tableLayout: 'fixed', width: '100%', minWidth: 320 }}>
-            <colgroup>
-              <col style={{ width: 72 }} />
-              <col />
-            </colgroup>
-            <TableHead>
-              <TableRow>
-                <TableCell
-                  sx={{
-                    fontWeight: 600,
-                    bgcolor: 'background.paper',
-                    width: 72,
-                    maxWidth: 72,
-                    position: 'sticky',
-                    left: 0,
-                    zIndex: 3,
-                    boxShadow: (t) => `1px 0 0 ${t.palette.divider}`,
-                  }}
-                >
-                  {strings.leave.calendarWeekCol}
-                </TableCell>
-                <TableCell align="center" sx={{ fontWeight: 600, bgcolor: 'background.paper' }}>
-                  {strings.leave.calendarWeekSummaryCol}
-                </TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {weekRows.map((days) => {
-                const weekMonday = days[0]!;
-                const isoWeek = getISOWeek(weekMonday.toDate());
-                const rowsW = rowsForWeekWeekdays(days, usageRows);
-                const groupsW = buildEmployeeGroups(rowsW);
-                const awayW = groupsW.length;
-                const deptSegmentsW = departmentAwaySegments(groupsW);
-                const weekRangeLabel = formatWeekRangeLabel(weekMonday, localeTag);
-                const containsToday = weekContainsToday(weekMonday);
-
-                let bgcolorW: string = 'transparent';
-                if (awayW > 0 && maxAwayWeekGrid > 0) {
-                  bgcolorW = calendarAwayHeatWash(theme, awayW / maxAwayWeekGrid);
-                }
-
-                const tooltipWeek = awayW > 0 ? calendarDepartmentTooltip(groupsW) : '';
-
-                const cellWeekInner = (
-                  <Box
-                    role={awayW > 0 ? 'button' : undefined}
-                    tabIndex={awayW > 0 ? 0 : undefined}
-                    onClick={(e) => openWeekPopover(e, weekMonday, rowsW)}
-                    onKeyDown={(e: KeyboardEvent<HTMLElement>) => {
-                      if ((e.key === 'Enter' || e.key === ' ') && awayW > 0) {
-                        e.preventDefault();
-                        openWeekPopover(e as unknown as MouseEvent<HTMLElement>, weekMonday, rowsW);
-                      }
-                    }}
+            <Table size="small" stickyHeader sx={{ tableLayout: 'fixed', width: '100%', minWidth: 320 }}>
+              <colgroup>
+                <col style={{ width: 72 }} />
+                <col />
+              </colgroup>
+              <TableHead>
+                <TableRow>
+                  <TableCell
                     sx={{
-                      minHeight: 36,
-                      display: 'flex',
-                      flexWrap: awayW > 0 ? 'wrap' : 'nowrap',
-                      alignItems: 'center',
-                      alignContent: 'center',
-                      justifyContent: 'center',
-                      gap: awayW > 0 ? 0.5 : 0,
-                      px: awayW > 0 ? 0.25 : 0,
-                      boxSizing: 'border-box',
-                      borderRadius: 1,
-                      cursor: awayW > 0 ? 'pointer' : 'default',
-                      bgcolor: bgcolorW,
-                      color: 'text.primary',
-                      outline: 'none',
-                      boxShadow: containsToday ? `inset 0 0 0 2px ${theme.palette.primary.main}` : undefined,
-                      '&:focus-visible': {
-                        boxShadow: (t) =>
-                          `${containsToday ? `inset 0 0 0 2px ${theme.palette.primary.main}, ` : ''}0 0 0 2px ${t.palette.primary.main}`,
-                      },
+                      fontWeight: 600,
+                      bgcolor: 'background.paper',
+                      width: 72,
+                      maxWidth: 72,
+                      position: 'sticky',
+                      left: 0,
+                      zIndex: 3,
+                      boxShadow: (t) => `1px 0 0 ${t.palette.divider}`,
                     }}
-                    aria-label={strings.leave.calendarWeekCellAria(weekRangeLabel, awayW, {
-                      weekContainsToday: containsToday,
-                    })}
                   >
-                    {awayW > 0 ? (
-                      deptSegmentsW.map((seg) => {
-                        const accent = getDepartmentAccent(seg.departmentId);
-                        return (
-                          <Box
-                            key={seg.departmentId}
-                            sx={{
-                              minWidth: 22,
-                              height: 22,
-                              px: 0.375,
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              borderRadius: 0.75,
-                              ...departmentLookupChipColors(theme, accent),
-                              fontSize: '0.75rem',
-                              fontWeight: theme.typography.fontWeightMedium,
-                              lineHeight: 1,
-                              boxSizing: 'border-box',
-                            }}
-                          >
-                            {seg.count}
-                          </Box>
-                        );
-                      })
-                    ) : (
-                      <Typography variant="body2" component="span" sx={{ fontWeight: 400 }}>
-                        {'\u00a0'}
-                      </Typography>
-                    )}
-                  </Box>
-                );
+                    {strings.leave.calendarWeekCol}
+                  </TableCell>
+                  <TableCell align="center" sx={{ fontWeight: 600, bgcolor: 'background.paper' }}>
+                    {strings.leave.calendarWeekSummaryCol}
+                  </TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {weekRows.map((days) => {
+                  const weekMonday = days[0]!;
+                  const weekNum = isoWeekNumber(weekMonday);
+                  const rowsW = rowsForWeekWeekdays(days, usageRows);
+                  const groupsW = buildEmployeeGroups(rowsW);
+                  const awayW = groupsW.length;
+                  const deptSegmentsW = departmentAwaySegments(groupsW);
+                  const weekRangeLabel = formatWeekRangeLabel(weekMonday, localeTag);
+                  const containsToday = weekContainsToday(weekMonday);
 
-                return (
-                  <TableRow key={`wk-sum-${weekMonday.format('YYYY-MM-DD')}`}>
-                    <TableCell
-                      sx={{
-                        fontWeight: 500,
-                        color: 'text.secondary',
-                        bgcolor: 'background.paper',
-                        position: 'sticky',
-                        left: 0,
-                        zIndex: 1,
-                        boxShadow: (t) => `1px 0 0 ${t.palette.divider}`,
+                  let bgcolorW: string = 'transparent';
+                  if (awayW > 0 && maxAwayWeekGrid > 0) {
+                    bgcolorW = calendarAwayHeatWash(theme, awayW / maxAwayWeekGrid);
+                  }
+
+                  const tooltipWeek = awayW > 0 ? calendarDepartmentTooltip(groupsW) : '';
+
+                  const cellWeekInner = (
+                    <Box
+                      role={awayW > 0 ? 'button' : undefined}
+                      tabIndex={awayW > 0 ? 0 : undefined}
+                      onClick={(e) => openWeekPopover(e, weekMonday, rowsW)}
+                      onKeyDown={(e: KeyboardEvent<HTMLElement>) => {
+                        if ((e.key === 'Enter' || e.key === ' ') && awayW > 0) {
+                          e.preventDefault();
+                          openWeekPopover(e as unknown as MouseEvent<HTMLElement>, weekMonday, rowsW);
+                        }
                       }}
-                    >
-                      <Typography variant="caption" component="span" sx={{ fontWeight: 600 }}>
-                        W{isoWeek}
-                      </Typography>
-                    </TableCell>
-                    <TableCell
-                      align="center"
                       sx={{
-                        verticalAlign: 'middle',
-                        px: 0.75,
-                        py: 0.5,
-                        borderBottom: (t) => `1px solid ${t.palette.divider}`,
+                        minHeight: 36,
+                        display: 'flex',
+                        flexWrap: awayW > 0 ? 'wrap' : 'nowrap',
+                        alignItems: 'center',
+                        alignContent: 'center',
+                        justifyContent: 'center',
+                        gap: awayW > 0 ? 0.5 : 0,
+                        px: awayW > 0 ? 0.25 : 0,
+                        boxSizing: 'border-box',
+                        borderRadius: 1,
+                        cursor: awayW > 0 ? 'pointer' : 'default',
+                        bgcolor: bgcolorW,
+                        color: 'text.primary',
+                        outline: 'none',
+                        boxShadow: containsToday ? `inset 0 0 0 2px ${theme.palette.primary.main}` : undefined,
+                        '&:focus-visible': {
+                          boxShadow: (t) =>
+                            `${containsToday ? `inset 0 0 0 2px ${theme.palette.primary.main}, ` : ''}0 0 0 2px ${t.palette.primary.main}`,
+                        },
                       }}
+                      aria-label={strings.leave.calendarWeekCellAria(weekRangeLabel, awayW, {
+                        weekContainsToday: containsToday,
+                      })}
                     >
                       {awayW > 0 ? (
-                        <Tooltip title={tooltipWeek} enterDelay={400} placement="top">
-                          <span>{cellWeekInner}</span>
-                        </Tooltip>
+                        deptSegmentsW.map((seg) => {
+                          const accent = getDepartmentAccent(seg.departmentId);
+                          return (
+                            <Box
+                              key={seg.departmentId}
+                              sx={{
+                                minWidth: 22,
+                                height: 22,
+                                px: 0.375,
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                borderRadius: 0.75,
+                                ...departmentLookupChipColors(theme, accent),
+                                fontSize: '0.75rem',
+                                fontWeight: theme.typography.fontWeightMedium,
+                                lineHeight: 1,
+                                boxSizing: 'border-box',
+                              }}
+                            >
+                              {seg.count}
+                            </Box>
+                          );
+                        })
                       ) : (
-                        cellWeekInner
+                        <Typography variant="body2" component="span" sx={{ fontWeight: 400 }}>
+                          {'\u00a0'}
+                        </Typography>
                       )}
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
+                    </Box>
+                  );
+
+                  return (
+                    <TableRow key={`wk-sum-${weekMonday.format('YYYY-MM-DD')}`}>
+                      <TableCell
+                        sx={{
+                          fontWeight: 500,
+                          color: 'text.secondary',
+                          bgcolor: 'background.paper',
+                          position: 'sticky',
+                          left: 0,
+                          zIndex: 1,
+                          boxShadow: (t) => `1px 0 0 ${t.palette.divider}`,
+                        }}
+                      >
+                        <Typography variant="caption" component="span" sx={{ fontWeight: 600 }}>
+                          W{weekNum}
+                        </Typography>
+                      </TableCell>
+                      <TableCell
+                        align="center"
+                        sx={{
+                          verticalAlign: 'middle',
+                          px: 0.75,
+                          py: 0.5,
+                          borderBottom: (t) => `1px solid ${t.palette.divider}`,
+                        }}
+                      >
+                        {awayW > 0 ? (
+                          <Tooltip title={tooltipWeek} enterDelay={400} placement="top">
+                            <span>{cellWeekInner}</span>
+                          </Tooltip>
+                        ) : (
+                          cellWeekInner
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
           )}
         </TableContainer>
       </Paper>
@@ -941,12 +783,7 @@ export function LeaveLookupTab() {
                         .map((r) => strings.leave.calendarPopoverPtoAmountLabel(r.amount))
                         .join(' + ');
                       return (
-                        <ListItem
-                          key={p.employeeId}
-                          dense
-                          disableGutters
-                          sx={{ px: 1, py: 0.125, minHeight: 0 }}
-                        >
+                        <ListItem key={p.employeeId} dense disableGutters sx={{ px: 1, py: 0.125, minHeight: 0 }}>
                           <Box
                             sx={{
                               display: 'flex',

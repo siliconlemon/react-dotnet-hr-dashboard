@@ -1,45 +1,8 @@
-import ClearIcon from '@mui/icons-material/Clear';
-import Autocomplete from '@mui/material/Autocomplete';
-import {
-  Alert,
-  Box,
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  FormControl,
-  FormControlLabel,
-  IconButton,
-  InputAdornment,
-  InputLabel,
-  MenuItem,
-  Paper,
-  Radio,
-  RadioGroup,
-  Select,
-  Stack,
-  Tab,
-  Tabs,
-  TextField,
-  Typography,
-} from '@mui/material';
-import {
-  DataGrid,
-  type GridColDef,
-  type GridPaginationModel,
-} from '@mui/x-data-grid';
+import { Box, Tab, Tabs } from '@mui/material';
+import type { GridPaginationModel } from '@mui/x-data-grid';
 import { shellUnderBarTabsSx } from '../layout/shellViewChrome';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import dayjs, { type Dayjs } from 'dayjs';
-import {
-  startTransition,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-  type SyntheticEvent,
-} from 'react';
+import { startTransition, useCallback, useEffect, useMemo, useState, type SyntheticEvent } from 'react';
 import { fetchDepartments } from '../../api/departmentsApi';
 import { fetchEmployees } from '../../api/employeesApi';
 import { createPtoLedgerEntries, fetchPtoLedgerPage } from '../../api/ptoLedgerApi';
@@ -50,46 +13,11 @@ import type {
   PtoLedgerEntryReadDto,
   PtoLedgerEntryTypeDto,
 } from '../../api/types';
-import { dayjsPickerDateFormat, strings } from '../../i18n';
-import { useDataGridLocaleText } from '../../i18n/useDataGridLocaleText';
-import { ViewLoadingGate } from '../layout/ViewLoadingGate';
-import { EmployeePickerField } from '../employees/EmployeePickerField';
-import { LeaveLookupTab } from './LeaveLookupTab';
-import { formatDateOnly, formatDateTime } from '../../utils/formatDate';
-import { formatEmployeeLedgerDisplay } from '../../utils/formatEmployeeLedger';
-import { formatPtoDays } from '../../utils/formatPto';
-import { dataGridShellSx } from '../../theme/dataGridShellSx';
-
-/** Ledger grid default min width for columns using fixed `width`; matches effective date column. */
-const LEDGER_COL_MIN_WIDTH_PX = 107;
-
-/** Match MUI Autocomplete `ClearIndicator`: hidden until hover (fine pointer) or focus-within. */
-const filterSelectFormControlSx = {
-  minWidth: 0,
-  '& .leave-filter-select-clear': { visibility: 'hidden' },
-  '&:focus-within .leave-filter-select-clear': { visibility: 'visible' },
-  '@media (pointer: fine)': {
-    '&:hover .leave-filter-select-clear': { visibility: 'visible' },
-  },
-} as const;
-
-/** Ledger filters: one typography scale for value text, placeholders, and date-picker sections. */
-const leaveFilterFieldFontSize = '0.8125rem';
-const leaveFilterFieldLineHeight = 1.5;
-
-/**
- * Autocomplete dropdowns use a portal; option text inherits Paper `body1`. Ledger filters only — keep options
- * at the same 13px scale as the inputs and DataGrid cells.
- */
-const leaveLedgerFilterAutocompleteListboxSx = {
-  '& .MuiAutocomplete-option': {
-    fontSize: leaveFilterFieldFontSize,
-    lineHeight: leaveFilterFieldLineHeight,
-    fontWeight: 400,
-  },
-} as const;
-
-export type LeaveManagementViewTab = 'ledger' | 'lookup';
+import { useLocale } from '../../i18n/useLocale';
+import type { LeaveManagementViewTab } from '../../navigation/viewTabs';
+import { LeaveLedgerCreateDialog } from './LeaveLedgerCreateDialog.tsx';
+import { LeaveLedgerPanel } from './LeaveLedgerPanel.tsx';
+import { LeaveLookupTab } from './LeaveLookupTab.tsx';
 
 type LeaveManagementViewProps = {
   viewTab: LeaveManagementViewTab;
@@ -97,6 +25,7 @@ type LeaveManagementViewProps = {
 };
 
 export function LeaveManagementView({ viewTab, onViewTabChange }: LeaveManagementViewProps) {
+  const { strings } = useLocale();
   const [employees, setEmployees] = useState<EmployeeReadDto[]>([]);
   const [departments, setDepartments] = useState<DepartmentReadDto[]>([]);
   const [loadMetaError, setLoadMetaError] = useState<string | null>(null);
@@ -128,20 +57,8 @@ export function LeaveManagementView({ viewTab, onViewTabChange }: LeaveManagemen
   const [dialogNote, setDialogNote] = useState('');
   const [dialogSubmitting, setDialogSubmitting] = useState(false);
   const [dialogError, setDialogError] = useState<string | null>(null);
-  const [ledgerLoadBannerDismissed, setLedgerLoadBannerDismissed] = useState(false);
-  const [scopeDeptInfoDismissed, setScopeDeptInfoDismissed] = useState(false);
-
-  const dataGridLocaleText = useDataGridLocaleText();
 
   const ledgerLoadBannerError = loadMetaError ?? gridError;
-
-  useEffect(() => {
-    if (!loadMetaError && !gridError) setLedgerLoadBannerDismissed(false);
-  }, [loadMetaError, gridError]);
-
-  useEffect(() => {
-    setScopeDeptInfoDismissed(false);
-  }, [dialogDepartmentId]);
 
   const handleViewTabChange = useCallback(
     (_: SyntheticEvent, value: LeaveManagementViewTab) => {
@@ -166,24 +83,23 @@ export function LeaveManagementView({ viewTab, onViewTabChange }: LeaveManagemen
       }
     })();
     return () => ac.abort();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- fetch roster once on mount (locale does not affect API payload)
   }, []);
 
   const reloadLedger = useCallback(async () => {
-    void refreshToken; // invalidation bump (dialog submit); must affect callback identity
+    void refreshToken;
     setGridLoading(true);
     setGridError(null);
     try {
-      const page = await fetchPtoLedgerPage(
-        {
-          employeeId: filterEmployeeId === '' ? undefined : Number(filterEmployeeId),
-          departmentId: filterDepartmentId === '' ? undefined : Number(filterDepartmentId),
-          fromDate: filterFrom ? filterFrom.format('YYYY-MM-DD') : undefined,
-          toDate: filterTo ? filterTo.format('YYYY-MM-DD') : undefined,
-          entryType: filterEntryType || undefined,
-          page: paginationModel.page,
-          pageSize: paginationModel.pageSize,
-        },
-      );
+      const page = await fetchPtoLedgerPage({
+        employeeId: filterEmployeeId === '' ? undefined : Number(filterEmployeeId),
+        departmentId: filterDepartmentId === '' ? undefined : Number(filterDepartmentId),
+        fromDate: filterFrom ? filterFrom.format('YYYY-MM-DD') : undefined,
+        toDate: filterTo ? filterTo.format('YYYY-MM-DD') : undefined,
+        entryType: filterEntryType || undefined,
+        page: paginationModel.page,
+        pageSize: paginationModel.pageSize,
+      });
       setRows(page.items);
       setTotalCount(page.totalCount);
     } catch {
@@ -202,6 +118,7 @@ export function LeaveManagementView({ viewTab, onViewTabChange }: LeaveManagemen
     paginationModel.page,
     paginationModel.pageSize,
     refreshToken,
+    strings.leave.loadError,
   ]);
 
   useEffect(() => {
@@ -215,101 +132,6 @@ export function LeaveManagementView({ viewTab, onViewTabChange }: LeaveManagemen
     const did = Number(dialogDepartmentId);
     return employees.filter((e) => e.departmentId === did).length;
   }, [dialogDepartmentId, employees]);
-
-  const entryTypeLabel = useCallback((t: PtoLedgerEntryTypeDto) => {
-    switch (t) {
-      case 'accrual':
-        return strings.leave.entryAccrual;
-      case 'usage':
-        return strings.leave.entryUsage;
-      case 'adjustment':
-        return strings.leave.entryAdjustment;
-      default:
-        return t;
-    }
-  }, []);
-
-  /** Ledger rows may omit email; match picker roster so the grid still shows name (email). */
-  const employeeEmailById = useMemo(() => {
-    const m = new Map<number, string>();
-    for (const e of employees) {
-      const em = e.email?.trim();
-      if (em) m.set(e.id, em);
-    }
-    return m;
-  }, [employees]);
-
-  const columns = useMemo<GridColDef<PtoLedgerEntryReadDto>[]>(
-    () => [
-      {
-        field: 'effectiveDate',
-        headerName: strings.leave.colEffectiveDate,
-        width: LEDGER_COL_MIN_WIDTH_PX,
-        minWidth: LEDGER_COL_MIN_WIDTH_PX,
-        sortable: false,
-        valueGetter: (_, row) => formatDateOnly(row.effectiveDate),
-      },
-      {
-        field: 'entryType',
-        headerName: strings.leave.colEntryType,
-        width: 105,
-        minWidth: LEDGER_COL_MIN_WIDTH_PX,
-        sortable: false,
-        valueGetter: (_, row) => entryTypeLabel(row.entryType),
-      },
-      {
-        field: 'amount',
-        headerName: strings.leave.colAmount,
-        width: 110,
-        minWidth: LEDGER_COL_MIN_WIDTH_PX,
-        sortable: false,
-        align: 'right',
-        headerAlign: 'right',
-        valueGetter: (_, row) => formatPtoDays(row.amount),
-      },
-      {
-        field: 'employee',
-        headerName: strings.leave.colEmployee,
-        flex: 1.375,
-        minWidth: 219,
-        sortable: false,
-        valueGetter: (_, row) =>
-          formatEmployeeLedgerDisplay(row, employeeEmailById.get(row.employeeId)),
-      },
-      {
-        field: 'departmentName',
-        headerName: strings.leave.colDepartment,
-        flex: 0.6,
-        minWidth: LEDGER_COL_MIN_WIDTH_PX,
-        sortable: false,
-      },
-      {
-        field: 'note',
-        headerName: strings.leave.colNote,
-        flex: 1.2,
-        minWidth: 140,
-        sortable: false,
-        valueGetter: (_, row) => row.note ?? '',
-      },
-      {
-        field: 'createdAt',
-        headerName: strings.leave.colCreatedAt,
-        width: 188,
-        minWidth: LEDGER_COL_MIN_WIDTH_PX,
-        sortable: false,
-        valueGetter: (_, row) => formatDateTime(row.createdAt),
-      },
-      {
-        field: 'createdBy',
-        headerName: strings.leave.colCreatedBy,
-        width: 100,
-        minWidth: LEDGER_COL_MIN_WIDTH_PX,
-        sortable: false,
-        valueGetter: (_, row) => row.createdBy ?? '-',
-      },
-    ],
-    [employeeEmailById, entryTypeLabel],
-  );
 
   const clearFilters = useCallback(() => {
     setFilterEmployeeId('');
@@ -402,11 +224,7 @@ export function LeaveManagementView({ viewTab, onViewTabChange }: LeaveManagemen
         overflow: 'hidden',
       }}
     >
-      <Tabs
-        value={viewTab}
-        onChange={handleViewTabChange}
-        sx={shellUnderBarTabsSx}
-      >
+      <Tabs value={viewTab} onChange={handleViewTabChange} sx={shellUnderBarTabsSx}>
         <Tab value="ledger" label={strings.leave.tabLedger} />
         <Tab value="lookup" label={strings.leave.tabLookup} />
       </Tabs>
@@ -436,443 +254,77 @@ export function LeaveManagementView({ viewTab, onViewTabChange }: LeaveManagemen
               theme.transitions.create(['opacity', 'visibility'], { duration: 120 }),
           }}
         >
-          <Paper
-            variant="outlined"
-            sx={{
-              flex: 1,
-              minHeight: 0,
-              display: 'flex',
-              flexDirection: 'column',
-              overflow: 'hidden',
-              px: 2,
-              pt: 2,
-              pb: 0,
-              boxSizing: 'border-box',
-            }}
-          >
-            <Box sx={{ flexShrink: 0 }}>
-              <Typography variant="h5" component="h2" sx={{ fontWeight: 600 }}>
-                {strings.leave.ledgerTitle}
-              </Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-                {strings.leave.ledgerSubtitle}
-              </Typography>
-            </Box>
-
-            {ledgerLoadBannerError && !ledgerLoadBannerDismissed ? (
-              <Alert
-                severity="error"
-                sx={{ mt: 2, flexShrink: 0 }}
-                onClose={() => setLedgerLoadBannerDismissed(true)}
-              >
-                {ledgerLoadBannerError}
-              </Alert>
-            ) : null}
-
-            <Box
-              sx={{
-                display: 'grid',
-            gap: 1,
-            alignItems: 'end',
-            mb: 1,
-            mt: 2,
-            flexShrink: 0,
-            gridTemplateColumns: {
-              xs: '1fr',
-              sm: 'repeat(2, minmax(0, 1fr))',
-              md: 'repeat(3, minmax(0, 1fr))',
-              lg: 'repeat(4, minmax(0, 1fr))',
-              xl:
-                'minmax(180px, 1.75fr) minmax(160px, 1fr) minmax(170px, 0.75fr) minmax(170px, 0.75fr) minmax(130px, 1fr) auto auto',
-            },
-            /** One row height for employee picker, selects, date fields, and actions (~theme small OutlinedInput). */
-            '& .MuiOutlinedInput-root, & .MuiPickersOutlinedInput-root, & .MuiPickersInputBase-root': {
-              fontSize: leaveFilterFieldFontSize,
-              lineHeight: leaveFilterFieldLineHeight,
-              minHeight: 40,
-              boxSizing: 'border-box',
-            },
-            '& .MuiOutlinedInput-input, & .MuiInputBase-input': {
-              fontSize: 'inherit',
-              lineHeight: 'inherit',
-              '&::placeholder': {
-                fontSize: 'inherit',
-                lineHeight: 'inherit',
-              },
-            },
-            '& .MuiPickersSectionList-root, & .MuiPickersInputBase-sectionContent, & .MuiPickersSectionList-sectionContent':
-              {
-                fontSize: leaveFilterFieldFontSize,
-                lineHeight: leaveFilterFieldLineHeight,
-              },
-            '& .MuiInputLabel-root': { fontSize: leaveFilterFieldFontSize },
-            '& .MuiSelect-select': {
-              display: 'flex',
-              alignItems: 'center',
-              fontSize: leaveFilterFieldFontSize,
-              lineHeight: leaveFilterFieldLineHeight,
-            },
-          }}
-        >
-          <Box sx={{ minWidth: 0 }}>
-            <EmployeePickerField
-              employees={employees}
-              valueId={filterEmployeeId}
-              onChangeId={(id) => {
-                setFilterEmployeeId(id);
-                setPaginationModel((m) => ({ ...m, page: 0 }));
-              }}
-              label={strings.leave.filterEmployee}
-              clearButtonAriaLabel={strings.leave.clearField}
-              listboxSlotSx={leaveLedgerFilterAutocompleteListboxSx}
-            />
-          </Box>
-          <FormControl fullWidth size="small" sx={{ minWidth: 0 }}>
-            <Autocomplete
-              size="small"
-              options={departments}
-              value={
-                filterDepartmentId === ''
-                  ? null
-                  : departments.find((d) => Number(d.id) === Number(filterDepartmentId)) ?? null
-              }
-              onChange={(_, next) => {
-                setFilterDepartmentId(next == null ? '' : Number(next.id));
-                setPaginationModel((m) => ({ ...m, page: 0 }));
-              }}
-              getOptionLabel={(d) => d.name}
-              isOptionEqualToValue={(a, b) => Number(a.id) === Number(b.id)}
-              autoHighlight
-              blurOnSelect
-              disableClearable={filterDepartmentId === ''}
-              slotProps={{
-                popper: {
-                  placement: 'bottom-start',
-                  modifiers: [{ name: 'offset', options: { offset: [0, 4] } }],
-                  sx: {
-                    '& .MuiPaper-root': {
-                      transition: (theme) =>
-                        theme.transitions.create(['box-shadow', 'opacity'], { duration: 150 }),
-                    },
-                  },
-                },
-                paper: {
-                  elevation: 4,
-                  sx: (theme) => ({
-                    mt: 0.25,
-                    borderRadius: 1,
-                    border: `1px solid ${theme.palette.divider}`,
-                    boxShadow: theme.shadows[8],
-                  }),
-                },
-                clearIndicator: { 'aria-label': strings.leave.clearField },
-                listbox: {
-                  sx: leaveLedgerFilterAutocompleteListboxSx,
-                },
-              }}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  label={strings.leave.filterDepartment}
-                  size="small"
-                  placeholder={strings.leave.filterAll}
-                  slotProps={{
-                    ...params.slotProps,
-                    htmlInput: {
-                      ...params.slotProps?.htmlInput,
-                      autoComplete: 'off',
-                    },
-                  }}
-                />
-              )}
-            />
-          </FormControl>
-          <DatePicker
-            format={dayjsPickerDateFormat()}
-            label={strings.leave.filterFrom}
-            value={filterFrom}
-            onChange={(v) => {
-              setFilterFrom(v);
-              setPaginationModel((m) => ({ ...m, page: 0 }));
-            }}
-            slotProps={{
-              field: { clearable: true },
-              textField: { size: 'small', fullWidth: true },
-            }}
+          <LeaveLedgerPanel
+            employees={employees}
+            departments={departments}
+            ledgerLoadBannerError={ledgerLoadBannerError}
+            rows={rows}
+            totalCount={totalCount}
+            gridLoading={gridLoading}
+            filterEmployeeId={filterEmployeeId}
+            setFilterEmployeeId={setFilterEmployeeId}
+            filterDepartmentId={filterDepartmentId}
+            setFilterDepartmentId={setFilterDepartmentId}
+            filterFrom={filterFrom}
+            setFilterFrom={setFilterFrom}
+            filterTo={filterTo}
+            setFilterTo={setFilterTo}
+            filterEntryType={filterEntryType}
+            setFilterEntryType={setFilterEntryType}
+            paginationModel={paginationModel}
+            setPaginationModel={setPaginationModel}
+            onClearFilters={clearFilters}
+            onOpenCreateDialog={openDialog}
           />
-          <DatePicker
-            format={dayjsPickerDateFormat()}
-            label={strings.leave.filterTo}
-            value={filterTo}
-            onChange={(v) => {
-              setFilterTo(v);
-              setPaginationModel((m) => ({ ...m, page: 0 }));
-            }}
-            slotProps={{
-              field: { clearable: true },
-              textField: { size: 'small', fullWidth: true },
-            }}
-          />
-          <FormControl size="small" fullWidth sx={filterSelectFormControlSx}>
-            <InputLabel id="leave-filter-type-label">{strings.leave.filterEntryType}</InputLabel>
-            <Select
-              labelId="leave-filter-type-label"
-              label={strings.leave.filterEntryType}
-              value={filterEntryType}
-              onChange={(e) => {
-                setFilterEntryType(e.target.value as PtoLedgerEntryTypeDto | '');
-                setPaginationModel((m) => ({ ...m, page: 0 }));
-              }}
-              endAdornment={
-                filterEntryType !== '' ? (
-                  <InputAdornment position="end" sx={{ mr: 1.5, maxHeight: 'unset' }}>
-                    <IconButton
-                      className="leave-filter-select-clear"
-                      size="small"
-                      aria-label={strings.leave.clearField}
-                      onMouseDown={(e) => e.preventDefault()}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setFilterEntryType('');
-                        setPaginationModel((m) => ({ ...m, page: 0 }));
-                      }}
-                    >
-                      <ClearIcon fontSize="small" />
-                    </IconButton>
-                  </InputAdornment>
-                ) : undefined
-              }
-            >
-              <MenuItem value="">{strings.leave.filterAll}</MenuItem>
-              <MenuItem value="accrual">{strings.leave.entryAccrual}</MenuItem>
-              <MenuItem value="usage">{strings.leave.entryUsage}</MenuItem>
-              <MenuItem value="adjustment">{strings.leave.entryAdjustment}</MenuItem>
-            </Select>
-          </FormControl>
-          <Button
-            variant="outlined"
-            size="small"
-            onClick={clearFilters}
-            sx={{
-              justifySelf: { xs: 'stretch', xl: 'start' },
-              width: { xs: '100%', xl: 'auto' },
-              minWidth: { xs: 'auto', sm: 112 },
-              minHeight: 40,
-              boxSizing: 'border-box',
-              fontSize: '0.8125rem',
-              lineHeight: 1.5,
-              py: 0.75,
-              whiteSpace: 'nowrap',
-            }}
-          >
-            {strings.leave.clearFilters}
-          </Button>
-          <Button
-            variant="contained"
-            size="small"
-            onClick={openDialog}
-            sx={{
-              justifySelf: { xs: 'stretch', xl: 'start' },
-              width: { xs: '100%', xl: 'auto' },
-              minWidth: { xs: 'auto', sm: 112 },
-              minHeight: 40,
-              boxSizing: 'border-box',
-              fontSize: '0.8125rem',
-              lineHeight: 1.5,
-              py: 0.75,
-              whiteSpace: 'nowrap',
-            }}
-          >
-            {strings.leave.addEntry}
-          </Button>
         </Box>
-
         <Box
+          aria-hidden={viewTab !== 'lookup'}
           sx={{
-            flex: 1,
-            minHeight: 0,
-            minWidth: 0,
-            width: '100%',
+            position: 'absolute',
+            inset: 0,
             display: 'flex',
             flexDirection: 'column',
+            alignItems: 'stretch',
+            justifyContent: 'flex-start',
+            overflowX: 'hidden',
+            overflowY: 'auto',
+            opacity: viewTab === 'lookup' ? 1 : 0,
+            visibility: viewTab === 'lookup' ? 'visible' : 'hidden',
+            pointerEvents: viewTab === 'lookup' ? 'auto' : 'none',
+            zIndex: viewTab === 'lookup' ? 1 : 0,
+            transition: (theme) =>
+              theme.transitions.create(['opacity', 'visibility'], { duration: 120 }),
           }}
         >
-          <ViewLoadingGate rawPending={gridLoading}>
-            <Box sx={{ flex: 1, minHeight: 0, minWidth: 0, width: '100%', overflow: 'hidden' }}>
-              <DataGrid
-                rows={rows}
-                columns={columns}
-                getRowId={(r) => r.id}
-                density="compact"
-                localeText={dataGridLocaleText}
-                label={strings.leave.ledgerTitle}
-                loading={false}
-                paginationMode="server"
-                rowCount={totalCount}
-                paginationModel={paginationModel}
-                onPaginationModelChange={setPaginationModel}
-                pageSizeOptions={[10, 25, 50]}
-                disableColumnSorting
-                disableRowSelectionOnClick
-                sx={{
-                  ...dataGridShellSx,
-                  border: 'none',
-                  height: '100%',
-                  width: '100%',
-                }}
-              />
-            </Box>
-          </ViewLoadingGate>
+          <LeaveLookupTab />
         </Box>
-          </Paper>
-          </Box>
-          <Box
-            aria-hidden={viewTab !== 'lookup'}
-            sx={{
-              position: 'absolute',
-              inset: 0,
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'stretch',
-              justifyContent: 'flex-start',
-              overflowX: 'hidden',
-              overflowY: 'auto',
-              opacity: viewTab === 'lookup' ? 1 : 0,
-              visibility: viewTab === 'lookup' ? 'visible' : 'hidden',
-              pointerEvents: viewTab === 'lookup' ? 'auto' : 'none',
-              zIndex: viewTab === 'lookup' ? 1 : 0,
-              transition: (theme) =>
-                theme.transitions.create(['opacity', 'visibility'], { duration: 120 }),
-            }}
-          >
-            <LeaveLookupTab />
-          </Box>
-        </Box>
+      </Box>
 
-      <Dialog open={dialogOpen} onClose={() => !dialogSubmitting && setDialogOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>{strings.leave.dialogTitle}</DialogTitle>
-        <DialogContent>
-          <Stack spacing={2} sx={{ pt: 1 }}>
-            {dialogError ? (
-              <Alert severity="error" onClose={() => setDialogError(null)}>
-                {dialogError}
-              </Alert>
-            ) : null}
-            <FormControl component="fieldset">
-              <Typography variant="subtitle2" sx={{ mb: 0.5 }}>
-                {strings.leave.scopeLabel}
-              </Typography>
-              <RadioGroup
-                row
-                value={dialogScope}
-                onChange={(_, v) => setDialogScope(v as 'employee' | 'department')}
-              >
-                <FormControlLabel value="employee" control={<Radio size="small" />} label={strings.leave.scopeEmployee} />
-                <FormControlLabel
-                  value="department"
-                  control={<Radio size="small" />}
-                  label={strings.leave.scopeDepartment}
-                />
-              </RadioGroup>
-            </FormControl>
-
-            {dialogScope === 'employee' ? (
-              <EmployeePickerField
-                employees={employees}
-                valueId={dialogEmployeeId}
-                onChangeId={setDialogEmployeeId}
-                label={strings.leave.pickEmployee}
-                listboxSlotSx={leaveLedgerFilterAutocompleteListboxSx}
-              />
-            ) : (
-              <>
-                <FormControl fullWidth size="small">
-                  <InputLabel id="leave-dialog-dept">{strings.leave.pickDepartment}</InputLabel>
-                  <Select
-                    labelId="leave-dialog-dept"
-                    label={strings.leave.pickDepartment}
-                    value={dialogDepartmentId === '' ? '' : String(dialogDepartmentId)}
-                    onChange={(e) => {
-                      const v = e.target.value;
-                      setDialogDepartmentId(v === '' ? '' : Number(v));
-                    }}
-                  >
-                    <MenuItem value="">
-                      <em>{strings.onboard.departmentPlaceholder}</em>
-                    </MenuItem>
-                    {departments.map((d) => (
-                      <MenuItem key={d.id} value={String(d.id)}>
-                        {d.name}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-                {dialogDepartmentId !== '' && !scopeDeptInfoDismissed ? (
-                  <Alert
-                    severity="info"
-                    onClose={() => setScopeDeptInfoDismissed(true)}
-                  >
-                    {strings.leave.scopeDeptExplain(deptMemberCount)}
-                  </Alert>
-                ) : null}
-              </>
-            )}
-
-            <FormControl fullWidth size="small">
-              <InputLabel id="leave-dialog-entry-type">{strings.leave.fieldEntryType}</InputLabel>
-              <Select
-                labelId="leave-dialog-entry-type"
-                label={strings.leave.fieldEntryType}
-                value={dialogEntryType}
-                onChange={(e) => setDialogEntryType(e.target.value as PtoLedgerEntryTypeDto)}
-              >
-                <MenuItem value="accrual">{strings.leave.entryAccrual}</MenuItem>
-                <MenuItem value="usage">{strings.leave.entryUsage}</MenuItem>
-                <MenuItem value="adjustment">{strings.leave.entryAdjustment}</MenuItem>
-              </Select>
-            </FormControl>
-
-            <TextField
-              label={strings.leave.fieldAmount}
-              size="small"
-              fullWidth
-              type="number"
-              slotProps={{ htmlInput: { step: 0.5 } }}
-              value={dialogAmount}
-              onChange={(e) => setDialogAmount(e.target.value)}
-              helperText={
-                dialogEntryType === 'adjustment' ? strings.leave.adjustmentAmountHint : undefined
-              }
-            />
-
-            <DatePicker
-              format={dayjsPickerDateFormat()}
-              label={strings.leave.fieldEffectiveDate}
-              value={dialogEffective}
-              onChange={(v) => setDialogEffective(v)}
-              slotProps={{ textField: { size: 'small', fullWidth: true } }}
-            />
-
-            <TextField
-              label={strings.leave.fieldNote}
-              size="small"
-              fullWidth
-              multiline
-              minRows={2}
-              value={dialogNote}
-              onChange={(e) => setDialogNote(e.target.value)}
-            />
-          </Stack>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDialogOpen(false)} disabled={dialogSubmitting}>
-            {strings.leave.dialogCancel}
-          </Button>
-          <Button variant="contained" onClick={() => void submitDialog()} disabled={dialogSubmitting}>
-            {dialogSubmitting ? strings.leave.dialogSaving : strings.leave.dialogSave}
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <LeaveLedgerCreateDialog
+        open={dialogOpen}
+        submitting={dialogSubmitting}
+        error={dialogError}
+        onDismissError={() => setDialogError(null)}
+        onClose={() => setDialogOpen(false)}
+        onSubmit={submitDialog}
+        employees={employees}
+        departments={departments}
+        scope={dialogScope}
+        onScopeChange={setDialogScope}
+        employeeId={dialogEmployeeId}
+        onEmployeeIdChange={setDialogEmployeeId}
+        departmentId={dialogDepartmentId}
+        onDepartmentIdChange={setDialogDepartmentId}
+        entryType={dialogEntryType}
+        onEntryTypeChange={setDialogEntryType}
+        amount={dialogAmount}
+        onAmountChange={setDialogAmount}
+        effective={dialogEffective}
+        onEffectiveChange={setDialogEffective}
+        note={dialogNote}
+        onNoteChange={setDialogNote}
+        deptMemberCount={deptMemberCount}
+      />
     </Box>
   );
 }

@@ -11,7 +11,7 @@ import {
   Typography,
 } from '@mui/material';
 import { alpha } from '@mui/material/styles';
-import { Fragment, useEffect, useState } from 'react';
+import { Fragment, useState } from 'react';
 
 export type EmployeeEditChangeRow = {
   label: string;
@@ -33,6 +33,16 @@ type EmployeeEditChangesDialogProps = {
   errorMessage?: string | null;
 };
 
+function ChangesDialogErrorBanner({ message }: { message: string }) {
+  const [hidden, setHidden] = useState(false);
+  if (hidden) return null;
+  return (
+    <Alert severity="error" onClose={() => setHidden(true)}>
+      {message}
+    </Alert>
+  );
+}
+
 /**
  * Changes sit in one grid: column 1 is as wide as the longest field label (plus padding);
  * column 2 holds the before → after blocks.
@@ -50,12 +60,6 @@ export function EmployeeEditChangesDialog({
   confirming,
   errorMessage,
 }: EmployeeEditChangesDialogProps) {
-  const [errorBannerHidden, setErrorBannerHidden] = useState(false);
-
-  useEffect(() => {
-    setErrorBannerHidden(false);
-  }, [errorMessage]);
-
   return (
     <Dialog
       open={open}
@@ -67,10 +71,8 @@ export function EmployeeEditChangesDialog({
       <DialogTitle id="employee-edit-changes-title">{title}</DialogTitle>
       <DialogContent>
         <Stack spacing={2} sx={{ pt: 0.5, width: '100%', minWidth: 0 }}>
-          {errorMessage && !errorBannerHidden ? (
-            <Alert severity="error" onClose={() => setErrorBannerHidden(true)}>
-              {errorMessage}
-            </Alert>
+          {errorMessage ? (
+            <ChangesDialogErrorBanner key={errorMessage} message={errorMessage} />
           ) : null}
           {subtitle ? (
             <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.5 }}>

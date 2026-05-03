@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { ViewLoadingGate } from '../layout/ViewLoadingGate';
 import { fetchDepartmentPtoMatrix } from '../../api/departmentsApi';
 import type { DepartmentPtoMatrixResponseDto } from '../../api/types';
-import { strings } from '../../i18n';
+import { useLocale } from '../../i18n/useLocale';
 import { formatDateOnly } from '../../utils/formatDate';
 import { formatPtoDays } from '../../utils/formatPto';
 import { accentAmbientHalo } from '../../theme/enterpriseTheme';
@@ -133,6 +133,7 @@ function SpotlightCard({
   accent: 'high' | 'low';
 }) {
   const theme = useTheme();
+  const { strings } = useLocale();
   const accentMain =
     accent === 'high' ? theme.palette.primary.main : theme.palette.warning.main;
   const bg = alpha(accentMain, accent === 'high' ? 0.06 : 0.09);
@@ -202,6 +203,7 @@ function SpotlightCard({
 }
 
 function DepartmentBreakdownCard({ kpis }: { kpis: WorkforceKpis }) {
+  const { strings } = useLocale();
   return (
     <Card
       variant="outlined"
@@ -271,6 +273,7 @@ function DepartmentBreakdownCard({ kpis }: { kpis: WorkforceKpis }) {
  * Workforce digest: KPI tiles derived from `GET /api/departments/pto-matrix` (client-side aggregates).
  */
 export function DashboardView() {
+  const { strings } = useLocale();
   const [matrix, setMatrix] = useState<DepartmentPtoMatrixResponseDto | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -287,6 +290,7 @@ export function DashboardView() {
         }
       });
     return () => ac.abort();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- matrix payload is locale-agnostic; keep single fetch on mount
   }, []);
 
   const kpis = useMemo(() => (matrix ? buildWorkforceKpis(matrix) : null), [matrix]);

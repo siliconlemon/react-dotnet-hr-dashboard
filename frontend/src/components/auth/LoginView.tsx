@@ -16,7 +16,7 @@ import {
 import { useCallback, useMemo, useState } from 'react';
 import { useAuth } from '../../auth/AuthContext';
 import { FAVICON_URL } from '../../constants/faviconUrl';
-import { strings } from '../../i18n';
+import { useLocale } from '../../i18n/useLocale';
 import { initialsFromAccount } from '../../utils/accountDisplay';
 
 const LOGIN_BRAND_ICON_PX = 40;
@@ -30,6 +30,7 @@ const DEMO_EMAIL = 'demo@smatchhr.local';
  * signing in uses the tray below (same visual language as the app bar account control).
  */
 export function LoginView() {
+  const { strings } = useLocale();
   const { loginDemo } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -50,7 +51,7 @@ export function LoginView() {
     } finally {
       setLoading(false);
     }
-  }, [loginDemo]);
+  }, [loginDemo, strings.auth.demoError]);
 
   return (
     <Box

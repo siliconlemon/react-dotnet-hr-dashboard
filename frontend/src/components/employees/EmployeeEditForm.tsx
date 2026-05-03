@@ -25,7 +25,9 @@ import { Controller, useForm } from 'react-hook-form';
 import { fetchDepartments } from '../../api/departmentsApi';
 import { updateEmployee } from '../../api/employeesApi';
 import type { DepartmentReadDto, EmployeeReadDto } from '../../api/types';
-import { dayjsCalendarMonthFormat, dayjsPickerDateFormat, strings } from '../../i18n';
+import { dayjsCalendarMonthFormat, dayjsPickerDateFormat } from '../../i18n';
+import type { EnMessages } from '../../i18n/locales/en';
+import { useLocale } from '../../i18n/useLocale';
 
 const HELPER_PLACEHOLDER = '\u00a0';
 
@@ -70,6 +72,7 @@ function buildEmployeeChangeRows(
   baseline: EmployeeReadDto,
   values: EditFormValues,
   departments: DepartmentReadDto[],
+  strings: EnMessages,
 ): EmployeeEditChangeRow[] {
   const rows: EmployeeEditChangeRow[] = [];
   const fn = values.firstName.trim();
@@ -129,6 +132,7 @@ type EmployeeEditFormProps = {
 
 /** Full PUT form for an existing employee; employee is chosen only via the picker. */
 export function EmployeeEditForm({ employees, onUpdated }: EmployeeEditFormProps) {
+  const { strings } = useLocale();
   const [departments, setDepartments] = useState<DepartmentReadDto[]>([]);
   const [deptError, setDeptError] = useState<string | null>(null);
   const [deptLoading, setDeptLoading] = useState(true);
@@ -192,7 +196,7 @@ export function EmployeeEditForm({ employees, onUpdated }: EmployeeEditFormProps
       }
     })();
     return () => ac.abort();
-  }, []);
+  }, [strings.onboard.departmentsLoadError]);
 
   useEffect(() => {
     if (!selectedRow) {
@@ -256,7 +260,7 @@ export function EmployeeEditForm({ employees, onUpdated }: EmployeeEditFormProps
       setSubmitError(strings.onboard.departmentRequired);
       return;
     }
-    const rows = buildEmployeeChangeRows(selectedRow, values, departments);
+    const rows = buildEmployeeChangeRows(selectedRow, values, departments, strings);
     if (rows.length === 0) {
       setInfoMessage(strings.employees.editNoChanges);
       return;

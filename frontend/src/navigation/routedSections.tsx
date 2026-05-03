@@ -1,7 +1,8 @@
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
-import { EmployeesView, type EmployeesViewTab } from '../components/employees/EmployeesView';
-import { LeaveManagementView, type LeaveManagementViewTab } from '../components/leave/LeaveManagementView';
+import { EmployeesView } from '../components/employees/EmployeesView';
+import { LeaveManagementView } from '../components/leave/LeaveManagementView';
 import { employeesPath, leavePath, parseEmployeesTabSegment } from './appPaths';
+import type { EmployeesViewTab, LeaveManagementViewTab } from './viewTabs';
 
 export function EmployeesSection() {
   const { tab } = useParams<{ tab?: string }>();

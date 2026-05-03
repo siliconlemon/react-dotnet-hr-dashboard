@@ -13,8 +13,8 @@ import type { MouseEvent } from 'react';
 import { forwardRef, useCallback, useEffect, useMemo, useState } from 'react';
 import { fetchDepartmentPtoMatrix } from '../../api/departmentsApi';
 import type { DepartmentPtoMatrixResponseDto } from '../../api/types';
-import { strings } from '../../i18n';
 import { useDataGridLocaleText } from '../../i18n/useDataGridLocaleText';
+import { useLocale } from '../../i18n/useLocale';
 import { EMPLOYEE_CARD_ACCENTS, getDepartmentAccent, getDepartmentAccentIndex } from '../../theme/employeeCardPalette';
 import { formatDateOnly } from '../../utils/formatDate';
 import { formatPtoDays } from '../../utils/formatPto';
@@ -109,6 +109,7 @@ function DepartmentsPageSizeStepper({
   onRowsPerPageChange,
   adjustSize,
 }: DepartmentsPageSizeStepperProps) {
+  const { strings } = useLocale();
   const [draftSize, setDraftSize] = useState(String(rowsPerPage));
 
   const commitDraft = useCallback(() => {
@@ -187,6 +188,7 @@ const DepartmentsPagination = forwardRef<HTMLDivElement, DepartmentsPaginationPr
     { count, page, rowsPerPage, onPageChange, onRowsPerPageChange, disabled },
     ref,
   ) {
+    const { strings } = useLocale();
     const apiRef = useGridApiContext();
     const maxSize = Math.max(1, count);
 
@@ -265,6 +267,7 @@ const DepartmentsPagination = forwardRef<HTMLDivElement, DepartmentsPaginationPr
 );
 
 export function DepartmentsView() {
+  const { strings } = useLocale();
   const theme = useTheme();
   const dataGridLocaleText = useDataGridLocaleText();
   const [matrix, setMatrix] = useState<DepartmentPtoMatrixResponseDto | null>(null);
@@ -296,7 +299,7 @@ export function DepartmentsView() {
     };
     void run();
     return () => ac.abort();
-  }, []);
+  }, [strings.departments.loadError]);
 
   const toggleDept = useCallback((departmentId: number) => {
     setExpandedDeptIds((prev) => {
@@ -381,7 +384,7 @@ export function DepartmentsView() {
         </Box>
       );
     },
-    [expandedDeptIds, theme.palette.mode, toggleDept],
+    [expandedDeptIds, strings.departments.expandRow, theme.palette.mode, toggleDept],
   );
 
   const columns = useMemo<GridColDef<MatrixGridRow>[]>(
@@ -451,7 +454,7 @@ export function DepartmentsView() {
         valueFormatter: (_value, row) => formatPtoDays(row.availableDays),
       },
     ],
-    [renderNameCell],
+    [renderNameCell, strings],
   );
 
   const departmentAccentGridSx = useMemo(

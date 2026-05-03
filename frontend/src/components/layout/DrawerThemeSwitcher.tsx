@@ -17,7 +17,7 @@ import {
 } from '@mui/material';
 import type { MouseEvent } from 'react';
 import { useState } from 'react';
-import { strings } from '../../i18n';
+import { useLocale } from '../../i18n/useLocale';
 import { useColorMode } from '../../theme/useColorMode';
 
 const NAV_ICON_SLOT_PX = 40;
@@ -37,6 +37,7 @@ type DrawerThemeSwitcherProps = {
 };
 
 export function DrawerThemeSwitcher({ collapsed, mobile, trailingFade }: DrawerThemeSwitcherProps) {
+  const { strings } = useLocale();
   const { mode, setMode } = useColorMode();
   const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null);
   const menuOpen = Boolean(menuAnchor);

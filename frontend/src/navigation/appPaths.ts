@@ -1,6 +1,5 @@
-import type { EmployeesViewTab } from '../components/employees/EmployeesView';
-import type { LeaveManagementViewTab } from '../components/leave/LeaveManagementView';
 import type { NavKey } from './navKeys';
+import type { EmployeesViewTab, LeaveManagementViewTab } from './viewTabs';
 
 /** Valid URL segments after `/employees/` (directory uses `/employees` only). */
 export function parseEmployeesTabSegment(raw: string): EmployeesViewTab | null {

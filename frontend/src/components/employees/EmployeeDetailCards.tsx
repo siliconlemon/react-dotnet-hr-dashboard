@@ -1,8 +1,8 @@
 import { Alert, Box, Paper, Skeleton, Typography, useTheme } from '@mui/material';
 import { alpha, type SxProps, type Theme } from '@mui/material/styles';
-import { Fragment, useEffect, useState, type ReactNode } from 'react';
+import { Fragment, useState, type ReactNode } from 'react';
 import type { EmployeeReadDto, PtoBalanceDto } from '../../api/types';
-import { strings } from '../../i18n';
+import { useLocale } from '../../i18n/useLocale';
 import { accentAmbientHalo } from '../../theme/enterpriseTheme';
 import { getDepartmentAccent } from '../../theme/employeeCardPalette';
 import { formatDateOnly } from '../../utils/formatDate';
@@ -65,6 +65,7 @@ function ProfileFieldsGrid({
   row: EmployeeReadDto;
   visibility: Record<EmployeeProfileFieldId, boolean>;
 }) {
+  const { strings } = useLocale();
   const rows: {
     id: EmployeeProfileFieldId;
     label: string;
@@ -106,6 +107,7 @@ function PtoFieldsGrid({
   pto: PtoBalanceDto;
   visibility: Record<EmployeePtoFieldId, boolean>;
 }) {
+  const { strings } = useLocale();
   const rows: {
     id: EmployeePtoFieldId;
     label: string;
@@ -200,6 +202,16 @@ function EmployeeDetailCardsSkeleton({ count }: { count: number }) {
   );
 }
 
+function EmployeePtoErrorAlert({ message }: { message: string }) {
+  const [dismissed, setDismissed] = useState(false);
+  if (dismissed) return null;
+  return (
+    <Alert severity="error" sx={{ mb: 1 }} onClose={() => setDismissed(true)}>
+      {message}
+    </Alert>
+  );
+}
+
 /**
  * Responsive grid of employee summary cards; profile and PTO share layout patterns and labels.
  */
@@ -212,24 +224,9 @@ export function EmployeeDetailCards({
   profileFieldVisibility = DEFAULT_EMPLOYEE_DETAIL_FIELD_VISIBILITY.profile,
   ptoFieldVisibility = DEFAULT_EMPLOYEE_DETAIL_FIELD_VISIBILITY.pto,
 }: EmployeeDetailCardsProps) {
+  const { strings } = useLocale();
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
-  const [dismissedPtoErrById, setDismissedPtoErrById] = useState<Record<number, boolean>>({});
-
-  useEffect(() => {
-    setDismissedPtoErrById((prev) => {
-      const next = { ...prev };
-      let changed = false;
-      for (const id of Object.keys(prev)) {
-        const n = Number(id);
-        if (!ptoErrorByEmployeeId[n]) {
-          delete next[n];
-          changed = true;
-        }
-      }
-      return changed ? next : prev;
-    });
-  }, [ptoErrorByEmployeeId]);
 
   if (detailTab === 'pto' && ptoLoading && employees.length > 0) {
     return <EmployeeDetailCardsSkeleton count={employees.length} />;
@@ -282,16 +279,8 @@ export function EmployeeDetailCards({
               )}
               {detailTab === 'pto' && (
                 <Box>
-                  {ptoErr && !dismissedPtoErrById[row.id] ? (
-                    <Alert
-                      severity="error"
-                      sx={{ mb: 1 }}
-                      onClose={() =>
-                        setDismissedPtoErrById((p) => ({ ...p, [row.id]: true }))
-                      }
-                    >
-                      {strings.employees.ptoError}
-                    </Alert>
+                  {ptoErr ? (
+                    <EmployeePtoErrorAlert key={row.id} message={strings.employees.ptoError} />
                   ) : null}
                   {!ptoErr && pto && (
                     <PtoFieldsGrid pto={pto} visibility={ptoFieldVisibility} />

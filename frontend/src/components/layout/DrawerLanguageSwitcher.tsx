@@ -11,8 +11,9 @@ import {
 } from '@mui/material';
 import type { MouseEvent } from 'react';
 import { useState } from 'react';
-import { messagesByLocale, strings, type Locale } from '../../i18n';
+import { messagesByLocale, type Locale } from '../../i18n';
 import { useLocale } from '../../i18n/useLocale';
+import type { DrawerTrailingFade } from './DrawerThemeSwitcher';
 
 const NAV_ICON_SLOT_PX = 40;
 const NAV_SVG_ICON_PX = 20;
@@ -21,16 +22,6 @@ const LANGUAGE_SELECT_ROW_HEIGHT_PX = 32;
 
 /** Display order in language menus. Add new locales here and in {@link messagesByLocale}. */
 const LOCALES = Object.keys(messagesByLocale) as Locale[];
-
-function localePrimaryLabel(id: Locale): string {
-  const labels: Record<Locale, string> = {
-    en: strings.shell.languageEnglish,
-    cs: strings.shell.languageCzech,
-  };
-  return labels[id];
-}
-
-import type { DrawerTrailingFade } from './DrawerThemeSwitcher';
 
 type DrawerLanguageSwitcherProps = {
   /** Desktop drawer collapsed to icon rail: compact trigger + menu. */
@@ -42,7 +33,10 @@ type DrawerLanguageSwitcherProps = {
 };
 
 export function DrawerLanguageSwitcher({ collapsed, mobile, trailingFade }: DrawerLanguageSwitcherProps) {
-  const { locale, setLocale } = useLocale();
+  const { locale, setLocale, strings } = useLocale();
+
+  const localePrimaryLabel = (id: Locale): string =>
+    id === 'en' ? strings.shell.languageEnglish : strings.shell.languageCzech;
   const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null);
   const menuOpen = Boolean(menuAnchor);
   const compact = collapsed && !mobile;
