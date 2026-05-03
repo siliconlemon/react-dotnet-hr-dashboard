@@ -4,8 +4,6 @@
 
 Simplified enterprise-style HR dashboard built with **React**, **MUI**, and **.NET 8** — a small toy project for practicing the stack end to end (Vite + TypeScript front end, ASP.NET Core REST API, SQLite).
 
-![Smatch HR dashboard](assets/screenshot.png)
-
 ### Dashboard
 
 High-level workforce snapshot: KPI-style cards built from department PTO data (headcount, balances, simple thresholds) so you can sanity-check the org at a glance.
