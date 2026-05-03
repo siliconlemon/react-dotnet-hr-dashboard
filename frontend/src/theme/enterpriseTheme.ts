@@ -336,7 +336,25 @@ export function createEnterpriseTheme(mode: PaletteMode = 'light', uiLocale: Loc
       },
     },
     MuiAlert: {
+      /** Match login / outlined surfaces: bordered alert instead of heavy `standard` tint. */
+      defaultProps: {
+        variant: 'outlined',
+      },
       styleOverrides: {
+        root: ({ theme, ownerState }) => {
+          const isErrorOutlined =
+            ownerState.variant === 'outlined' &&
+            (ownerState.severity === 'error' || ownerState.color === 'error');
+          if (!isErrorOutlined) return {};
+          const main = theme.palette.error.main;
+          const strong = theme.palette.mode === 'dark' ? 0.28 : 0.18;
+          const soft = theme.palette.mode === 'dark' ? 0.14 : 0.09;
+          return {
+            boxShadow: [`0 0 18px ${alpha(main, strong)}`, `0 0 36px ${alpha(main, soft)}`].join(
+              ', ',
+            ),
+          };
+        },
         /** Align with {@link CONTROL_OUTLINE} on `OutlinedInput`, `Button`, `Paper`, etc. */
         outlined: {
           borderWidth: CONTROL_OUTLINE,

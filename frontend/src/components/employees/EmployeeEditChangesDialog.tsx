@@ -11,7 +11,7 @@ import {
   Typography,
 } from '@mui/material';
 import { alpha } from '@mui/material/styles';
-import { Fragment } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 
 export type EmployeeEditChangeRow = {
   label: string;
@@ -50,6 +50,12 @@ export function EmployeeEditChangesDialog({
   confirming,
   errorMessage,
 }: EmployeeEditChangesDialogProps) {
+  const [errorBannerHidden, setErrorBannerHidden] = useState(false);
+
+  useEffect(() => {
+    setErrorBannerHidden(false);
+  }, [errorMessage]);
+
   return (
     <Dialog
       open={open}
@@ -61,8 +67,10 @@ export function EmployeeEditChangesDialog({
       <DialogTitle id="employee-edit-changes-title">{title}</DialogTitle>
       <DialogContent>
         <Stack spacing={2} sx={{ pt: 0.5, width: '100%', minWidth: 0 }}>
-          {errorMessage ? (
-            <Alert severity="error">{errorMessage}</Alert>
+          {errorMessage && !errorBannerHidden ? (
+            <Alert severity="error" onClose={() => setErrorBannerHidden(true)}>
+              {errorMessage}
+            </Alert>
           ) : null}
           {subtitle ? (
             <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.5 }}>

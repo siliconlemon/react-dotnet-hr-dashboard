@@ -349,7 +349,7 @@ export function DashboardView() {
           >
           <ViewLoadingGate rawPending={fetching}>
             {error ? (
-              <Alert severity="error" sx={{ flexShrink: 0 }}>
+              <Alert severity="error" sx={{ flexShrink: 0 }} onClose={() => setError(null)}>
                 {error}
               </Alert>
             ) : null}

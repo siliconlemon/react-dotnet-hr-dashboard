@@ -132,8 +132,20 @@ export function LeaveManagementView({
   const [dialogNote, setDialogNote] = useState('');
   const [dialogSubmitting, setDialogSubmitting] = useState(false);
   const [dialogError, setDialogError] = useState<string | null>(null);
+  const [ledgerLoadBannerDismissed, setLedgerLoadBannerDismissed] = useState(false);
+  const [scopeDeptInfoDismissed, setScopeDeptInfoDismissed] = useState(false);
 
   const dataGridLocaleText = useDataGridLocaleText();
+
+  const ledgerLoadBannerError = loadMetaError ?? gridError;
+
+  useEffect(() => {
+    if (!loadMetaError && !gridError) setLedgerLoadBannerDismissed(false);
+  }, [loadMetaError, gridError]);
+
+  useEffect(() => {
+    setScopeDeptInfoDismissed(false);
+  }, [dialogDepartmentId]);
 
   const handleViewTabChange = useCallback(
     (_: SyntheticEvent, value: LeaveManagementViewTab) => {
@@ -468,9 +480,13 @@ export function LeaveManagementView({
               </Typography>
             </Box>
 
-            {loadMetaError ? (
-              <Alert severity="error" sx={{ mt: 2, flexShrink: 0 }}>
-                {loadMetaError}
+            {ledgerLoadBannerError && !ledgerLoadBannerDismissed ? (
+              <Alert
+                severity="error"
+                sx={{ mt: 2, flexShrink: 0 }}
+                onClose={() => setLedgerLoadBannerDismissed(true)}
+              >
+                {ledgerLoadBannerError}
               </Alert>
             ) : null}
 
@@ -688,12 +704,6 @@ export function LeaveManagementView({
           </Button>
         </Box>
 
-        {gridError ? (
-          <Alert severity="error" sx={{ mb: 1 }}>
-            {gridError}
-          </Alert>
-        ) : null}
-
         <Box
           sx={{
             flex: 1,
@@ -831,8 +841,13 @@ export function LeaveManagementView({
                     ))}
                   </Select>
                 </FormControl>
-                {dialogDepartmentId !== '' ? (
-                  <Alert severity="info">{strings.leave.scopeDeptExplain(deptMemberCount)}</Alert>
+                {dialogDepartmentId !== '' && !scopeDeptInfoDismissed ? (
+                  <Alert
+                    severity="info"
+                    onClose={() => setScopeDeptInfoDismissed(true)}
+                  >
+                    {strings.leave.scopeDeptExplain(deptMemberCount)}
+                  </Alert>
                 ) : null}
               </>
             )}

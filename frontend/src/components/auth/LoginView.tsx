@@ -33,6 +33,7 @@ export function LoginView() {
   const { loginDemo } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [formHintDismissed, setFormHintDismissed] = useState(false);
 
   const demoInitials = useMemo(
     () => initialsFromAccount(DEMO_DISPLAY_NAME, DEMO_EMAIL),
@@ -120,9 +121,15 @@ export function LoginView() {
             </Typography>
           </Box>
 
-          <Alert severity="info" variant="outlined" sx={{ alignItems: 'flex-start' }}>
-            {strings.auth.formBlockedHint}
-          </Alert>
+          {!formHintDismissed ? (
+            <Alert
+              severity="info"
+              sx={{ alignItems: 'flex-start' }}
+              onClose={() => setFormHintDismissed(true)}
+            >
+              {strings.auth.formBlockedHint}
+            </Alert>
+          ) : null}
 
           <Stack spacing={1.5}>
             <TextField
@@ -148,7 +155,7 @@ export function LoginView() {
           </Button>
 
           {error ? (
-            <Alert severity="error" variant="outlined">
+            <Alert severity="error" onClose={() => setError(null)}>
               {error}
             </Alert>
           ) : null}

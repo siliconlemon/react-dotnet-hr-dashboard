@@ -330,7 +330,7 @@ export function EmployeeEditForm({ employees, onUpdated }: EmployeeEditFormProps
         </Typography>
       )}
       {deptError && (
-        <Alert severity="error" sx={{ mb: 1.5 }}>
+        <Alert severity="error" sx={{ mb: 1.5 }} onClose={() => setDeptError(null)}>
           {deptError}
         </Alert>
       )}

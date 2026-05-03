@@ -1,6 +1,6 @@
 import { Alert, Box, Paper, Skeleton, Typography, useTheme } from '@mui/material';
 import { alpha, type SxProps, type Theme } from '@mui/material/styles';
-import { Fragment, type ReactNode } from 'react';
+import { Fragment, useEffect, useState, type ReactNode } from 'react';
 import type { EmployeeReadDto, PtoBalanceDto } from '../../api/types';
 import { strings } from '../../i18n';
 import { accentAmbientHalo } from '../../theme/enterpriseTheme';
@@ -214,6 +214,22 @@ export function EmployeeDetailCards({
 }: EmployeeDetailCardsProps) {
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
+  const [dismissedPtoErrById, setDismissedPtoErrById] = useState<Record<number, boolean>>({});
+
+  useEffect(() => {
+    setDismissedPtoErrById((prev) => {
+      const next = { ...prev };
+      let changed = false;
+      for (const id of Object.keys(prev)) {
+        const n = Number(id);
+        if (!ptoErrorByEmployeeId[n]) {
+          delete next[n];
+          changed = true;
+        }
+      }
+      return changed ? next : prev;
+    });
+  }, [ptoErrorByEmployeeId]);
 
   if (detailTab === 'pto' && ptoLoading && employees.length > 0) {
     return <EmployeeDetailCardsSkeleton count={employees.length} />;
@@ -266,11 +282,17 @@ export function EmployeeDetailCards({
               )}
               {detailTab === 'pto' && (
                 <Box>
-                  {ptoErr && (
-                    <Alert severity="error" sx={{ mb: 1 }}>
+                  {ptoErr && !dismissedPtoErrById[row.id] ? (
+                    <Alert
+                      severity="error"
+                      sx={{ mb: 1 }}
+                      onClose={() =>
+                        setDismissedPtoErrById((p) => ({ ...p, [row.id]: true }))
+                      }
+                    >
                       {strings.employees.ptoError}
                     </Alert>
-                  )}
+                  ) : null}
                   {!ptoErr && pto && (
                     <PtoFieldsGrid pto={pto} visibility={ptoFieldVisibility} />
                   )}

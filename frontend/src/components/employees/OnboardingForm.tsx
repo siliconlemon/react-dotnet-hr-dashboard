@@ -153,7 +153,7 @@ export function OnboardingForm({ onCreated }: OnboardingFormProps) {
         {strings.onboard.subtitle}
       </Typography>
       {deptError && (
-        <Alert severity="error" sx={{ mt: 2, mb: 0 }}>
+        <Alert severity="error" sx={{ mt: 2, mb: 0 }} onClose={() => setDeptError(null)}>
           {deptError}
         </Alert>
       )}

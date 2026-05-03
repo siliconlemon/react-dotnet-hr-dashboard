@@ -98,11 +98,13 @@ export function AccountToolbarMenu() {
           </ListItemIcon>
           <ListItemText
             primary={strings.auth.logout}
-            primaryTypographyProps={{
-              sx: {
-                fontSize: '13px',
-                mt: '4px',
-                mb: '4px',
+            slotProps={{
+              primary: {
+                sx: {
+                  fontSize: '13px',
+                  mt: '4px',
+                  mb: '4px',
+                },
               },
             }}
           />
