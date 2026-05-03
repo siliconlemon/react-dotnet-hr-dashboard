@@ -1,5 +1,5 @@
 import { useContext } from 'react';
-import { ColorModeContext } from './ColorModeProvider';
+import { ColorModeContext } from './ColorModeContext';
 
 export function useColorMode() {
   const ctx = useContext(ColorModeContext);

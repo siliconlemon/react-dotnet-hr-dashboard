@@ -69,6 +69,10 @@ const filterSelectFormControlSx = {
   },
 } as const;
 
+/** Ledger filters: one typography scale for value text, placeholders, and date-picker sections. */
+const leaveFilterFieldFontSize = '0.8125rem';
+const leaveFilterFieldLineHeight = 1.5;
+
 export function LeaveManagementView() {
   const [employees, setEmployees] = useState<EmployeeReadDto[]>([]);
   const [departments, setDepartments] = useState<DepartmentReadDto[]>([]);
@@ -393,15 +397,31 @@ export function LeaveManagementView() {
                 'minmax(180px, 1.75fr) minmax(160px, 1fr) minmax(170px, 0.75fr) minmax(170px, 0.75fr) minmax(130px, 1fr) auto auto',
             },
             /** One row height for employee picker, selects, date fields, and actions (~theme small OutlinedInput). */
-            '& .MuiOutlinedInput-root, & .MuiPickersOutlinedInput-root': {
-              fontSize: '0.8125rem',
+            '& .MuiOutlinedInput-root, & .MuiPickersOutlinedInput-root, & .MuiPickersInputBase-root': {
+              fontSize: leaveFilterFieldFontSize,
+              lineHeight: leaveFilterFieldLineHeight,
               minHeight: 40,
               boxSizing: 'border-box',
             },
-            '& .MuiInputLabel-root': { fontSize: '0.8125rem' },
+            '& .MuiOutlinedInput-input, & .MuiInputBase-input': {
+              fontSize: 'inherit',
+              lineHeight: 'inherit',
+              '&::placeholder': {
+                fontSize: 'inherit',
+                lineHeight: 'inherit',
+              },
+            },
+            '& .MuiPickersSectionList-root, & .MuiPickersInputBase-sectionContent, & .MuiPickersSectionList-sectionContent':
+              {
+                fontSize: leaveFilterFieldFontSize,
+                lineHeight: leaveFilterFieldLineHeight,
+              },
+            '& .MuiInputLabel-root': { fontSize: leaveFilterFieldFontSize },
             '& .MuiSelect-select': {
               display: 'flex',
               alignItems: 'center',
+              fontSize: leaveFilterFieldFontSize,
+              lineHeight: leaveFilterFieldLineHeight,
             },
           }}
         >

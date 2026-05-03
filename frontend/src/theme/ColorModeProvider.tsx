@@ -1,17 +1,10 @@
 import type { PaletteMode } from '@mui/material';
 import { ThemeProvider } from '@mui/material/styles';
-import {
-  createContext,
-  useCallback,
-  useLayoutEffect,
-  useMemo,
-  useState,
-  type ReactNode,
-} from 'react';
+import { useCallback, useLayoutEffect, useMemo, useState, type ReactNode } from 'react';
 import { useLocale } from '../i18n/useLocale';
+import { ColorModeContext } from './ColorModeContext';
+import { COLOR_MODE_STORAGE_KEY, readStoredColorMode } from './colorModeStorage';
 import { createEnterpriseTheme } from './enterpriseTheme';
-
-export const COLOR_MODE_STORAGE_KEY = 'hr-dashboard-color-mode';
 
 /**
  * Chromium uses the document's used `color-scheme` for native overlay scrollbars. Setting it on
@@ -25,24 +18,6 @@ function applyDocumentColorScheme(mode: PaletteMode) {
     document.body.style.setProperty('color-scheme', scheme);
   }
 }
-
-export function readStoredColorMode(): PaletteMode {
-  if (typeof window === 'undefined') return 'light';
-  try {
-    const raw = window.localStorage.getItem(COLOR_MODE_STORAGE_KEY);
-    if (raw === 'light' || raw === 'dark') return raw;
-  } catch {
-    /* ignore */
-  }
-  return 'light';
-}
-
-export type ColorModeContextValue = {
-  mode: PaletteMode;
-  setMode: (mode: PaletteMode) => void;
-};
-
-export const ColorModeContext = createContext<ColorModeContextValue | undefined>(undefined);
 
 export function ColorModeProvider({ children }: { children: ReactNode }) {
   const { locale } = useLocale();

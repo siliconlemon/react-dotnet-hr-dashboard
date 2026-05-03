@@ -10,20 +10,22 @@ export function useMinimumPendingDuration(rawPending: boolean, minMs: number): b
 
   useEffect(() => {
     if (minMs <= 0) {
-      setExtended(rawPending);
-      if (!rawPending) loadStartRef.current = null;
+      queueMicrotask(() => {
+        setExtended(rawPending);
+        if (!rawPending) loadStartRef.current = null;
+      });
       return;
     }
 
     if (rawPending) {
       loadStartRef.current = Date.now();
-      setExtended(true);
+      queueMicrotask(() => setExtended(true));
       return;
     }
 
     const start = loadStartRef.current;
     if (start == null) {
-      setExtended(false);
+      queueMicrotask(() => setExtended(false));
       return;
     }
 
@@ -32,7 +34,7 @@ export function useMinimumPendingDuration(rawPending: boolean, minMs: number): b
 
     if (remaining === 0) {
       loadStartRef.current = null;
-      setExtended(false);
+      queueMicrotask(() => setExtended(false));
       return;
     }
 
