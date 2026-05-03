@@ -930,8 +930,8 @@ export function LeaveLookupTab() {
               </Typography>
             </Box>
             <Box sx={{ overflow: 'auto', px: 1, py: 0.5 }}>
-              {[...departmentBuckets(buildEmployeeGroups(popover.rows)).entries()].map(([dept, people], index) => (
-                <Box key={dept} sx={{ mb: 1, mt: index > 0 ? 1.25 : 0 }}>
+              {[...departmentBuckets(buildEmployeeGroups(popover.rows)).entries()].map(([dept, people]) => (
+                <Box key={dept} sx={{ mb: 1, mt: 1.025 }}>
                   <Typography
                     variant="overline"
                     color="text.secondary"
