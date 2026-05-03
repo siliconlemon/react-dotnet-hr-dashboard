@@ -419,7 +419,14 @@ export function AppShell({ children, activeNavKey, onNavKeyChange, breadcrumbIte
         </Toolbar>
       </AppBar>
 
-      <Box component="nav" sx={{ width: { md: drawerWidth }, flexShrink: { md: 0 } }}>
+      <Box
+        component="nav"
+        sx={{
+          width: { md: drawerWidth },
+          flexShrink: { md: 0 },
+          transition: { md: drawerPaperTransition },
+        }}
+      >
         <Drawer
           variant="temporary"
           open={mobileOpen}
@@ -479,6 +486,7 @@ export function AppShell({ children, activeNavKey, onNavKeyChange, breadcrumbIte
           pt: 1,
           pb: 1,
           width: { md: `calc(100% - ${drawerWidth}px)` },
+          transition: { md: drawerPaperTransition },
           bgcolor: 'background.default',
           boxSizing: 'border-box',
         }}

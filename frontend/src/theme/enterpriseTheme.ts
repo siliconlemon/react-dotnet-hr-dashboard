@@ -378,6 +378,11 @@ export function createEnterpriseTheme(mode: PaletteMode = 'light') {
           borderBottom: `${CONTROL_OUTLINE} solid`,
           borderColor: theme.palette.divider,
           boxShadow: ambientHalo(theme),
+          // AppBar uses `Paper` elevation0 (`paperChrome` = border on all sides). The permanent drawer
+          // paper already has `borderRight`; without this, the seam beside the rail reads as a double-weight line.
+          [theme.breakpoints.up('md')]: {
+            borderLeft: 'none',
+          },
         }),
       },
     },
