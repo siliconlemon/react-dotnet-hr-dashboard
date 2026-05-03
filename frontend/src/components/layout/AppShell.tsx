@@ -287,10 +287,16 @@ export function AppShell({ children, activeNavKey, onNavKeyChange, breadcrumbIte
           width: drawerWidth,
           transition: drawerPaperTransition,
           overflowX: 'hidden',
+          overflow: 'hidden',
           display: 'flex',
           flexDirection: 'column',
           height: '100%',
           pb: 2,
+          // Flush with app bar on the right; round TL + both bottom corners.
+          borderTopLeftRadius: theme.shape.borderRadius,
+          borderTopRightRadius: 0,
+          borderBottomLeftRadius: theme.shape.borderRadius,
+          borderBottomRightRadius: theme.shape.borderRadius,
         },
       }}
     >
@@ -362,6 +368,12 @@ export function AppShell({ children, activeNavKey, onNavKeyChange, breadcrumbIte
           width: { md: `calc(100% - ${drawerWidth}px)` },
           ml: { md: `${drawerWidth}px` },
           transition: appBarShift,
+          overflow: 'hidden',
+          // Beside the drawer on md+: flush left; round the outer (right) edge.
+          borderTopLeftRadius: 0,
+          borderBottomLeftRadius: 0,
+          borderTopRightRadius: { md: theme.shape.borderRadius },
+          borderBottomRightRadius: { md: theme.shape.borderRadius },
         }}
       >
         <Toolbar>
