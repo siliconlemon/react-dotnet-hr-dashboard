@@ -18,6 +18,7 @@ import { useDataGridLocaleText } from '../../i18n/useDataGridLocaleText';
 import { EMPLOYEE_CARD_ACCENTS, getDepartmentAccent, getDepartmentAccentIndex } from '../../theme/employeeCardPalette';
 import { formatDateOnly } from '../../utils/formatDate';
 import { formatPtoDays } from '../../utils/formatPto';
+import { ViewLoadingGate } from '../layout/ViewLoadingGate';
 
 /**
  * Department PTO matrix: parent rows (team rollups) and child rows (per employee).
@@ -513,16 +514,17 @@ export function DepartmentsView() {
         </Alert>
       )}
 
-      {matrix && !loadError && (
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 1, flexShrink: 0 }}>
-          {strings.employees.ptoYear}: {matrix.calendarYear} · {strings.employees.ptoAsOf}:{' '}
-          {formatDateOnly(matrix.asOfDate)}
-        </Typography>
-      )}
+      <ViewLoadingGate rawPending={loading}>
+        {matrix && !loadError && (
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 1, flexShrink: 0 }}>
+            {strings.employees.ptoYear}: {matrix.calendarYear} · {strings.employees.ptoAsOf}:{' '}
+            {formatDateOnly(matrix.asOfDate)}
+          </Typography>
+        )}
 
-      <Box sx={{ flex: 1, minHeight: 0, minWidth: 0, width: '100%', overflow: 'hidden' }}>
-        <DataGrid<MatrixGridRow>
-          loading={loading}
+        <Box sx={{ flex: 1, minHeight: 0, minWidth: 0, width: '100%', overflow: 'hidden' }}>
+          <DataGrid<MatrixGridRow>
+            loading={false}
           rows={gridRows}
           columns={columns}
           getRowId={(r) => r.id}
@@ -575,7 +577,8 @@ export function DepartmentsView() {
             ...departmentAccentGridSx,
           }}
         />
-      </Box>
+        </Box>
+      </ViewLoadingGate>
     </Paper>
   );
 }

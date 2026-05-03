@@ -14,6 +14,7 @@ import type { EmployeeReadDto, PtoBalanceDto } from '../../api/types';
 import { strings } from '../../i18n';
 import { useDataGridLocaleText } from '../../i18n/useDataGridLocaleText';
 import { formatDateOnly } from '../../utils/formatDate';
+import { ViewLoadingGate } from '../layout/ViewLoadingGate';
 import { EmployeeDetailCards } from './EmployeeDetailCards';
 import { EmployeeDetailFieldsPicker } from './EmployeeDetailFieldsPicker';
 import { useEmployeeDetailFieldVisibility } from './useEmployeeDetailFieldVisibility';
@@ -417,16 +418,17 @@ export function EmployeesView({ onViewTabChange }: EmployeesViewProps) {
               theme.transitions.create(['opacity', 'visibility'], { duration: 120 }),
           }}
         >
-          <Box
-            ref={splitContainerRef}
-            sx={{
-              flex: 1,
-              minHeight: 0,
-              display: 'flex',
-              flexDirection: 'column',
-              overflow: 'hidden',
-            }}
-          >
+          <ViewLoadingGate rawPending={loading}>
+            <Box
+              ref={splitContainerRef}
+              sx={{
+                flex: 1,
+                minHeight: 0,
+                display: 'flex',
+                flexDirection: 'column',
+                overflow: 'hidden',
+              }}
+            >
             <Box
               sx={{
                 position: 'relative',
@@ -474,7 +476,7 @@ export function EmployeesView({ onViewTabChange }: EmployeesViewProps) {
                 <DataGrid
                   rows={rows}
                   columns={columns}
-                  loading={loading}
+                  loading={false}
                   getRowId={(row) => row.id}
                   density="compact"
                   localeText={dataGridLocaleText}
@@ -770,6 +772,7 @@ export function EmployeesView({ onViewTabChange }: EmployeesViewProps) {
             </Paper>
             </Box>
           </Box>
+          </ViewLoadingGate>
         </Box>
 
         <Box

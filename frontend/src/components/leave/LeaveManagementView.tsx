@@ -43,6 +43,7 @@ import type {
 } from '../../api/types';
 import { dayjsPickerDateFormat, strings } from '../../i18n';
 import { useDataGridLocaleText } from '../../i18n/useDataGridLocaleText';
+import { ViewLoadingGate } from '../layout/ViewLoadingGate';
 import { EmployeePickerField } from '../employees/EmployeePickerField';
 import { formatDateOnly, formatDateTime } from '../../utils/formatDate';
 import { formatPtoDays } from '../../utils/formatPto';
@@ -579,46 +580,59 @@ export function LeaveManagementView() {
           </Alert>
         ) : null}
 
-        <Box sx={{ flex: 1, minHeight: 0, minWidth: 0, width: '100%' }}>
-          <DataGrid
-            rows={rows}
-            columns={columns}
-            getRowId={(r) => r.id}
-            density="compact"
-            localeText={dataGridLocaleText}
-            label={strings.leave.title}
-            loading={gridLoading}
-            paginationMode="server"
-            rowCount={totalCount}
-            paginationModel={paginationModel}
-            onPaginationModelChange={setPaginationModel}
-            pageSizeOptions={[10, 25, 50]}
-            disableColumnSorting
-            disableRowSelectionOnClick
-            sx={{
-              border: 'none',
-              height: '100%',
-              width: '100%',
-              '& .MuiDataGrid-columnHeaders': { bgcolor: 'action.hover' },
-              '& .MuiDataGrid-footerContainer': {
-                minHeight: 47,
-                height: 47,
-                maxHeight: 47,
-                alignItems: 'center',
-                py: 0,
-                pl: 0.5,
-                pr: 0,
-                boxSizing: 'border-box',
-              },
-              '& .MuiDataGrid-footerContainer .MuiTablePagination-root': { py: 0, minHeight: 35 },
-              '& .MuiDataGrid-footerContainer .MuiTablePagination-toolbar': {
-                minHeight: 35,
-                height: 35,
-                alignItems: 'center',
-                py: 0,
-              },
-            }}
-          />
+        <Box
+          sx={{
+            flex: 1,
+            minHeight: 0,
+            minWidth: 0,
+            width: '100%',
+            display: 'flex',
+            flexDirection: 'column',
+          }}
+        >
+          <ViewLoadingGate rawPending={gridLoading}>
+            <Box sx={{ flex: 1, minHeight: 0, minWidth: 0, width: '100%', overflow: 'hidden' }}>
+              <DataGrid
+                rows={rows}
+                columns={columns}
+                getRowId={(r) => r.id}
+                density="compact"
+                localeText={dataGridLocaleText}
+                label={strings.leave.title}
+                loading={false}
+                paginationMode="server"
+                rowCount={totalCount}
+                paginationModel={paginationModel}
+                onPaginationModelChange={setPaginationModel}
+                pageSizeOptions={[10, 25, 50]}
+                disableColumnSorting
+                disableRowSelectionOnClick
+                sx={{
+                  border: 'none',
+                  height: '100%',
+                  width: '100%',
+                  '& .MuiDataGrid-columnHeaders': { bgcolor: 'action.hover' },
+                  '& .MuiDataGrid-footerContainer': {
+                    minHeight: 47,
+                    height: 47,
+                    maxHeight: 47,
+                    alignItems: 'center',
+                    py: 0,
+                    pl: 0.5,
+                    pr: 0,
+                    boxSizing: 'border-box',
+                  },
+                  '& .MuiDataGrid-footerContainer .MuiTablePagination-root': { py: 0, minHeight: 35 },
+                  '& .MuiDataGrid-footerContainer .MuiTablePagination-toolbar': {
+                    minHeight: 35,
+                    height: 35,
+                    alignItems: 'center',
+                    py: 0,
+                  },
+                }}
+              />
+            </Box>
+          </ViewLoadingGate>
         </Box>
       </Paper>
 

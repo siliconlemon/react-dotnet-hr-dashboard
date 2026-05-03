@@ -1,6 +1,7 @@
 import { Alert, Box, Card, CardContent, Grid, Tooltip, Typography } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
 import { useEffect, useMemo, useState } from 'react';
+import { ViewLoadingGate } from '../layout/ViewLoadingGate';
 import { fetchDepartmentPtoMatrix } from '../../api/departmentsApi';
 import type { DepartmentPtoMatrixResponseDto } from '../../api/types';
 import { strings } from '../../i18n';
@@ -292,6 +293,8 @@ export function DashboardView() {
       ? strings.dashboard.subtitle(kpis.calendarYear, formatDateOnly(kpis.asOfDate))
       : '';
 
+  const fetching = matrix === null && !error;
+
   return (
     <Box sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', boxSizing: 'border-box' }}>
       <Card
@@ -319,23 +322,36 @@ export function DashboardView() {
             '&:last-child': { pb: 2 },
           }}
         >
-          <Typography variant="h2" sx={{ flexShrink: 0, m: 0 }}>
-            {strings.dashboard.title}
-          </Typography>
-
-          {kpis ? (
-            <Typography variant="body2" color="text.secondary" sx={{ flexShrink: 0 }}>
-              {asOfLabel}
+          <Box sx={{ flexShrink: 0 }}>
+            <Typography variant="h2" gutterBottom={!!kpis} sx={{ flexShrink: 0 }}>
+              {strings.dashboard.title}
             </Typography>
-          ) : null}
+            {kpis ? (
+              <Typography variant="body2" color="text.secondary" sx={{ flexShrink: 0 }}>
+                {asOfLabel}
+              </Typography>
+            ) : null}
+          </Box>
 
-          {error ? (
-            <Alert severity="error" sx={{ flexShrink: 0 }}>
-              {error}
-            </Alert>
-          ) : null}
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 1,
+              flexShrink: 0,
+              minWidth: 0,
+              flex: 1,
+              minHeight: 0,
+            }}
+          >
+          <ViewLoadingGate rawPending={fetching}>
+            {error ? (
+              <Alert severity="error" sx={{ flexShrink: 0 }}>
+                {error}
+              </Alert>
+            ) : null}
 
-          {!error && kpis ? (
+            {!error && kpis ? (
           <Grid container spacing={2} sx={{ flexShrink: 0 }}>
             <Grid size={{ xs: 12, sm: 6, lg: 4 }}>
               <KpiCard
@@ -419,11 +435,9 @@ export function DashboardView() {
               <DepartmentBreakdownCard kpis={kpis} />
             </Grid>
           </Grid>
-          ) : !error ? (
-            <Typography variant="body2" color="text.secondary" sx={{ flexShrink: 0 }}>
-              {strings.dashboard.loading}
-            </Typography>
-          ) : null}
+            ) : null}
+          </ViewLoadingGate>
+          </Box>
         </CardContent>
       </Card>
     </Box>
