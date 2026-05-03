@@ -76,14 +76,9 @@ export function LoginView() {
           width: '100%',
           maxWidth: 420,
           p: { xs: 3, sm: 4 },
-          borderRadius: 2,
           borderWidth: 2,
           borderStyle: 'solid',
           borderColor: 'divider',
-          boxShadow: (theme) =>
-            theme.palette.mode === 'dark'
-              ? '0 0 24px rgba(0,0,0,0.35)'
-              : '0 0 24px rgba(25, 79, 130, 0.08)',
         }}
       >
         <Stack spacing={2.5}>
@@ -136,8 +131,7 @@ export function LoginView() {
               autoComplete="username"
               fullWidth
               disabled
-              value="—"
-              slotProps={{ htmlInput: { readOnly: true } }}
+              placeholder={strings.auth.emailPlaceholder}
             />
             <TextField
               label={strings.auth.passwordLabel}
@@ -145,8 +139,7 @@ export function LoginView() {
               autoComplete="current-password"
               fullWidth
               disabled
-              value="••••••••"
-              slotProps={{ htmlInput: { readOnly: true } }}
+              placeholder={strings.auth.passwordPlaceholder}
             />
           </Stack>
 
@@ -173,7 +166,6 @@ export function LoginView() {
         <Paper
           variant="outlined"
           sx={{
-            borderRadius: 2,
             borderWidth: 2,
             borderColor: 'divider',
             overflow: 'hidden',

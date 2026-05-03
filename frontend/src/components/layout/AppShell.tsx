@@ -478,7 +478,7 @@ export function AppShell({ children, activeNavKey, onNavKeyChange, breadcrumbIte
           borderBottomRightRadius: { md: theme.shape.borderRadius },
         }}
       >
-        <Toolbar>
+        <Toolbar sx={{ pr: 1.5 }}>
           <IconButton
             color="inherit"
             edge="start"

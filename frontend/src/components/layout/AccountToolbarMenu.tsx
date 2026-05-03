@@ -72,12 +72,15 @@ export function AccountToolbarMenu() {
           paper: {
             sx: { minWidth: 220, mt: 1 },
           },
+          list: {
+            sx: { pt: 0, pb: 0 },
+          },
         }}
       >
         <Typography variant="body2" sx={{ px: 2, py: 1.5, color: 'text.secondary' }}>
           {strings.auth.signedInAs}
         </Typography>
-        <Typography variant="subtitle2" sx={{ px: 2, pb: 1.5, wordBreak: 'break-word' }}>
+        <Typography variant="subtitle2" sx={{ px: 2, pb: 0, wordBreak: 'break-word' }}>
           {label}
         </Typography>
         <Typography variant="caption" color="text.secondary" sx={{ px: 2, pb: 1.5, display: 'block' }}>
@@ -93,7 +96,16 @@ export function AccountToolbarMenu() {
           <ListItemIcon>
             <Logout fontSize="small" />
           </ListItemIcon>
-          <ListItemText primary={strings.auth.logout} />
+          <ListItemText
+            primary={strings.auth.logout}
+            primaryTypographyProps={{
+              sx: {
+                fontSize: '13px',
+                mt: '4px',
+                mb: '4px',
+              },
+            }}
+          />
         </MenuItem>
       </Menu>
     </>
