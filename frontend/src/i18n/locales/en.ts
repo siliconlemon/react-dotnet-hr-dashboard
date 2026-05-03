@@ -2,6 +2,8 @@
  * English UI strings. Add other locale files alongside this and switch in `../index.ts`.
  * Headings and buttons do not auto-capitalize; title-tier strings below use Title Case.
  */
+import { formatPtoDays } from '../../utils/formatPto';
+
 export const en = {
   app: {
     documentTitle: 'Smatch HR',
@@ -161,6 +163,12 @@ export const en = {
     calendarDetailTitle: (longDate: string) => `Away · ${longDate}`,
     calendarAwayCount: (people: number) =>
       `${people} ${people === 1 ? 'employee' : 'employees'} with usage this day`,
+    /** Leave lookup popover: formatted amount + “day” / “days” (PluralRules). */
+    calendarPopoverPtoAmountLabel: (n: number) => {
+      const s = formatPtoDays(n);
+      const cat = new Intl.PluralRules('en-US').select(n);
+      return `${s} ${cat === 'one' ? 'day' : 'days'}`;
+    },
     calendarCellAria: (
       isoDisplayDate: string,
       away: number,

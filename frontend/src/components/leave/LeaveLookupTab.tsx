@@ -33,7 +33,6 @@ import { strings } from '../../i18n';
 import { useLocale } from '../../i18n/useLocale';
 import { getDepartmentAccent, type EmployeeCardAccent } from '../../theme/employeeCardPalette';
 import { formatDateOnly } from '../../utils/formatDate';
-import { formatPtoDays } from '../../utils/formatPto';
 
 /** Same 13px / compact row scale as PTO ledger filter Autocomplete dropdown options. */
 const LEAVE_LOOKUP_MENU_FONT_SIZE = '0.8125rem';
@@ -235,7 +234,6 @@ export function LeaveLookupTab() {
     anchor: HTMLElement;
     rows: PtoLedgerEntryReadDto[];
     title: string;
-    countLabel: string;
   } | null>(null);
 
   /** Include spillover Mon–Sun days so partial weeks show usage for adjacent months. */
@@ -343,12 +341,10 @@ export function LeaveLookupTab() {
   const openDayPopover = useCallback(
     (ev: MouseEvent<HTMLElement>, day: Dayjs, dateRows: PtoLedgerEntryReadDto[]) => {
       if (dateRows.length === 0) return;
-      const groups = buildEmployeeGroups(dateRows);
       setPopover({
         anchor: ev.currentTarget,
         rows: dateRows,
         title: strings.leave.calendarDetailTitle(formatDayHeading(day)),
-        countLabel: strings.leave.calendarAwayCount(groups.length),
       });
     },
     [formatDayHeading],
@@ -356,12 +352,10 @@ export function LeaveLookupTab() {
 
   const openWeekPopover = useCallback((ev: MouseEvent<HTMLElement>, weekMonday: Dayjs, rows: PtoLedgerEntryReadDto[]) => {
     if (rows.length === 0) return;
-    const groups = buildEmployeeGroups(rows);
     setPopover({
       anchor: ev.currentTarget,
       rows,
       title: strings.leave.calendarDetailTitleWeek(formatWeekRangeLabel(weekMonday, localeTag)),
-      countLabel: strings.leave.calendarAwayCountWeek(groups.length),
     });
   }, [localeTag]);
 
@@ -930,17 +924,14 @@ export function LeaveLookupTab() {
       >
         {popover ? (
           <>
-            <Box sx={{ px: 2, pt: 1.25, pb: 0.75, borderBottom: 1, borderColor: 'divider' }}>
+            <Box sx={{ px: 2, pt: 1.25, pb: 1, borderBottom: 1, borderColor: 'divider' }}>
               <Typography variant="subtitle2" sx={{ fontWeight: 600, lineHeight: 1.3 }}>
                 {popover.title}
               </Typography>
-              <Typography variant="caption" color="text.secondary" sx={{ display: 'block', lineHeight: 1.25, mt: 0.25 }}>
-                {popover.countLabel}
-              </Typography>
             </Box>
             <Box sx={{ overflow: 'auto', px: 1, py: 0.5 }}>
-              {[...departmentBuckets(buildEmployeeGroups(popover.rows)).entries()].map(([dept, people]) => (
-                <Box key={dept} sx={{ mb: 1, mt: 1.25 }}>
+              {[...departmentBuckets(buildEmployeeGroups(popover.rows)).entries()].map(([dept, people], index) => (
+                <Box key={dept} sx={{ mb: 1, mt: index > 0 ? 1.25 : 0 }}>
                   <Typography
                     variant="overline"
                     color="text.secondary"
@@ -950,7 +941,9 @@ export function LeaveLookupTab() {
                   </Typography>
                   <List dense disablePadding>
                     {people.map((p) => {
-                      const amountLabel = p.ledgerRows.map((r) => formatPtoDays(r.amount)).join(' + ');
+                      const amountLabel = p.ledgerRows
+                        .map((r) => strings.leave.calendarPopoverPtoAmountLabel(r.amount))
+                        .join(' + ');
                       return (
                         <ListItem
                           key={p.employeeId}

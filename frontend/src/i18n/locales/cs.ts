@@ -3,6 +3,7 @@
  * Pozn.: počítání osob v {@link scopeDeptExplain} řeší české skloňování (1 osoba / 2-4 osoby / 5+ osob).
  */
 import type { EnMessages } from './en';
+import { formatPtoDays } from '../../utils/formatPto';
 
 function osobySklonění(n: number): string {
   const zbytek10 = n % 10;
@@ -171,6 +172,13 @@ export const cs = {
     calendarDetailTitle: (longDate: string) => `Nepřítomnost · ${longDate}`,
     calendarAwayCount: (people: number) =>
       `Počet osob s čerpáním v tento den: ${people}`,
+    /** Přehled nepřítomnosti — popover: částka + den / dny / dní (PluralRules). */
+    calendarPopoverPtoAmountLabel: (n: number) => {
+      const s = formatPtoDays(n);
+      const cat = new Intl.PluralRules('cs-CZ').select(n);
+      const w = cat === 'one' ? 'den' : cat === 'few' ? 'dny' : 'dní';
+      return `${s} ${w}`;
+    },
     calendarCellAria: (
       isoDisplayDate: string,
       away: number,
