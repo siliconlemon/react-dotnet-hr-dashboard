@@ -2,7 +2,7 @@ import Autocomplete, { createFilterOptions } from '@mui/material/Autocomplete';
 import FormControl from '@mui/material/FormControl';
 import FormHelperText from '@mui/material/FormHelperText';
 import TextField from '@mui/material/TextField';
-import type { Theme } from '@mui/material/styles';
+import type { SxProps, Theme } from '@mui/material/styles';
 import type { EmployeeReadDto } from '../../api/types';
 import { getEmployeeById } from './getEmployeeById';
 
@@ -42,6 +42,8 @@ export type EmployeePickerFieldProps = {
   helperPlaceholder?: string;
   /** Accessible label for the built-in clear (X) control when a selection exists. */
   clearButtonAriaLabel?: string;
+  /** Styles for the popup list (`slotProps.listbox`); use when the menu must match local filter typography. */
+  listboxSlotSx?: SxProps<Theme>;
 };
 
 /**
@@ -57,6 +59,7 @@ export function EmployeePickerField({
   helperSpacerSx,
   helperPlaceholder = '\u00a0',
   clearButtonAriaLabel,
+  listboxSlotSx,
 }: EmployeePickerFieldProps) {
   const value: EmployeeReadDto | null = getEmployeeById(employees, valueId) ?? null;
 
@@ -103,6 +106,7 @@ export function EmployeePickerField({
           ...(clearButtonAriaLabel
             ? { clearIndicator: { 'aria-label': clearButtonAriaLabel } }
             : {}),
+          ...(listboxSlotSx != null ? { listbox: { sx: listboxSlotSx } } : {}),
         }}
         renderInput={(params) => (
           <TextField

@@ -56,7 +56,7 @@ export function DrawerLanguageSwitcher({ collapsed, mobile, trailingFade }: Draw
   };
 
   const menuItems = LOCALES.map((loc) => (
-    <MenuItem key={loc} selected={locale === loc} onClick={() => pickFromMenu(loc)} dense>
+    <MenuItem key={loc} selected={locale === loc} onClick={() => pickFromMenu(loc)}>
       <ListItemIcon sx={{ minWidth: 36 }}>
         <Translate
           fontSize="small"
@@ -211,9 +211,6 @@ export function DrawerLanguageSwitcher({ collapsed, mobile, trailingFade }: Draw
               minWidth: 200,
               ...(compact ? { mt: -0.5 } : { mb: 0.5 }),
             },
-          },
-          list: {
-            sx: { py: 0 },
           },
         }}
       >

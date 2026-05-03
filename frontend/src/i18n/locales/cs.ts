@@ -140,7 +140,7 @@ export const cs = {
     createFailed: 'Záznam se nepodařilo uložit.',
     calendarTitle: 'Docházka – přehled',
     calendarHintDayGrid:
-      'Buňka pro pracovní den ukazuje počet osob s čerpáním. Najetím zobrazíte stručný výpis; kliknutím na nenulovou buňku jména a oddělení.',
+      'Buňka pro pracovní den ukazuje počet osob s čerpáním. Najetím zobrazíte stručný výpis, kliknutím na nenulovou buňku zobrazíte jména a oddělení.',
     calendarHintWeekGrid:
       'Každý řádek je jeden kalendářní týden. Číslo je počet různých osob s čerpáním v kterýkoliv pracovní den v týdnu. Najetím součty za osobu; kliknutím podrobnosti.',
     calendarViewWeek: 'Týden',

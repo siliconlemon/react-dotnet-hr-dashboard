@@ -324,6 +324,64 @@ export function createEnterpriseTheme(mode: PaletteMode = 'light', uiLocale: Loc
     MuiIconButton: {
       defaultProps: { size: 'small' },
     },
+    /**
+     * Select/Dropdown menus and autocomplete listboxes: remove default top/bottom padding on the
+     * scroll container (per-item spacing comes from MenuItem).
+     */
+    MuiMenu: {
+      defaultProps: {
+        slotProps: {
+          list: {
+            sx: {
+              py: 0,
+            },
+          },
+        },
+      },
+    },
+    /**
+     * Dropdown options are `li.MuiAutocomplete-option`, not {@link MuiMenuItem}; dense Menu styling
+     * does not apply. Mirror dense menu rows (32px, tight padding) and flush the listbox gutter.
+     */
+    MuiAutocomplete: {
+      defaultProps: {
+        slotProps: {
+          listbox: {
+            sx: {
+              py: 0,
+            },
+          },
+        },
+      },
+      styleOverrides: {
+        listbox: {
+          paddingTop: 0,
+          paddingBottom: 0,
+        },
+        option: ({ theme }) => ({
+          /** Align with dense {@link MuiMenuItem} (see MUI menu dense spec). */
+          minHeight: 32,
+          paddingTop: theme.spacing(0.5),
+          paddingBottom: theme.spacing(0.5),
+          paddingLeft: theme.spacing(2),
+          paddingRight: theme.spacing(2),
+          [theme.breakpoints.up('sm')]: {
+            minHeight: 32,
+          },
+        }),
+        loading: ({ theme }) => ({
+          padding: `${theme.spacing(1)} ${theme.spacing(2)}`,
+        }),
+        noOptions: ({ theme }) => ({
+          padding: `${theme.spacing(1)} ${theme.spacing(2)}`,
+        }),
+      },
+    },
+    MuiMenuItem: {
+      defaultProps: {
+        dense: true,
+      },
+    },
     MuiListItemButton: {
       defaultProps: { dense: true },
     },

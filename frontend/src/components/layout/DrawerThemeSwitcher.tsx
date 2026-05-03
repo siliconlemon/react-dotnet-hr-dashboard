@@ -137,15 +137,11 @@ export function DrawerThemeSwitcher({ collapsed, mobile, trailingFade }: DrawerT
                 elevation: 3,
                 sx: { minWidth: 200, mt: -0.5 },
               },
-              list: {
-                sx: { py: 0 },
-              },
             }}
           >
             <MenuItem
               selected={mode === 'light'}
               onClick={() => pickFromMenu('light')}
-              dense
             >
               <ListItemIcon sx={{ minWidth: 36 }}>
                 <LightModeOutlined
@@ -165,7 +161,6 @@ export function DrawerThemeSwitcher({ collapsed, mobile, trailingFade }: DrawerT
             <MenuItem
               selected={mode === 'dark'}
               onClick={() => pickFromMenu('dark')}
-              dense
             >
               <ListItemIcon sx={{ minWidth: 36 }}>
                 <DarkModeOutlined

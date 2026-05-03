@@ -130,7 +130,7 @@ export const en = {
     createFailed: 'Could not save the entry.',
     calendarTitle: 'Absence lookup',
     calendarHintDayGrid:
-      'Each weekday cell is how many distinct people have usage logged that workday. Hover for a quick list; click a non-zero cell for names and departments.',
+      'Each weekday cell is how many distinct people have usage logged that workday. Hover for a quick list, click a non-zero cell for names and departments.',
     calendarHintWeekGrid:
       'Each row is one calendar week. The number is distinct people with usage on any weekday that week. Hover for per-person totals; click for details.',
     calendarViewWeek: 'Week',

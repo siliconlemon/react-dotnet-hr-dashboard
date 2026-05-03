@@ -36,6 +36,10 @@ import { getDepartmentAccent } from '../../theme/employeeCardPalette';
 import { formatDateOnly } from '../../utils/formatDate';
 import { formatPtoDays } from '../../utils/formatPto';
 
+/** Same 13px / compact row scale as PTO ledger filter Autocomplete dropdown options. */
+const LEAVE_LOOKUP_MENU_FONT_SIZE = '0.8125rem';
+const LEAVE_LOOKUP_MENU_LINE_HEIGHT = 1.5;
+
 function mondayOfDate(d: Dayjs): Dayjs {
   const dow = d.day();
   const delta = dow === 0 ? -6 : 1 - dow;
@@ -432,24 +436,20 @@ export function LeaveCalendarTab() {
                 onChange={(e) => setLayoutMode(e.target.value as 'week' | 'month')}
                 MenuProps={{
                   slotProps: {
-                    list: {
-                      sx: {
-                        py: 0,
-                      },
-                    },
                     paper: {
                       sx: {
                         minWidth: 140,
                         '& .MuiMenuItem-root': {
-                          ...theme.typography.body2,
-                          fontSize: theme.typography.pxToRem(13),
-                          fontWeight: theme.typography.fontWeightRegular,
+                          fontSize: LEAVE_LOOKUP_MENU_FONT_SIZE,
+                          lineHeight: LEAVE_LOOKUP_MENU_LINE_HEIGHT,
+                          fontWeight: 400,
                           textTransform: 'none',
                           letterSpacing: 'normal',
                           color: theme.palette.text.primary,
-                          py: 0.75,
-                          pl: 1,
-                          pr: 2,
+                          minHeight: 32,
+                          py: theme.spacing(0.5),
+                          pl: theme.spacing(2),
+                          pr: theme.spacing(2),
                           '&.Mui-selected': {
                             backgroundColor: alpha(theme.palette.primary.main, 0.08),
                           },
@@ -495,7 +495,7 @@ export function LeaveCalendarTab() {
                     maxHeight: 40,
                     height: 40,
                     py: 0,
-                    pl: 1.25,
+                    pl: 2,
                     /** Reserve space for the caret so it matches outlined primary buttons visually. */
                     pr: 4,
                     display: 'inline-flex',

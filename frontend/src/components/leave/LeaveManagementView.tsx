@@ -81,6 +81,18 @@ const filterSelectFormControlSx = {
 const leaveFilterFieldFontSize = '0.8125rem';
 const leaveFilterFieldLineHeight = 1.5;
 
+/**
+ * Autocomplete dropdowns use a portal; option text inherits Paper `body1`. Ledger filters only — keep options
+ * at the same 13px scale as the inputs and DataGrid cells.
+ */
+const leaveLedgerFilterAutocompleteListboxSx = {
+  '& .MuiAutocomplete-option': {
+    fontSize: leaveFilterFieldFontSize,
+    lineHeight: leaveFilterFieldLineHeight,
+    fontWeight: 400,
+  },
+} as const;
+
 export type LeaveManagementViewTab = 'ledger' | 'lookup';
 
 type LeaveManagementViewProps = {
@@ -516,6 +528,7 @@ export function LeaveManagementView({ viewTab, onViewTabChange }: LeaveManagemen
               }}
               label={strings.leave.filterEmployee}
               clearButtonAriaLabel={strings.leave.clearField}
+              listboxSlotSx={leaveLedgerFilterAutocompleteListboxSx}
             />
           </Box>
           <FormControl fullWidth size="small" sx={{ minWidth: 0 }}>
@@ -557,6 +570,9 @@ export function LeaveManagementView({ viewTab, onViewTabChange }: LeaveManagemen
                   }),
                 },
                 clearIndicator: { 'aria-label': strings.leave.clearField },
+                listbox: {
+                  sx: leaveLedgerFilterAutocompleteListboxSx,
+                },
               }}
               renderInput={(params) => (
                 <TextField
@@ -784,6 +800,7 @@ export function LeaveManagementView({ viewTab, onViewTabChange }: LeaveManagemen
                 valueId={dialogEmployeeId}
                 onChangeId={setDialogEmployeeId}
                 label={strings.leave.pickEmployee}
+                listboxSlotSx={leaveLedgerFilterAutocompleteListboxSx}
               />
             ) : (
               <>

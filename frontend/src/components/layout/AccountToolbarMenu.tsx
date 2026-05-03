@@ -72,9 +72,6 @@ export function AccountToolbarMenu() {
           paper: {
             sx: { minWidth: 220, mt: 1 },
           },
-          list: {
-            sx: { pt: 0, pb: 0 },
-          },
         }}
       >
         <Typography variant="body2" sx={{ px: 2, py: 1.5, color: 'text.secondary' }}>
