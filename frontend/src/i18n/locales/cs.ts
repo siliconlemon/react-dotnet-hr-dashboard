@@ -73,7 +73,7 @@ export const cs = {
     tabCalendar: 'Kalendář',
     ledgerTitle: 'Kniha dovolené (PTO)',
     ledgerSubtitle:
-      'Připsání nároku, evidované čerpání a úpravy. Řádky se promítají do zůstatků spolu s plánovaným přirůstáním nároku a schváleným čerpáním.',
+      'Záznamy o změnách stavů na kontech dovolené u jednotlivých zaměstnanců, případně týmů.',
     loadError: 'Kniha dovolené se nepodařila načíst. Je spuštěné API?',
     colEffectiveDate: 'Účinné datum',
     colEntryType: 'Typ záznamu',
@@ -120,7 +120,7 @@ export const cs = {
     createFailed: 'Záznam se nepodařilo uložit.',
     calendarTitle: 'Kalendář dovolené',
     calendarHint:
-      'Zjistíte, zda má někdo zapsanou dovolenou v daný den nebo v daném týdnu. Pomocí panelu přepnete mezi dnem, týdnem, měsícem nebo agendou.',
+      'Zjistíte, zda má někdo zapsanou dovolenou v daný den nebo v daném týdnu.',
     calendarLoadError: 'Kalendáři se nepodařilo načíst čerpání. Je spuštěné API?',
     calendarToday: 'Dnes',
   },

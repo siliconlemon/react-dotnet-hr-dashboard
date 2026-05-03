@@ -63,7 +63,7 @@ export const en = {
     tabCalendar: 'Calendar',
     ledgerTitle: 'PTO Ledger',
     ledgerSubtitle:
-      'Accrual grants, recorded usage, and adjustments. Rows apply to balances together with schedule accrual and approved leave.',
+      'Change logs of changes in PTO balances for individual employees or teams.',
     loadError: 'Could not load PTO ledger. Is the API running?',
     colEffectiveDate: 'Effective date',
     colEntryType: 'Entry type',
@@ -110,7 +110,7 @@ export const en = {
     createFailed: 'Could not save the entry.',
     calendarTitle: 'Leave calendar',
     calendarHint:
-      'See whether anyone has recorded leave on a given day or in a given week. Use the toolbar to switch between day, week, month, or agenda.',
+      'See whether anyone has recorded leave on a given day or in a given week.',
     calendarLoadError: 'Could not load usage for the calendar. Is the API running?',
     calendarToday: 'Today',
   },

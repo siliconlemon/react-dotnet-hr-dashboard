@@ -382,7 +382,6 @@ export function LeaveManagementView({ onViewTabChange }: LeaveManagementViewProp
         flex: 1,
         minHeight: 0,
         overflow: 'hidden',
-        my: 1,
       }}
     >
       <Tabs
