@@ -526,7 +526,6 @@ export function DepartmentsView() {
           </Typography>
         )}
 
-        <Box sx={{ flex: 1, minHeight: 0, minWidth: 0, width: '100%', overflow: 'hidden' }}>
           <DataGrid<MatrixGridRow>
             loading={false}
           rows={gridRows}
@@ -562,6 +561,11 @@ export function DepartmentsView() {
             }
           }}
           sx={{
+            flex: 1,
+            minHeight: 0,
+            minWidth: 0,
+            width: '100%',
+            overflow: 'hidden',
             height: '100%',
             border: 'none',
             '& .MuiDataGrid-columnHeaders': { bgcolor: 'action.hover' },
@@ -581,7 +585,6 @@ export function DepartmentsView() {
             ...departmentAccentGridSx,
           }}
         />
-        </Box>
       </ViewLoadingGate>
     </Paper>
   );

@@ -588,8 +588,8 @@ export function AppShell({ children, activeNavKey, onNavKeyChange, breadcrumbIte
           minWidth: 0,
           minHeight: 0,
           px: 2,
-          pt: 1,
-          pb: 1,
+          pt: 2,
+          pb: 2,
           width: { md: `calc(100% - ${drawerWidth}px)` },
           transition: { md: drawerPaperTransition },
           bgcolor: 'background.default',
@@ -604,6 +604,15 @@ export function AppShell({ children, activeNavKey, onNavKeyChange, breadcrumbIte
             display: 'flex',
             flexDirection: 'column',
             overflow: 'hidden',
+            bgcolor: 'transparent',
+            /**
+             * View roots often used `margin` for spacing; in a flex column fill layout that shrinks
+             * the usable height and causes overflow/clipping. Shell padding handles chrome inset;
+             * views should use internal padding/gap instead.
+             */
+            '& > *': {
+              margin: '0 !important',
+            },
           }}
         >
           {children}

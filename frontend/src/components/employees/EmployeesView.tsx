@@ -15,6 +15,7 @@ import { strings } from '../../i18n';
 import { useDataGridLocaleText } from '../../i18n/useDataGridLocaleText';
 import { useLocale } from '../../i18n/useLocale';
 import { formatDateOnly } from '../../utils/formatDate';
+import { shellTopTabStripSx } from '../layout/shellViewChrome';
 import { ViewLoadingGate } from '../layout/ViewLoadingGate';
 import { EmployeeDetailCards } from './EmployeeDetailCards';
 import { EmployeeDetailFieldsPicker } from './EmployeeDetailFieldsPicker';
@@ -389,7 +390,7 @@ export function EmployeesView({ onViewTabChange }: EmployeesViewProps) {
       <Tabs
         value={viewTab}
         onChange={handleViewTabChange}
-        sx={{ borderBottom: 1, borderColor: 'divider', flexShrink: 0 }}
+        sx={{ ...shellTopTabStripSx, borderBottom: 1, borderColor: 'divider', flexShrink: 0 }}
       >
         <Tab value="directory" label={strings.employees.tabDirectory} />
         <Tab value="onboard" label={strings.employees.tabOnboard} />
@@ -619,7 +620,6 @@ export function EmployeesView({ onViewTabChange }: EmployeesViewProps) {
                 overflow: 'hidden',
                 width: '100%',
                 boxSizing: 'border-box',
-                mb: 1,
               }}
               variant="outlined"
             >

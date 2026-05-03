@@ -29,6 +29,7 @@ import {
   type GridColDef,
   type GridPaginationModel,
 } from '@mui/x-data-grid';
+import { shellTopTabStripSx } from '../layout/shellViewChrome';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import dayjs, { type Dayjs } from 'dayjs';
 import {
@@ -409,7 +410,7 @@ export function LeaveManagementView({ viewTab, onViewTabChange }: LeaveManagemen
       <Tabs
         value={viewTab}
         onChange={handleViewTabChange}
-        sx={{ borderBottom: 1, borderColor: 'divider', flexShrink: 0 }}
+        sx={{ ...shellTopTabStripSx, borderBottom: 1, borderColor: 'divider', flexShrink: 0 }}
       >
         <Tab value="ledger" label={strings.leave.tabLedger} />
         <Tab value="lookup" label={strings.leave.tabLookup} />

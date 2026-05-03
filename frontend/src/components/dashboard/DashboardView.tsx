@@ -299,20 +299,19 @@ export function DashboardView() {
   const fetching = matrix === null && !error;
 
   return (
-    <Box sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', boxSizing: 'border-box' }}>
-      <Card
-        variant="outlined"
-        sx={{
-          flex: 1,
-          minHeight: 0,
-          width: '100%',
-          boxSizing: 'border-box',
-          display: 'flex',
-          flexDirection: 'column',
-          my: 1,
-          overflow: 'hidden',
-        }}
-      >
+    <Card
+      variant="outlined"
+      sx={{
+        flex: 1,
+        minHeight: 0,
+        width: '100%',
+        boxSizing: 'border-box',
+        display: 'flex',
+        flexDirection: 'column',
+        my: 1,
+        overflow: 'hidden',
+      }}
+    >
         <CardContent
           sx={{
             flex: 1,
@@ -442,7 +441,6 @@ export function DashboardView() {
           </ViewLoadingGate>
           </Box>
         </CardContent>
-      </Card>
-    </Box>
+    </Card>
   );
 }
