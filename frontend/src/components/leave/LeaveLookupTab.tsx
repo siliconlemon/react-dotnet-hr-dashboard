@@ -9,7 +9,6 @@ import {
   LinearProgress,
   List,
   ListItem,
-  ListItemText,
   MenuItem,
   Paper,
   Popover,
@@ -943,33 +942,72 @@ export function LeaveLookupTab() {
       >
         {popover ? (
           <>
-            <Box sx={{ px: 2, pt: 1.5, pb: 1, borderBottom: 1, borderColor: 'divider' }}>
-              <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+            <Box sx={{ px: 2, pt: 1.25, pb: 0.75, borderBottom: 1, borderColor: 'divider' }}>
+              <Typography variant="subtitle2" sx={{ fontWeight: 600, lineHeight: 1.3 }}>
                 {popover.title}
               </Typography>
-              <Typography variant="caption" color="text.secondary">
+              <Typography variant="caption" color="text.secondary" sx={{ display: 'block', lineHeight: 1.25, mt: 0.25 }}>
                 {popover.countLabel}
               </Typography>
             </Box>
-            <Box sx={{ overflow: 'auto', px: 1, py: 1 }}>
+            <Box sx={{ overflow: 'auto', px: 1, py: 0.5 }}>
               {[...departmentBuckets(buildEmployeeGroups(popover.rows)).entries()].map(([dept, people]) => (
-                <Box key={dept} sx={{ mb: 1.5 }}>
-                  <Typography variant="overline" color="text.secondary" sx={{ px: 1, letterSpacing: 0.06 }}>
+                <Box key={dept} sx={{ mb: 1, mt: 1.25 }}>
+                  <Typography
+                    variant="overline"
+                    color="text.secondary"
+                    sx={{ px: 1, letterSpacing: 0.06, display: 'block', lineHeight: 1.2, mb: 0.25 }}
+                  >
                     {dept}
                   </Typography>
                   <List dense disablePadding>
-                    {people.map((p) => (
-                      <ListItem key={p.employeeId} disableGutters sx={{ px: 1 }}>
-                        <ListItemText
-                          primary={p.label}
-                          secondary={p.ledgerRows.map((r) => formatPtoDays(r.amount)).join(' + ')}
-                          slotProps={{
-                            primary: { variant: 'body2' },
-                            secondary: { variant: 'caption' },
-                          }}
-                        />
-                      </ListItem>
-                    ))}
+                    {people.map((p) => {
+                      const amountLabel = p.ledgerRows.map((r) => formatPtoDays(r.amount)).join(' + ');
+                      return (
+                        <ListItem
+                          key={p.employeeId}
+                          dense
+                          disableGutters
+                          sx={{ px: 1, py: 0.125, minHeight: 0 }}
+                        >
+                          <Box
+                            sx={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'space-between',
+                              gap: 1,
+                              width: '100%',
+                              minWidth: 0,
+                            }}
+                          >
+                            <Typography
+                              variant="body2"
+                              component="span"
+                              sx={{
+                                minWidth: 0,
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                whiteSpace: 'nowrap',
+                              }}
+                            >
+                              {p.label}
+                            </Typography>
+                            <Typography
+                              variant="body2"
+                              component="span"
+                              color="text.secondary"
+                              sx={{
+                                flexShrink: 0,
+                                fontVariantNumeric: 'tabular-nums',
+                                whiteSpace: 'nowrap',
+                              }}
+                            >
+                              {amountLabel}
+                            </Typography>
+                          </Box>
+                        </ListItem>
+                      );
+                    })}
                   </List>
                 </Box>
               ))}
