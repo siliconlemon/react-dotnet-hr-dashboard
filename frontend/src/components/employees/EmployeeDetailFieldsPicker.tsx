@@ -245,7 +245,10 @@ function EmployeeDetailFieldsPickerPanel({
         onClick={handleOpen}
         aria-label={strings.employees.detailFieldsPickerAria}
         aria-expanded={open}
-        sx={{ color: 'text.secondary' }}
+        sx={{
+          color:
+            theme.palette.mode === 'dark' ? theme.palette.common.white : theme.palette.text.secondary,
+        }}
       >
         <ViewColumnIcon fontSize="small" />
       </IconButton>
