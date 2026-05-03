@@ -94,8 +94,8 @@ type DetailPanelTier = 'expanded' | 'normal' | 'collapsed';
 
 const DETAIL_COLLAPSED_PX = 48;
 
-/** Matches split gutter: splitter `py: 1` + 1px line + `py: 1` ≈ 17px at default spacing. */
-const DETAIL_PANEL_COLLAPSED_TOP_GAP = 2.125;
+/** Matches split gutter: splitter `py: 0.75` + 1px line + `py: 0.75` ≈ 13px at default spacing. */
+const DETAIL_PANEL_COLLAPSED_TOP_GAP = 1.625;
 
 const detailPanelHeaderRowSx = {
   display: 'flex',
@@ -115,6 +115,7 @@ const detailPanelTitleTypographySx = {
   fontSize: '20px',
   lineHeight: 1.2,
   minWidth: 0,
+  mt: -0.25,
 };
 
 /**
@@ -548,17 +549,17 @@ export function EmployeesView({ onViewTabChange }: EmployeesViewProps) {
                   e.preventDefault();
                   setSplitDragging(true);
                 }}
-                sx={{
+                sx={(theme) => ({
                   flexShrink: 0,
-                  py: 1,
+                  py: 0.75,
                   px: 1,
                   display: 'flex',
                   alignItems: 'center',
                   cursor: 'row-resize',
                   touchAction: 'none',
                   userSelect: 'none',
-                  /** Page backdrop so `Paper` halo does not tint the gutter; drag strip stays visually neutral. */
-                  bgcolor: 'background.default',
+                  /** Page backdrop only on middle 2/3 height so `Paper` halo does not tint full gutter. */
+                  background: `linear-gradient(to bottom, transparent 0% 16.67%, ${theme.palette.background.default} 16.67% 83.33%, transparent 83.33% 100%)`,
                   boxShadow: 'none',
                   filter: 'none',
                   '&:hover .EmployeesView-splitterLine': {
@@ -567,7 +568,7 @@ export function EmployeesView({ onViewTabChange }: EmployeesViewProps) {
                   ...(splitDragging && {
                     '& .EmployeesView-splitterLine': { opacity: 1 },
                   }),
-                }}
+                })}
               >
                 <Box
                   className="EmployeesView-splitterLine"
