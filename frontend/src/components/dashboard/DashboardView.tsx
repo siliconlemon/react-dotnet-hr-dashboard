@@ -83,7 +83,8 @@ function KpiCard({ title, primary, secondary, tooltipNames }: KpiCardProps) {
           display: 'flex',
           flexDirection: 'column',
           gap: 0.5,
-          py: 2,
+          pt: 1.5,
+          pb: 2,
           '&:last-child': { pb: 2 },
         }}
       >
@@ -156,7 +157,8 @@ function SpotlightCard({
           display: 'flex',
           flexDirection: 'column',
           gap: 1,
-          py: 2,
+          pt: 1.5,
+          pb: 2,
           '&:last-child': { pb: 2 },
         }}
       >
@@ -216,7 +218,8 @@ function DepartmentBreakdownCard({ kpis }: { kpis: WorkforceKpis }) {
           display: 'flex',
           flexDirection: 'column',
           minHeight: 0,
-          py: 2,
+          pt: 1.5,
+          pb: 2,
           '&:last-child': { pb: 2 },
         }}
       >
