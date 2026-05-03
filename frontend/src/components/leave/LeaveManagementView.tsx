@@ -309,7 +309,7 @@ export function LeaveManagementView({
         width: 100,
         minWidth: LEDGER_COL_MIN_WIDTH_PX,
         sortable: false,
-        valueGetter: (_, row) => row.createdBy ?? '—',
+        valueGetter: (_, row) => row.createdBy ?? '-',
       },
     ],
     [employeeEmailById, entryTypeLabel],

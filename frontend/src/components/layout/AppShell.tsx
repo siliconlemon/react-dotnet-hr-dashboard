@@ -52,7 +52,7 @@ const DRAWER_FAVICON_PX = 28;
 const NAV_ITEM_MIN_HEIGHT_PX = 44;
 /** Icon slot: centered in the row; collapsed mode uses a fixed square button this tall/wide. */
 const NAV_ICON_SLOT_PX = 40;
-/** Match `fontSize="small"` on nav SvgIcons — lock size so dense rows + flex don’t shrink glyphs when labels appear. */
+/** Match `fontSize="small"` on nav SvgIcons: lock size so dense rows + flex don’t shrink glyphs when labels appear. */
 const NAV_SVG_ICON_PX = 20;
 
 /** Strong nav title: matches breadcrumb current-page segment (`subtitle1` + weight + line height). */
@@ -61,7 +61,7 @@ const NAV_TITLE_STRONG_SX = {
   lineHeight: 1.3,
 } as const;
 
-/** Same slot as collapsed rail: small IconButton + `p: 1` (not a plain Box — IconButton has fixed min size). */
+/** Same slot as collapsed rail: small IconButton + `p: 1` (not a plain Box; IconButton has fixed min size). */
 const DRAWER_BRAND_ICON_BUTTON_SX = { p: 1 } as const;
 
 function DrawerBrandFaviconImg() {
@@ -82,7 +82,7 @@ function DrawerBrandFaviconImg() {
 
 /**
  * Brand row: icon + title + optional trailing control in one flex row.
- * Title uses `flex: 1` + `minWidth: 0` so it truncates against the trailing slot — never a stretched
+ * Title uses `flex: 1` + `minWidth: 0` so it truncates against the trailing slot. Avoid a stretched
  * empty band between name and control (that read as “padding growing” when the drawer widened).
  */
 function DrawerTitleRow({ title, endSlot }: { title: string; endSlot?: ReactNode }) {

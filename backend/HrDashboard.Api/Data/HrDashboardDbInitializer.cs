@@ -352,7 +352,7 @@ public static class HrDashboardDbInitializer
             }
         }
 
-        // Upcoming approved — staggered over the next ~3 weeks so the matrix shows near-term approved days
+        // Upcoming approved: staggered over the next ~3 weeks so the matrix shows near-term approved days
         var upcomingHorizon = today.AddDays(21);
         for (var i = 0; i < employees.Count; i++)
         {
@@ -369,7 +369,7 @@ public static class HrDashboardDbInitializer
                 });
         }
 
-        // Upcoming pending — next two weeks, overlapping requests for visibility on pending totals
+        // Upcoming pending: next two weeks, overlapping requests for visibility on pending totals
         for (var i = 0; i < employees.Count; i++)
         {
             var d = today.AddDays((i * 2) % 14);
@@ -439,7 +439,7 @@ public static class HrDashboardDbInitializer
                 });
         }
 
-        // Usage entries — next several weeks so month/agenda calendar views show events starting today
+        // Usage entries: next several weeks so month/agenda calendar views show events starting today
         const int usageDays = 24;
         for (var k = 0; k < usageDays; k++)
         {
@@ -458,7 +458,7 @@ public static class HrDashboardDbInitializer
                 });
         }
 
-        // Adjustments — mix of past corrections in the current year
+        // Adjustments: mix of past corrections in the current year
         var adjDate = today.AddDays(-rng.Next(5, 40));
         if (adjDate < yearStart)
             adjDate = yearStart.AddDays(10);

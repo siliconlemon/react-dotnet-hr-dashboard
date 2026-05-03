@@ -54,7 +54,7 @@ public sealed class AuthResponseDto
 
 public sealed class RegisterResponseDto
 {
-    /// <summary>Human-readable outcome (e.g. confirmation email sent — placeholder in this project).</summary>
+    /// <summary>Human-readable outcome (e.g. confirmation email sent; placeholder in this project).</summary>
     public string Message { get; set; } = string.Empty;
 
     public string Email { get; set; } = string.Empty;

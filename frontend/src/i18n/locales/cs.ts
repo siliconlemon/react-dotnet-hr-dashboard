@@ -1,6 +1,6 @@
 /**
  * České rozhraní. Typová shoda s {@link ./en}.
- * Pozn.: počítání osob v {@link scopeDeptExplain} řeší české skloňování (1 osoba / 2–4 osoby / 5+ osob).
+ * Pozn.: počítání osob v {@link scopeDeptExplain} řeší české skloňování (1 osoba / 2-4 osoby / 5+ osob).
  */
 import type { EnMessages } from './en';
 
@@ -156,7 +156,7 @@ export const cs = {
     departmentsPerPageDecreaseAria: 'Méně oddělení na stránku',
     departmentsPerPageIncreaseAria: 'Více oddělení na stránku',
     paginationRange: (from: number, to: number, count: number) =>
-      `${from}–${to} z ${count}`,
+      `${from}-${to} z ${count}`,
   },
   onboard: {
     title: 'Nový zaměstnanec',

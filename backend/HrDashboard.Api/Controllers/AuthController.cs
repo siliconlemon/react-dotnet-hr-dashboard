@@ -18,7 +18,7 @@ public sealed class AuthController : ControllerBase
         _auth = auth;
     }
 
-    /// <summary>Creates an account; confirmation email is simulated — password login stays disabled until confirmed.</summary>
+    /// <summary>Creates an account. Confirmation email is simulated; password login stays disabled until confirmed.</summary>
     [HttpPost("register")]
     [ProducesResponseType(typeof(RegisterResponseDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]

@@ -19,7 +19,7 @@ const NAV_SVG_ICON_PX = 20;
 /** Matches MUI `ToggleButton` size="small" row height from the previous toggle group. */
 const LANGUAGE_SELECT_ROW_HEIGHT_PX = 32;
 
-/** Display order in language menus — add new locales here and in {@link messagesByLocale}. */
+/** Display order in language menus. Add new locales here and in {@link messagesByLocale}. */
 const LOCALES = Object.keys(messagesByLocale) as Locale[];
 
 function localePrimaryLabel(id: Locale): string {
@@ -33,9 +33,9 @@ function localePrimaryLabel(id: Locale): string {
 import type { DrawerTrailingFade } from './DrawerThemeSwitcher';
 
 type DrawerLanguageSwitcherProps = {
-  /** Desktop drawer collapsed to icon rail — compact trigger + menu. */
+  /** Desktop drawer collapsed to icon rail: compact trigger + menu. */
   collapsed: boolean;
-  /** Mobile temporary drawer — always show expanded control. */
+  /** Mobile temporary drawer: always show expanded control. */
   mobile: boolean;
   /** Expanded desktop row: fade only the language control while the drawer rail collapses. */
   trailingFade?: DrawerTrailingFade;

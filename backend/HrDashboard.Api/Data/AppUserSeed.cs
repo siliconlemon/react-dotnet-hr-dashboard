@@ -7,7 +7,7 @@ namespace HrDashboard.Api.Data;
 /// <summary>Ensures built-in showcase accounts exist independently of HR seed data.</summary>
 public static class AppUserSeed
 {
-    /// <summary>Creates the Demo account if missing (password-based login is intentionally unusable — use POST /api/auth/demo).</summary>
+    /// <summary>Creates the Demo account if missing (password-based login is intentionally unusable; use POST /api/auth/demo).</summary>
     public static void EnsureDemoUser(HrDashboardDbContext context)
     {
         var alexEmployeeId = context.Employees

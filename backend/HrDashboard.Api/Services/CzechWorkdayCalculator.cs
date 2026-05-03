@@ -7,7 +7,7 @@ namespace HrDashboard.Api.Services;
 
 /// <summary>
 /// Uses Czech public holidays from <see href="https://date.nager.at">date.nager.at</see> (free API, same source as Nager.Date)
-/// with in-memory caching. Falls back to Mon–Fri only if the API is unavailable.
+/// with in-memory caching. Falls back to Mon-Fri only if the API is unavailable.
 /// </summary>
 public sealed class CzechWorkdayCalculator : ICzechWorkdayCalculator
 {

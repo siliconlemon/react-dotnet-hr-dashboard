@@ -1,4 +1,4 @@
-# HR Dashboard — setup
+# HR Dashboard: setup
 
 ## Prerequisites
 
@@ -53,7 +53,7 @@ Base path: `/api/employees`.
 | `DELETE` | `/api/employees/{id}` | Delete employee (cascades leave requests and PTO ledger rows). |
 | `GET` | `/api/employees/{id}/pto-balance?asOf=YYYY-MM-DD` | PTO snapshot for the calendar year of `asOf` (optional; defaults to today’s UTC date). |
 
-**PTO rules (portfolio defaults):** Amounts are **Czech workdays** (Monday–Friday, excluding **Czech public holidays** loaded from the free [Nager Public Holiday API](https://date.nager.at) (`GET /api/v3/PublicHolidays/{year}/CZ`), cached in memory. If that service is unreachable, the app **falls back to weekdays only** (still excludes Sat/Sun) until the cache expires. Each employee has an **annual entitlement** in the database (default **15** workdays on create; the empty-DB seed mixes **15** and **20** for a few rows). Anyone **employed since Jan 1** of the balance year is treated as having the **full annual entitlement accrued** for that year; **mid-year hires** earn a **prorated** accrued amount linear in Czech workdays from their hire date through the as-of date, over the full calendar year. Approved and pending leave overlapping that calendar year consume workdays in the request range (weekends and public holidays in that range do not). Rejected leave does not count.
+**PTO rules (portfolio defaults):** Amounts are **Czech workdays** (Monday-Friday, excluding **Czech public holidays** loaded from the free [Nager Public Holiday API](https://date.nager.at) (`GET /api/v3/PublicHolidays/{year}/CZ`), cached in memory. If that service is unreachable, the app **falls back to weekdays only** (still excludes Sat/Sun) until the cache expires. Each employee has an **annual entitlement** in the database (default **15** workdays on create; the empty-DB seed mixes **15** and **20** for a few rows). Anyone **employed since Jan 1** of the balance year is treated as having the **full annual entitlement accrued** for that year; **mid-year hires** earn a **prorated** accrued amount linear in Czech workdays from their hire date through the as-of date, over the full calendar year. Approved and pending leave overlapping that calendar year consume workdays in the request range (weekends and public holidays in that range do not). Rejected leave does not count.
 
 **PTO ledger (Phase 9):** Rows in `PtoLedgerEntries` are included in the same balance endpoint: **accrual** lines add to accrued days, **usage** lines add to used days, and **adjustment** lines apply as a signed correction to availability (still rounded to half days). Effective dates must fall in the balance year and on/before the as-of date to count.
 
@@ -118,7 +118,7 @@ Use any SQLite client (for example [DB Browser for SQLite](https://sqlitebrowser
 
 4. Open the URL shown in the console (Vite defaults to `http://localhost:5173/`).
 
-5. **Employees (Phases 4–6):** Start the API in another terminal (`dotnet run` from `backend/HrDashboard.Api` on `http://localhost:5228`). The Vite dev server proxies `/api` to that URL, so the **Employees** page can load data without CORS setup. If the API is not running, the grid and forms show an error.
+5. **Employees (Phases 4-6):** Start the API in another terminal (`dotnet run` from `backend/HrDashboard.Api` on `http://localhost:5228`). The Vite dev server proxies `/api` to that URL, so the **Employees** page can load data without CORS setup. If the API is not running, the grid and forms show an error.
 
 The shell uses a compact MUI theme, top **AppBar**, and a **collapsible** side navigation (full labels or icon rail on wide screens; menu drawer on narrow screens). The **Employees** view has **Directory** (MUI **DataGrid** with client-side sort/pagination, **multi-select**, a **resizable split** between the grid and the detail panel, **tabbed** profile + PTO with selected rows shown as **accent-colored cards** in a responsive grid, centralized accent tokens under `frontend/src/theme/employeeCardPalette.ts`) and **Onboard** (**react-hook-form** + MUI fields in a **two-column** layout on medium+ screens, form draft kept while switching Directory/Onboard tabs because the form stays mounted, `POST /api/employees`).
 

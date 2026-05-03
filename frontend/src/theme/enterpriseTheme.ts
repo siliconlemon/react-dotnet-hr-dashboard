@@ -18,7 +18,7 @@ const paperLiftRaised = '0 0 16px rgba(25, 79, 130, 0.075)';
 const CONTROL_OUTLINE = '2px';
 
 /**
- * Omnidirectional primary tint only (`0 0` blur — no offsets). Two soft layers read clearly
+ * Omnidirectional primary tint only (`0 0` blur, no offsets). Two soft layers read clearly
  * without mimicking a cast shadow.
  */
 function ambientHalo(theme: Theme): string {
@@ -89,15 +89,15 @@ const LIGHT_PAPER = '#ffffff';
 const lightPalette = {
   mode: 'light' as const,
   primary: {
-    /** Navy — default interactive color on light surfaces (high contrast). */
+    /** Navy: default interactive color on light surfaces (high contrast). */
     main: '#194f82',
-    /** Sky blue — lighter ramp step for chips / selection tint. */
+    /** Sky blue: lighter ramp step for chips / selection tint. */
     light: '#56ace0',
     dark: '#123d63',
     contrastText: '#ffffff',
   },
   secondary: {
-    /** Steel blue between primary and navy — secondary actions / chips without competing with CTAs. */
+    /** Steel blue between primary and navy for secondary actions / chips without competing with CTAs. */
     main: '#4a7bad',
     contrastText: '#ffffff',
   },
@@ -128,7 +128,7 @@ const DARK_PAPER = '#161f2e';
 const darkPalette = {
   mode: 'dark' as const,
   primary: {
-    /** Sky blue — reads clearly on dark surfaces without heavy navy fills. */
+    /** Sky blue reads clearly on dark surfaces without heavy navy fills. */
     main: '#56ace0',
     light: '#8ec5eb',
     dark: '#194f82',
@@ -171,7 +171,7 @@ function baselineScrollbarChrome(theme: Theme) {
   return { thumb, thumbHover, track };
 }
 
-/** Shared toolbar metrics — matches ledger filter row height / label scale. */
+/** Shared toolbar metrics: matches ledger filter row height / label scale. */
 function eventCalendarToolbarButtonBase(theme: Theme) {
   const cornerPx = `${Number((theme.vars ?? theme).shape.borderRadius)}px`;
   return {
@@ -192,7 +192,7 @@ function eventCalendarToolbarButtonBase(theme: Theme) {
 }
 
 /**
- * View switcher — same as ledger `Button variant="outlined"` ({@link CONTROL_OUTLINE}, paper surface).
+ * View switcher matches ledger `Button variant="outlined"` ({@link CONTROL_OUTLINE}, paper surface).
  */
 export function getEventCalendarToolbarOutlinedButtonSx(theme: Theme) {
   return {
@@ -223,7 +223,7 @@ export function getEventCalendarToolbarOutlinedButtonSx(theme: Theme) {
 }
 
 /**
- * Today — primary fill (`Button variant="contained"`; theme uses `disableElevation`).
+ * Today uses primary fill (`Button variant="contained"`). Theme uses `disableElevation`.
  */
 export function getEventCalendarToolbarTodayButtonSx(theme: Theme) {
   return {
@@ -368,7 +368,7 @@ export function createEnterpriseTheme(mode: PaletteMode = 'light', uiLocale: Loc
           fontWeight: theme.typography.fontWeightMedium,
           /** Match `TextField` / `OutlinedInput` `size="small"` control height (~40px). */
           minHeight: 40,
-          /** Explicit px — same sharp corners as fields; avoids oversized radius reads as “pill”. */
+          /** Explicit px: same sharp corners as fields. Avoids oversized radius reading as “pill”. */
           borderRadius: `${Number((theme.vars ?? theme).shape.borderRadius)}px`,
         }),
         outlined: {
@@ -434,7 +434,7 @@ export function createEnterpriseTheme(mode: PaletteMode = 'light', uiLocale: Loc
         }),
       },
     },
-    /** Permanent/temporary drawer panel — match divider weight on the outer edge. */
+    /** Permanent/temporary drawer panel: match divider weight on the outer edge. */
     MuiDrawer: {
       styleOverrides: {
         paper: ({ theme }) => ({
@@ -442,12 +442,12 @@ export function createEnterpriseTheme(mode: PaletteMode = 'light', uiLocale: Loc
         }),
       },
     },
-    /** MUI X Scheduler — toolbar “Today” is an unslotted `Button`; label uses bold `h6` by default. */
+    /** MUI X Scheduler toolbar “Today” is an unslotted `Button`. Label uses bold `h6` by default. */
     MuiEventCalendar: {
       styleOverrides: {
         /**
          * `MainPanel` is `display:flex` with `gap` between horizontal `Collapse` (mini calendar) and `Content`.
-         * When the rail is collapsed, `Collapse` width is 0 but flex `gap` still inserts space — looks like left padding on the grid.
+         * When the rail is collapsed, `Collapse` width is 0 but flex `gap` still inserts space so it looks like left padding on the grid.
          */
         mainPanel: ({ theme }) => ({
           gap: 0,
@@ -456,7 +456,7 @@ export function createEnterpriseTheme(mode: PaletteMode = 'light', uiLocale: Loc
             gap: theme.spacing(1),
           },
         }),
-        /** `&&` beats default slot styles; semibold body tier — lighter than `h5` page title, clearer than regular. */
+        /** `&&` beats default slot styles. Semibold body tier: lighter than `h5` page title, clearer than regular. */
         headerToolbarLabel: ({ theme }) => ({
           '&&': {
             ...theme.typography.subtitle1,
@@ -485,7 +485,7 @@ export function createEnterpriseTheme(mode: PaletteMode = 'light', uiLocale: Loc
         }),
       },
     },
-    /** Same outline weight as `OutlinedInput` / buttons — pickers use this root. */
+    /** Same outline weight as `OutlinedInput` / buttons. Pickers use this root. */
     MuiOutlinedInput: {
       styleOverrides: {
         root: {
@@ -507,7 +507,7 @@ export function createEnterpriseTheme(mode: PaletteMode = 'light', uiLocale: Loc
         },
       },
     },
-    /** Date/time fields — separate root from `MuiOutlinedInput`; keep outline weight aligned. */
+    /** Date/time fields: separate root from `MuiOutlinedInput`. Keep outline weight aligned. */
     MuiPickersOutlinedInput: {
       styleOverrides: {
         root: {
@@ -561,14 +561,14 @@ export function createEnterpriseTheme(mode: PaletteMode = 'light', uiLocale: Loc
       styleOverrides: {
         root: ({ theme }) => ({
           paddingTop: theme.spacing(1),
-          /** Slightly under side inset — full symmetry reads heavy at the bottom edge. */
+          /** Slightly under side inset: full symmetry reads heavy at the bottom edge. */
           paddingBottom: theme.spacing(2.5),
           paddingLeft: theme.spacing(3),
           paddingRight: theme.spacing(3),
         }),
       },
     },
-    // MUI X Date Pickers — align popups with enterprise Paper/shape and primary palette.
+    // MUI X Date Pickers: align popups with enterprise Paper/shape and primary palette.
     /** Popper surface wrapping the layout; round this so the outer shell matches `shape` (not just the inner layout). */
     MuiPickerPopper: {
       styleOverrides: {
@@ -781,7 +781,7 @@ export function createEnterpriseTheme(mode: PaletteMode = 'light', uiLocale: Loc
           },
           /**
            * Collapsed quick filter should only use the trigger width (`--trigger-width`), not a
-           * wide min-width — otherwise empty space remains beside the icon.
+           * wide min-width. Otherwise empty space remains beside the icon.
            */
           '& .MuiDataGrid-toolbarQuickFilter': {
             flex: '0 0 auto',

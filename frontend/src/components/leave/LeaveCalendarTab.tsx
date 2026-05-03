@@ -29,7 +29,7 @@ function usageRowsToEvents(rows: PtoLedgerEntryReadDto[]): SchedulerEvent[] {
     const d = r.effectiveDate.slice(0, 10);
     const name = `${r.employeeFirstName} ${r.employeeLastName}`.trim();
     const dayLabel = formatPtoDays(r.amount);
-    const title = name ? `${name} — ${dayLabel}` : dayLabel;
+    const title = name ? `${name} - ${dayLabel}` : dayLabel;
     const endD = dayjs(d).add(1, 'day').format('YYYY-MM-DD');
     return {
       id: `usage-${r.id}`,
@@ -218,7 +218,7 @@ export function LeaveCalendarTab({
                 getEventCalendarToolbarTodayButtonSx(theme),
               [`& .${eventCalendarClasses.viewSwitcherButton}`]:
                 getEventCalendarToolbarOutlinedButtonSx(theme),
-              /** Side panel is empty for our setup (`isSidePanelOpen: false`); toggle still renders — hide it. */
+              /** Side panel is empty for our setup (`isSidePanelOpen: false`). Hide the toggle. */
               [`& .${eventCalendarClasses.headerToolbarSidePanelToggle}`]: { display: 'none' },
               /** `p` + class beats default slot `h6` + bold from the scheduler. */
               [`& p.${eventCalendarClasses.headerToolbarLabel}`]: {

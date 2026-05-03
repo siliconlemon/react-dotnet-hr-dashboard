@@ -209,7 +209,7 @@ const DepartmentsPagination = forwardRef<HTMLDivElement, DepartmentsPaginationPr
     const from = count === 0 ? 0 : page * rowsPerPage + 1;
     const to = count === 0 ? 0 : Math.min(count, (page + 1) * rowsPerPage);
     const displayedRowsLabel =
-      count == null || count < 0 ? `${from}–${to}` : strings.departments.paginationRange(from, to, count);
+      count == null || count < 0 ? `${from}-${to}` : strings.departments.paginationRange(from, to, count);
 
     return (
       <Box
@@ -551,7 +551,7 @@ export function DepartmentsView() {
             ...dataGridLocaleText,
             paginationDisplayedRows: ({ from, to, count }) => {
               if (count == null || count < 0) {
-                return `${from}–${to}`;
+                return `${from}-${to}`;
               }
               return strings.departments.paginationRange(from, to, count);
             },

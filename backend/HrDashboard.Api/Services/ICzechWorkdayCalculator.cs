@@ -1,7 +1,7 @@
 namespace HrDashboard.Api.Services;
 
 /// <summary>
-/// Counts Czech workdays (Mon–Fri excluding public holidays when available).
+/// Counts Czech workdays (Mon-Fri excluding public holidays when available).
 /// </summary>
 public interface ICzechWorkdayCalculator
 {

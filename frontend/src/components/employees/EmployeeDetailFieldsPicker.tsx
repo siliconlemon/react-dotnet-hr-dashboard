@@ -224,7 +224,7 @@ function EmployeeDetailFieldsPickerPanel({
     '& .MuiFormControlLabel-label': rowLabelSx,
   } as const;
 
-  /** Slightly roomier than the bulk toggle row — list rows only. */
+  /** Slightly roomier than the bulk toggle row (list rows only). */
   const listRowSx = {
     ...formRowSx,
     py: 0.4,

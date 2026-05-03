@@ -62,14 +62,14 @@ function calendarMonthFormat(forLocale: Locale): string {
 }
 
 /**
- * Day.js tokens for MUI X DatePicker — reads {@link locale} each call (cs → `DD.MM.YYYY`).
+ * Day.js tokens for MUI X DatePicker: reads {@link locale} each call (cs → `DD.MM.YYYY`).
  * Use as `format={dayjsPickerDateFormat()}` so updates apply after you wire a language switcher.
  */
 export function dayjsPickerDateFormat(): string {
   return pickerDateFormat(locale);
 }
 
-/** Calendar header month in pickers — numeric months for consistency with {@link formatDateOnly}. */
+/** Calendar header month in pickers: numeric months for consistency with {@link formatDateOnly}. */
 export function dayjsCalendarMonthFormat(): string {
   return calendarMonthFormat(locale);
 }

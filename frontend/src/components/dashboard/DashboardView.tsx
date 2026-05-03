@@ -16,11 +16,11 @@ import {
 } from './workforceKpisFromMatrix';
 
 function formatMean(n: number | null): string {
-  if (n === null) return '—';
+  if (n === null) return '-';
   return formatPtoDays(n);
 }
 
-/** Card section labels — match app section tone (semibold body, not all-caps caption). */
+/** Card section labels: match app section tone (semibold body, not all-caps caption). */
 const cardTitleSx = {
   fontWeight: 600,
   color: 'text.secondary',
@@ -418,7 +418,7 @@ export function DashboardView() {
                   accent="high"
                 />
               ) : (
-                <KpiCard title={strings.dashboard.spotlightHighest} primary="—" secondary={strings.dashboard.emptyWorkforce} />
+                <KpiCard title={strings.dashboard.spotlightHighest} primary="-" secondary={strings.dashboard.emptyWorkforce} />
               )}
             </Grid>
             <Grid size={{ xs: 12, md: 6 }}>
@@ -431,7 +431,7 @@ export function DashboardView() {
                   accent="low"
                 />
               ) : (
-                <KpiCard title={strings.dashboard.spotlightLowest} primary="—" secondary={strings.dashboard.emptyWorkforce} />
+                <KpiCard title={strings.dashboard.spotlightLowest} primary="-" secondary={strings.dashboard.emptyWorkforce} />
               )}
             </Grid>
             <Grid size={{ xs: 12 }}>
