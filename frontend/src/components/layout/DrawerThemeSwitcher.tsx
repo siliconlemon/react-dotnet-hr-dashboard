@@ -89,9 +89,7 @@ export function DrawerThemeSwitcher({ collapsed, mobile }: DrawerThemeSwitcherPr
   return (
     <Box
       sx={{
-        py: 0.5,
-        pl: 0.5,
-        pr: 1,
+        p: 0.375,
         flexShrink: 0,
       }}
     >

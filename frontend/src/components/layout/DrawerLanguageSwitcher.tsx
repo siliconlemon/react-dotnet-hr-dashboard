@@ -73,7 +73,8 @@ export function DrawerLanguageSwitcher({ collapsed, mobile }: DrawerLanguageSwit
   return (
     <Box
       sx={{
-        py: compact ? 0.5 : 0.25,
+        // Match `DrawerThemeSwitcher` outer padding (`p: 0.375`) so rail mode doesn’t grow vs expanded.
+        py: 0.375,
         pl: 0.5,
         pr: 1,
         flexShrink: 0,
@@ -111,7 +112,7 @@ export function DrawerLanguageSwitcher({ collapsed, mobile }: DrawerLanguageSwit
             gap: 0,
             width: '100%',
             minWidth: 0,
-            pr: 1,
+            pr: 0.5,
           }}
         >
           <Box

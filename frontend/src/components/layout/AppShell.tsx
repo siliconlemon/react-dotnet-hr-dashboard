@@ -32,27 +32,22 @@ import { DrawerThemeSwitcher } from './DrawerThemeSwitcher';
 const DRAWER_EXPANDED_PX = 240;
 const DRAWER_COLLAPSED_PX = 64;
 /**
- * Outer list inset (expanded, collapsed, mobile): pairs with inner nav item horizontal padding so the icon stays
- * 12px from the drawer edge (`spacing(1)` + `spacing(0.5)`) in every mode — no horizontal re-centering when collapsed.
+ * Outer list inset (expanded, collapsed, mobile). Nav buttons use `padding: 0` and no extra horizontal inset so the
+ * icon column lines up when toggling collapsed ↔ expanded (same offset: list gutter + button border).
  */
 const DRAWER_NAV_LIST_OUTER_GUTTER_SPACING = 1;
 /**
- * Horizontal padding inside each expanded nav `ListItemButton`: same as inside the collapsed 48×48 row
- * around the 40px icon slot — `(48 − 40) / 2` = 4px (`theme.spacing(0.5)`).
- */
-const DRAWER_NAV_ITEM_INNER_PADDING_X_SPACING = 0.5;
-/**
- * Drawer header row horizontal inset: `calc(spacing(2) − 2px)` on the left in both expanded and collapsed desktop
- * drawers so the brand favicon does not shift when toggling width; right inset may be tighter when collapsed so the
+ * Drawer header row horizontal inset: left uses `spacing(2)` (16px); right uses `calc(spacing(2) − 2px)` when expanded
+ * so the brand favicon alignment stays consistent when toggling width; right inset may be tighter when collapsed so the
  * control still fits in `DRAWER_COLLAPSED_PX`. Drawer `Toolbar` uses `disableGutters`.
  */
 const drawerToolbarInsetX = (theme: Theme) => `calc(${theme.spacing(2)} - 2px)`;
 /** Favicon in drawer header: same size expanded, collapsed rail, and mobile. */
 const DRAWER_FAVICON_PX = 28;
 
-/** Single row height for nav items in expanded and collapsed desktop drawer. */
-const NAV_ITEM_MIN_HEIGHT_PX = 48;
-/** Square icon slot so collapsed rail matches expanded vertical rhythm. */
+/** Single row height for nav items in expanded drawer (collapsed uses the same for the square touch target). */
+const NAV_ITEM_MIN_HEIGHT_PX = 44;
+/** Icon slot: centered in the row; collapsed mode uses a fixed square button this tall/wide. */
 const NAV_ICON_SLOT_PX = 40;
 /** Match `fontSize="small"` on nav SvgIcons — lock size so dense rows + flex don’t shrink glyphs when labels appear. */
 const NAV_SVG_ICON_PX = 20;
@@ -63,8 +58,8 @@ const NAV_TITLE_STRONG_SX = {
   lineHeight: 1.3,
 } as const;
 
-/** Same slot as collapsed rail: small IconButton + `p: 0.5` (not a plain Box — IconButton has fixed min size). */
-const DRAWER_BRAND_ICON_BUTTON_SX = { p: 0.5 } as const;
+/** Same slot as collapsed rail: small IconButton + `p: 1` (not a plain Box — IconButton has fixed min size). */
+const DRAWER_BRAND_ICON_BUTTON_SX = { p: 1 } as const;
 
 function DrawerBrandFaviconImg() {
   const theme = useTheme();
@@ -182,8 +177,8 @@ export function AppShell({ children, activeNavKey, onNavKeyChange, breadcrumbIte
           px: mobile ? DRAWER_NAV_LIST_OUTER_GUTTER_SPACING : DRAWER_NAV_LIST_OUTER_GUTTER_SPACING,
           display: 'flex',
           flexDirection: 'column',
-          alignItems: 'stretch',
-          gap: 0.75,
+          alignItems: iconOnly ? 'flex-start' : 'stretch',
+          gap: 1,
         }}
       >
         {navItems.map((item) => {
@@ -195,6 +190,8 @@ export function AppShell({ children, activeNavKey, onNavKeyChange, breadcrumbIte
                 if (mobile) setMobileOpen(false);
               }}
               sx={{
+                // Override MuiListItemButton dense defaults so expanded/collapsed share one horizontal icon column.
+                padding: 0,
                 borderRadius: `${theme.shape.borderRadius}px`,
                 borderStyle: 'solid',
                 borderWidth: 2,
@@ -202,8 +199,7 @@ export function AppShell({ children, activeNavKey, onNavKeyChange, breadcrumbIte
                 boxSizing: 'border-box',
                 minHeight: NAV_ITEM_MIN_HEIGHT_PX,
                 py: 0,
-                justifyContent: 'flex-start',
-                px: DRAWER_NAV_ITEM_INNER_PADDING_X_SPACING,
+                justifyContent: iconOnly ? 'center' : 'flex-start',
                 alignItems: 'center',
                 fontWeight: 600,
                 letterSpacing: '0.04em',
@@ -220,6 +216,11 @@ export function AppShell({ children, activeNavKey, onNavKeyChange, breadcrumbIte
                 },
                 ...(iconOnly && {
                   height: NAV_ITEM_MIN_HEIGHT_PX,
+                  width: NAV_ITEM_MIN_HEIGHT_PX,
+                  minWidth: NAV_ITEM_MIN_HEIGHT_PX,
+                  maxWidth: NAV_ITEM_MIN_HEIGHT_PX,
+                  maxHeight: NAV_ITEM_MIN_HEIGHT_PX,
+                  alignSelf: 'flex-start',
                   flexShrink: 0,
                 }),
               }}
@@ -289,7 +290,7 @@ export function AppShell({ children, activeNavKey, onNavKeyChange, breadcrumbIte
           display: 'flex',
           flexDirection: 'column',
           height: '100%',
-          pb: 3,
+          pb: 2,
         },
       }}
     >
@@ -297,7 +298,7 @@ export function AppShell({ children, activeNavKey, onNavKeyChange, breadcrumbIte
         disableGutters
         sx={{
           minHeight: 48,
-          pl: drawerToolbarInsetX,
+          pl: 1,
           pr: collapsed ? 0.5 : drawerToolbarInsetX,
           justifyContent: collapsed ? 'flex-start' : 'space-between',
           alignItems: 'center',
@@ -420,7 +421,7 @@ export function AppShell({ children, activeNavKey, onNavKeyChange, breadcrumbIte
               display: 'flex',
               flexDirection: 'column',
               height: '100%',
-              pb: 3,
+              pb: 2,
             },
           }}
         >
