@@ -495,7 +495,7 @@ export function LeaveCalendarTab() {
                     maxHeight: 40,
                     height: 40,
                     py: 0,
-                    pl: 2,
+                    pl: 1.5,
                     /** Reserve space for the caret so it matches outlined primary buttons visually. */
                     pr: 4,
                     display: 'inline-flex',
