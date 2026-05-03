@@ -13,6 +13,7 @@ import { fetchEmployees, fetchPtoBalance } from '../../api/employeesApi';
 import type { EmployeeReadDto, PtoBalanceDto } from '../../api/types';
 import { strings } from '../../i18n';
 import { useDataGridLocaleText } from '../../i18n/useDataGridLocaleText';
+import { useLocale } from '../../i18n/useLocale';
 import { formatDateOnly } from '../../utils/formatDate';
 import { ViewLoadingGate } from '../layout/ViewLoadingGate';
 import { EmployeeDetailCards } from './EmployeeDetailCards';
@@ -154,6 +155,7 @@ export function EmployeesView({ onViewTabChange }: EmployeesViewProps) {
   } = useEmployeeDetailFieldVisibility();
 
   const dataGridLocaleText = useDataGridLocaleText();
+  const { locale } = useLocale();
 
   const reloadEmployees = useCallback(async (signal?: AbortSignal) => {
     setLoading(true);
@@ -369,7 +371,7 @@ export function EmployeesView({ onViewTabChange }: EmployeesViewProps) {
         hideable: employeeColumnHideable('hireDate', hasQuickFilter, columnFilterFields),
       },
     ],
-    [columnFilterFields, hasQuickFilter],
+    [columnFilterFields, hasQuickFilter, locale],
   );
 
   return (
