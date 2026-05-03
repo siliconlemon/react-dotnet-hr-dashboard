@@ -16,6 +16,8 @@
     "@mui/material": "^9.0.0",
     "@mui/x-data-grid": "^9.0.4",
     "@mui/x-date-pickers": "^9.0.4",
+    "@mui/x-scheduler": "^9.0.0-alpha.4",
+    "date-fns": "^4.1.0",
     "dayjs": "^1.11.20",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",

@@ -8,7 +8,6 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  Divider,
   FormControl,
   FormControlLabel,
   IconButton,
@@ -20,6 +19,8 @@ import {
   RadioGroup,
   Select,
   Stack,
+  Tab,
+  Tabs,
   TextField,
   Typography,
 } from '@mui/material';
@@ -30,7 +31,14 @@ import {
 } from '@mui/x-data-grid';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import dayjs, { type Dayjs } from 'dayjs';
-import { startTransition, useCallback, useEffect, useMemo, useState } from 'react';
+import {
+  startTransition,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  type SyntheticEvent,
+} from 'react';
 import { fetchDepartments } from '../../api/departmentsApi';
 import { fetchEmployees } from '../../api/employeesApi';
 import { createPtoLedgerEntries, fetchPtoLedgerPage } from '../../api/ptoLedgerApi';
@@ -45,6 +53,7 @@ import { dayjsPickerDateFormat, strings } from '../../i18n';
 import { useDataGridLocaleText } from '../../i18n/useDataGridLocaleText';
 import { ViewLoadingGate } from '../layout/ViewLoadingGate';
 import { EmployeePickerField } from '../employees/EmployeePickerField';
+import { LeaveCalendarTab } from './LeaveCalendarTab';
 import { formatDateOnly, formatDateTime } from '../../utils/formatDate';
 import { formatPtoDays } from '../../utils/formatPto';
 
@@ -73,7 +82,14 @@ const filterSelectFormControlSx = {
 const leaveFilterFieldFontSize = '0.8125rem';
 const leaveFilterFieldLineHeight = 1.5;
 
-export function LeaveManagementView() {
+export type LeaveManagementViewTab = 'ledger' | 'calendar';
+
+type LeaveManagementViewProps = {
+  onViewTabChange?: (tab: LeaveManagementViewTab) => void;
+};
+
+export function LeaveManagementView({ onViewTabChange }: LeaveManagementViewProps) {
+  const [viewTab, setViewTab] = useState<LeaveManagementViewTab>('ledger');
   const [employees, setEmployees] = useState<EmployeeReadDto[]>([]);
   const [departments, setDepartments] = useState<DepartmentReadDto[]>([]);
   const [loadMetaError, setLoadMetaError] = useState<string | null>(null);
@@ -107,6 +123,14 @@ export function LeaveManagementView() {
   const [dialogError, setDialogError] = useState<string | null>(null);
 
   const dataGridLocaleText = useDataGridLocaleText();
+
+  useEffect(() => {
+    onViewTabChange?.(viewTab);
+  }, [viewTab, onViewTabChange]);
+
+  const handleViewTabChange = useCallback((_: SyntheticEvent, value: LeaveManagementViewTab) => {
+    setViewTab(value);
+  }, []);
 
   useEffect(() => {
     const ac = new AbortController();
@@ -349,44 +373,88 @@ export function LeaveManagementView() {
   };
 
   return (
-    <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
-      <Paper
-        variant="outlined"
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 2,
+        minWidth: 0,
+        flex: 1,
+        minHeight: 0,
+        overflow: 'hidden',
+        my: 1,
+      }}
+    >
+      <Tabs
+        value={viewTab}
+        onChange={handleViewTabChange}
+        sx={{ borderBottom: 1, borderColor: 'divider', flexShrink: 0 }}
+      >
+        <Tab value="ledger" label={strings.leave.tabLedger} />
+        <Tab value="calendar" label={strings.leave.tabCalendar} />
+      </Tabs>
+
+      <Box
         sx={{
-          px: 2,
-          pt: 2,
-          pb: 0,
+          position: 'relative',
           flex: 1,
           minHeight: 0,
-          display: 'flex',
-          flexDirection: 'column',
+          minWidth: 0,
           overflow: 'hidden',
-          my: 1,
         }}
       >
-        <Box sx={{ flexShrink: 0 }}>
-          <Typography variant="h5" component="h2" sx={{ fontWeight: 600 }}>
-            {strings.leave.title}
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-            {strings.leave.subtitle}
-          </Typography>
-        </Box>
-
-        {loadMetaError ? (
-          <Alert severity="error" sx={{ mt: 2, flexShrink: 0 }}>
-            {loadMetaError}
-          </Alert>
-        ) : null}
-
-        <Divider sx={{ my: 2, flexShrink: 0 }} />
-
         <Box
+          aria-hidden={viewTab !== 'ledger'}
           sx={{
-            display: 'grid',
+            position: 'absolute',
+            inset: 0,
+            display: 'flex',
+            flexDirection: 'column',
+            overflow: 'hidden',
+            opacity: viewTab === 'ledger' ? 1 : 0,
+            visibility: viewTab === 'ledger' ? 'visible' : 'hidden',
+            pointerEvents: viewTab === 'ledger' ? 'auto' : 'none',
+            zIndex: viewTab === 'ledger' ? 1 : 0,
+            transition: (theme) =>
+              theme.transitions.create(['opacity', 'visibility'], { duration: 120 }),
+          }}
+        >
+          <Paper
+            variant="outlined"
+            sx={{
+              flex: 1,
+              minHeight: 0,
+              display: 'flex',
+              flexDirection: 'column',
+              overflow: 'hidden',
+              px: 2,
+              pt: 2,
+              pb: 0,
+              boxSizing: 'border-box',
+            }}
+          >
+            <Box sx={{ flexShrink: 0 }}>
+              <Typography variant="h5" component="h2" sx={{ fontWeight: 600 }}>
+                {strings.leave.ledgerTitle}
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                {strings.leave.ledgerSubtitle}
+              </Typography>
+            </Box>
+
+            {loadMetaError ? (
+              <Alert severity="error" sx={{ mt: 2, flexShrink: 0 }}>
+                {loadMetaError}
+              </Alert>
+            ) : null}
+
+            <Box
+              sx={{
+                display: 'grid',
             gap: 1,
             alignItems: 'end',
             mb: 1,
+            mt: 2,
             flexShrink: 0,
             gridTemplateColumns: {
               xs: '1fr',
@@ -618,7 +686,7 @@ export function LeaveManagementView() {
                 getRowId={(r) => r.id}
                 density="compact"
                 localeText={dataGridLocaleText}
-                label={strings.leave.title}
+                label={strings.leave.ledgerTitle}
                 loading={false}
                 paginationMode="server"
                 rowCount={totalCount}
@@ -654,7 +722,27 @@ export function LeaveManagementView() {
             </Box>
           </ViewLoadingGate>
         </Box>
-      </Paper>
+          </Paper>
+          </Box>
+          <Box
+            aria-hidden={viewTab !== 'calendar'}
+            sx={{
+              position: 'absolute',
+              inset: 0,
+              display: 'flex',
+              flexDirection: 'column',
+              overflow: 'hidden',
+              opacity: viewTab === 'calendar' ? 1 : 0,
+              visibility: viewTab === 'calendar' ? 'visible' : 'hidden',
+              pointerEvents: viewTab === 'calendar' ? 'auto' : 'none',
+              zIndex: viewTab === 'calendar' ? 1 : 0,
+              transition: (theme) =>
+                theme.transitions.create(['opacity', 'visibility'], { duration: 120 }),
+            }}
+          >
+            <LeaveCalendarTab />
+          </Box>
+        </Box>
 
       <Dialog open={dialogOpen} onClose={() => !dialogSubmitting && setDialogOpen(false)} maxWidth="sm" fullWidth>
         <DialogTitle>{strings.leave.dialogTitle}</DialogTitle>

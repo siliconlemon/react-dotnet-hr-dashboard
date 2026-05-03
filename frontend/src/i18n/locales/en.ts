@@ -59,8 +59,11 @@ export const en = {
   },
   leave: {
     title: 'Leave Management',
-    subtitle:
-      'PTO ledger: accrual grants, recorded usage, and adjustments. Rows apply to balances together with schedule accrual and approved leave.',
+    tabLedger: 'Ledger',
+    tabCalendar: 'Calendar',
+    ledgerTitle: 'PTO Ledger',
+    ledgerSubtitle:
+      'Accrual grants, recorded usage, and adjustments. Rows apply to balances together with schedule accrual and approved leave.',
     loadError: 'Could not load PTO ledger. Is the API running?',
     colEffectiveDate: 'Effective date',
     colEntryType: 'Entry type',
@@ -105,6 +108,11 @@ export const en = {
     validationAmountAdjustment: 'Adjustment cannot be zero.',
     validationAmountRange: 'Amount is outside the allowed range.',
     createFailed: 'Could not save the entry.',
+    calendarTitle: 'Leave calendar',
+    calendarHint:
+      'See whether anyone has recorded leave on a given day or in a given week. Use the toolbar to switch between day, week, month, or agenda.',
+    calendarLoadError: 'Could not load usage for the calendar. Is the API running?',
+    calendarToday: 'Today',
   },
   departments: {
     title: 'Departments',

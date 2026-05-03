@@ -20,6 +20,35 @@ export type PtoLedgerListParams = {
 /**
  * Paginated org-wide PTO ledger; omit filters to scan the full ledger (subject to paging).
  */
+/**
+ * Loads every usage-type ledger row in `[fromDate, toDate]` by paging (server max page size is 200).
+ */
+export async function fetchPtoLedgerUsageInRange(
+  fromDate: string,
+  toDate: string,
+  signal?: AbortSignal,
+): Promise<PtoLedgerEntryReadDto[]> {
+  const pageSize = 200;
+  let page = 0;
+  const all: PtoLedgerEntryReadDto[] = [];
+  while (true) {
+    const res = await fetchPtoLedgerPage(
+      {
+        fromDate,
+        toDate,
+        entryType: 'usage',
+        page,
+        pageSize,
+      },
+      signal,
+    );
+    all.push(...res.items);
+    if (all.length >= res.totalCount || res.items.length === 0) break;
+    page += 1;
+  }
+  return all;
+}
+
 export async function fetchPtoLedgerPage(
   params: PtoLedgerListParams,
   signal?: AbortSignal,

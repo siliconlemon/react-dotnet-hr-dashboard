@@ -4,7 +4,10 @@ import { DashboardView } from './components/dashboard/DashboardView';
 import { DepartmentsView } from './components/departments/DepartmentsView';
 import { EmployeesView, type EmployeesViewTab } from './components/employees/EmployeesView';
 import { AppShell, type NavKey } from './components/layout/AppShell';
-import { LeaveManagementView } from './components/leave/LeaveManagementView';
+import {
+  LeaveManagementView,
+  type LeaveManagementViewTab,
+} from './components/leave/LeaveManagementView';
 import { strings } from './i18n';
 import { useLocale } from './i18n/useLocale';
 
@@ -49,10 +52,20 @@ function employeesTabLabel(tab: EmployeesViewTab): string {
   }
 }
 
+function leaveTabLabel(tab: LeaveManagementViewTab): string {
+  switch (tab) {
+    case 'ledger':
+      return strings.leave.tabLedger;
+    case 'calendar':
+      return strings.leave.tabCalendar;
+  }
+}
+
 function App() {
   const { locale } = useLocale();
   const [navKey, setNavKey] = useState<NavKey>(readStoredNavKey);
   const [employeesViewTab, setEmployeesViewTab] = useState<EmployeesViewTab>('directory');
+  const [leaveViewTab, setLeaveViewTab] = useState<LeaveManagementViewTab>('ledger');
 
   useEffect(() => {
     document.title = strings.app.documentTitle;
@@ -72,18 +85,28 @@ function App() {
     if (navKey === 'employees') {
       items.push(employeesTabLabel(employeesViewTab));
     }
+    if (navKey === 'leave') {
+      items.push(leaveTabLabel(leaveViewTab));
+    }
     return items;
-  }, [locale, navKey, employeesViewTab]);
+  }, [locale, navKey, employeesViewTab, leaveViewTab]);
 
   const handleNavKeyChange = useCallback((key: NavKey) => {
     setNavKey(key);
     if (key !== 'employees') {
       setEmployeesViewTab('directory');
     }
+    if (key !== 'leave') {
+      setLeaveViewTab('ledger');
+    }
   }, []);
 
   const handleEmployeesViewTabChange = useCallback((tab: EmployeesViewTab) => {
     setEmployeesViewTab(tab);
+  }, []);
+
+  const handleLeaveViewTabChange = useCallback((tab: LeaveManagementViewTab) => {
+    setLeaveViewTab(tab);
   }, []);
 
   return (
@@ -98,7 +121,7 @@ function App() {
         ) : navKey === 'departments' ? (
           <DepartmentsView />
         ) : navKey === 'leave' ? (
-          <LeaveManagementView />
+          <LeaveManagementView onViewTabChange={handleLeaveViewTabChange} />
         ) : (
           <DashboardView />
         )}

@@ -213,9 +213,9 @@ export function AppShell({ children, activeNavKey, onNavKeyChange, breadcrumbIte
 
     const navItems: Array<{ key: NavKey; label: string; icon: React.ReactElement }> = [
       { key: 'dashboard', label: strings.nav.dashboard, icon: <DashboardOutlined fontSize="small" /> },
+      { key: 'leave', label: strings.nav.leave, icon: <EventNoteOutlined fontSize="small" /> },
       { key: 'employees', label: strings.nav.employees, icon: <PeopleOutlined fontSize="small" /> },
       { key: 'departments', label: strings.nav.departments, icon: <BusinessOutlined fontSize="small" /> },
-      { key: 'leave', label: strings.nav.leave, icon: <EventNoteOutlined fontSize="small" /> },
     ];
 
     return (

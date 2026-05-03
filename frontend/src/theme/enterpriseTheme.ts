@@ -1,5 +1,6 @@
 import type {} from '@mui/x-data-grid/themeAugmentation';
 import type {} from '@mui/x-date-pickers/themeAugmentation';
+import type {} from '@mui/x-scheduler/theme-augmentation';
 import type { PaletteMode } from '@mui/material';
 import { csCZ, enUS } from '@mui/material/locale';
 import { alpha, createTheme, type Theme } from '@mui/material/styles';
@@ -170,6 +171,90 @@ function baselineScrollbarChrome(theme: Theme) {
   return { thumb, thumbHover, track };
 }
 
+/** Shared toolbar metrics — matches ledger filter row height / label scale. */
+function eventCalendarToolbarButtonBase(theme: Theme) {
+  const cornerPx = `${Number((theme.vars ?? theme).shape.borderRadius)}px`;
+  return {
+    textTransform: 'uppercase' as const,
+    letterSpacing: '0.06em',
+    fontSize: calRem(13),
+    lineHeight: 1.5,
+    fontWeight: theme.typography.fontWeightMedium,
+    minHeight: 40,
+    paddingTop: theme.spacing(0.75),
+    paddingBottom: theme.spacing(0.75),
+    paddingLeft: theme.spacing(1.5),
+    paddingRight: theme.spacing(1.5),
+    boxSizing: 'border-box' as const,
+    whiteSpace: 'nowrap' as const,
+    borderRadius: cornerPx,
+  };
+}
+
+/**
+ * View switcher — same as ledger `Button variant="outlined"` ({@link CONTROL_OUTLINE}, paper surface).
+ */
+export function getEventCalendarToolbarOutlinedButtonSx(theme: Theme) {
+  return {
+    ...eventCalendarToolbarButtonBase(theme),
+    border: `${CONTROL_OUTLINE} solid ${theme.palette.divider}`,
+    color: theme.palette.primary.main,
+    backgroundColor: theme.palette.background.paper,
+    boxShadow: 'none',
+    '&:hover': {
+      borderColor: theme.palette.primary.main,
+      borderWidth: CONTROL_OUTLINE,
+      backgroundColor: theme.palette.action.hover,
+      boxShadow: 'none',
+    },
+    '&:focus-visible': {
+      borderWidth: CONTROL_OUTLINE,
+      boxShadow: 'none',
+    },
+    '&:active': {
+      borderWidth: CONTROL_OUTLINE,
+      boxShadow: 'none',
+    },
+    '&.Mui-disabled': {
+      borderWidth: CONTROL_OUTLINE,
+      boxShadow: 'none',
+    },
+  };
+}
+
+/**
+ * Today — primary fill (`Button variant="contained"`; theme uses `disableElevation`).
+ */
+export function getEventCalendarToolbarTodayButtonSx(theme: Theme) {
+  return {
+    ...eventCalendarToolbarButtonBase(theme),
+    border: 'none',
+    boxShadow: 'none',
+    color: theme.palette.primary.contrastText,
+    backgroundColor: theme.palette.primary.main,
+    '&:hover': {
+      border: 'none',
+      boxShadow: 'none',
+      backgroundColor: theme.palette.primary.dark,
+    },
+    '&:focus-visible': {
+      border: 'none',
+      boxShadow: 'none',
+    },
+    '&:active': {
+      border: 'none',
+      boxShadow: 'none',
+      backgroundColor: theme.palette.primary.dark,
+    },
+    '&.Mui-disabled': {
+      border: 'none',
+      boxShadow: 'none',
+      color: theme.palette.action.disabled,
+      backgroundColor: theme.palette.action.disabledBackground,
+    },
+  };
+}
+
 /**
  * Compact enterprise theme: navy primary in light mode, sky primary in dark mode; gold warnings;
  * cool blue-gray surfaces (light) or navy-tinted dark surfaces.
@@ -257,6 +342,8 @@ export function createEnterpriseTheme(mode: PaletteMode = 'light', uiLocale: Loc
           fontWeight: theme.typography.fontWeightMedium,
           /** Match `TextField` / `OutlinedInput` `size="small"` control height (~40px). */
           minHeight: 40,
+          /** Explicit px — same sharp corners as fields; avoids oversized radius reads as “pill”. */
+          borderRadius: `${Number((theme.vars ?? theme).shape.borderRadius)}px`,
         }),
         outlined: {
           borderWidth: CONTROL_OUTLINE,
@@ -327,6 +414,37 @@ export function createEnterpriseTheme(mode: PaletteMode = 'light', uiLocale: Loc
         paper: ({ theme }) => ({
           borderRight: `${CONTROL_OUTLINE} solid ${theme.palette.divider}`,
         }),
+      },
+    },
+    /** MUI X Scheduler — toolbar “Today” is an unslotted `Button`; label uses bold `h6` by default. */
+    MuiEventCalendar: {
+      styleOverrides: {
+        /**
+         * `MainPanel` is `display:flex` with `gap` between horizontal `Collapse` (mini calendar) and `Content`.
+         * When the rail is collapsed, `Collapse` width is 0 but flex `gap` still inserts space — looks like left padding on the grid.
+         */
+        mainPanel: ({ theme }) => ({
+          gap: 0,
+          /** Open rail: React may use `=""` or `"true"`; closed is absent or `"false"`. */
+          '&:has([data-side-panel-open]:not([data-side-panel-open="false"]))': {
+            gap: theme.spacing(1),
+          },
+        }),
+        /** `&&` beats default slot styles; semibold body tier — lighter than `h5` page title, clearer than regular. */
+        headerToolbarLabel: ({ theme }) => ({
+          '&&': {
+            ...theme.typography.subtitle1,
+            margin: 0,
+            fontWeight: FW.semibold,
+            color: theme.palette.text.secondary,
+            lineHeight: 1.43,
+          },
+        }),
+        /** Today = contained primary; view switcher = outlined (ledger). */
+        headerToolbarActions: ({ theme }) => ({
+          '& > .MuiButton-root': getEventCalendarToolbarTodayButtonSx(theme),
+        }),
+        viewSwitcherButton: ({ theme }) => getEventCalendarToolbarOutlinedButtonSx(theme),
       },
     },
     MuiPaper: {

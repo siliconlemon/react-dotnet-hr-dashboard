@@ -69,8 +69,11 @@ export const cs = {
   },
   leave: {
     title: 'Správa dovolené',
-    subtitle:
-      'Kniha dovolené: připsání nároku, evidované čerpání a úpravy. Řádky se promítají do zůstatků spolu s plánovaným přirůstáním nároku a schváleným čerpáním.',
+    tabLedger: 'Kniha',
+    tabCalendar: 'Kalendář',
+    ledgerTitle: 'Kniha dovolené (PTO)',
+    ledgerSubtitle:
+      'Připsání nároku, evidované čerpání a úpravy. Řádky se promítají do zůstatků spolu s plánovaným přirůstáním nároku a schváleným čerpáním.',
     loadError: 'Kniha dovolené se nepodařila načíst. Je spuštěné API?',
     colEffectiveDate: 'Účinné datum',
     colEntryType: 'Typ záznamu',
@@ -115,6 +118,11 @@ export const cs = {
     validationAmountAdjustment: 'Úprava nesmí být nulová.',
     validationAmountRange: 'Hodnota je mimo povolený rozsah.',
     createFailed: 'Záznam se nepodařilo uložit.',
+    calendarTitle: 'Kalendář dovolené',
+    calendarHint:
+      'Zjistíte, zda má někdo zapsanou dovolenou v daný den nebo v daném týdnu. Pomocí panelu přepnete mezi dnem, týdnem, měsícem nebo agendou.',
+    calendarLoadError: 'Kalendáři se nepodařilo načíst čerpání. Je spuštěné API?',
+    calendarToday: 'Dnes',
   },
   departments: {
     title: 'Oddělení',
