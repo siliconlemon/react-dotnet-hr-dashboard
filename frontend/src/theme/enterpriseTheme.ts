@@ -335,6 +335,14 @@ export function createEnterpriseTheme(mode: PaletteMode = 'light', uiLocale: Loc
         },
       },
     },
+    MuiAlert: {
+      styleOverrides: {
+        /** Align with {@link CONTROL_OUTLINE} on `OutlinedInput`, `Button`, `Paper`, etc. */
+        outlined: {
+          borderWidth: CONTROL_OUTLINE,
+        },
+      },
+    },
     MuiButton: {
       defaultProps: { size: 'medium', disableElevation: true },
       styleOverrides: {
