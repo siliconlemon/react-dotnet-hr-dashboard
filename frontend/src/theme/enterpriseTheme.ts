@@ -585,6 +585,14 @@ export function createEnterpriseTheme(mode: PaletteMode = 'light', uiLocale: Loc
         }),
       },
     },
+    MuiTabs: {
+      styleOverrides: {
+        root: ({ theme }) => ({
+          /** Halves the usual step before the next block when parents use `gap: 2` (flex gap + this offset). */
+          marginBlockEnd: theme.spacing(-1),
+        }),
+      },
+    },
     MuiTab: {
       styleOverrides: {
         root: ({ theme }) => ({

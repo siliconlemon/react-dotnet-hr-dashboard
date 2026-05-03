@@ -714,7 +714,7 @@ export function EmployeesView({ onViewTabChange }: EmployeesViewProps) {
                           alignItems: 'center',
                           borderBottom: 1,
                           borderColor: 'divider',
-                          mb: 2,
+                          mb: 1,
                           flexShrink: 0,
                         }}
                       >
@@ -726,6 +726,7 @@ export function EmployeesView({ onViewTabChange }: EmployeesViewProps) {
                             minWidth: 0,
                             px: 1,
                             borderBottom: 0,
+                            marginBlockEnd: 0,
                           }}
                         >
                           <Tab value="profile" label={strings.employees.tabProfile} />
