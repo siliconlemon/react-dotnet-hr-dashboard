@@ -1,8 +1,9 @@
 import { Alert, Box, Paper, Skeleton, Typography, useTheme } from '@mui/material';
-import type { SxProps, Theme } from '@mui/material/styles';
+import { alpha, type SxProps, type Theme } from '@mui/material/styles';
 import { Fragment, type ReactNode } from 'react';
 import type { EmployeeReadDto, PtoBalanceDto } from '../../api/types';
 import { strings } from '../../i18n';
+import { accentAmbientHalo } from '../../theme/enterpriseTheme';
 import { getDepartmentAccent } from '../../theme/employeeCardPalette';
 import { formatDateOnly } from '../../utils/formatDate';
 import { formatPtoDays } from '../../utils/formatPto';
@@ -233,9 +234,10 @@ export function EmployeeDetailCards({
             key={row.id}
             variant="outlined"
             sx={{
-              borderLeftWidth: 4,
-              borderLeftStyle: 'solid',
-              borderLeftColor: accent.border,
+              borderWidth: 2,
+              borderStyle: 'solid',
+              borderColor: alpha(accent.border, isDark ? 0.62 : 0.48),
+              boxShadow: accentAmbientHalo(theme, accent.border),
               overflow: 'hidden',
               display: 'flex',
               flexDirection: 'column',

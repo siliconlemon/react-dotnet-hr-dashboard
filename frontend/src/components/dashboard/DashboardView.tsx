@@ -6,6 +6,7 @@ import type { DepartmentPtoMatrixResponseDto } from '../../api/types';
 import { strings } from '../../i18n';
 import { formatDateOnly } from '../../utils/formatDate';
 import { formatPtoDays } from '../../utils/formatPto';
+import { accentAmbientHalo } from '../../theme/enterpriseTheme';
 import {
   buildWorkforceKpis,
   HIGH_BALANCE_THRESHOLD_DAYS,
@@ -132,7 +133,6 @@ function SpotlightCard({
   const theme = useTheme();
   const accentMain =
     accent === 'high' ? theme.palette.primary.main : theme.palette.warning.main;
-  const border = `1px solid ${alpha(accentMain, 0.45)}`;
   const bg = alpha(accentMain, accent === 'high' ? 0.06 : 0.09);
 
   return (
@@ -142,7 +142,10 @@ function SpotlightCard({
         height: '100%',
         display: 'flex',
         flexDirection: 'column',
-        border,
+        borderWidth: 2,
+        borderStyle: 'solid',
+        borderColor: alpha(accentMain, 0.45),
+        boxShadow: accentAmbientHalo(theme, accentMain),
         bgcolor: bg,
       }}
     >

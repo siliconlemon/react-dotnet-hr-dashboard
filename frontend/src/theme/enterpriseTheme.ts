@@ -30,6 +30,16 @@ function ambientHalo(theme: Theme): string {
   ].join(', ');
 }
 
+/** Same layer weights as {@link ambientHalo}, tinted to an arbitrary accent (e.g. department stripe, spotlight KPI). */
+export function accentAmbientHalo(theme: Theme, accentColor: string): string {
+  const strong = theme.palette.mode === 'dark' ? 0.09 : 0.058;
+  const soft = theme.palette.mode === 'dark' ? 0.045 : 0.028;
+  return [
+    `0 0 18px ${alpha(accentColor, strong)}`,
+    `0 0 36px ${alpha(accentColor, soft)}`,
+  ].join(', ');
+}
+
 function modalLift(theme: Theme): string {
   return theme.palette.mode === 'dark'
     ? '0 0 28px rgba(0, 0, 0, 0.5)'
