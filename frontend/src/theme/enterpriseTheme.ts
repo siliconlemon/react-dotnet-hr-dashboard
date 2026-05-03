@@ -436,7 +436,7 @@ export function createEnterpriseTheme(mode: PaletteMode = 'light', uiLocale: Loc
             ...theme.typography.subtitle1,
             margin: 0,
             fontWeight: FW.semibold,
-            color: theme.palette.text.secondary,
+            color: theme.palette.text.primary,
             lineHeight: 1.43,
           },
         }),

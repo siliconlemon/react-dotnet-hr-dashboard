@@ -56,6 +56,10 @@ import { EmployeePickerField } from '../employees/EmployeePickerField';
 import { LeaveCalendarTab } from './LeaveCalendarTab';
 import { formatDateOnly, formatDateTime } from '../../utils/formatDate';
 import { formatPtoDays } from '../../utils/formatPto';
+import {
+  countWeekdaysInclusive,
+  firstWeekdayInInclusiveRange,
+} from '../../utils/weekdayCalendar';
 
 function formatEmployeeNameEmail(row: PtoLedgerEntryReadDto, rosterEmail?: string): string {
   const name = `${row.employeeFirstName} ${row.employeeLastName}`.trim();
@@ -313,6 +317,23 @@ export function LeaveManagementView({ onViewTabChange }: LeaveManagementViewProp
     setDialogNote('');
     setDialogOpen(true);
   };
+
+  const openDialogFromCalendarRange = useCallback(
+    ({ start, endInclusive }: { start: Dayjs; endInclusive: Dayjs }) => {
+      setDialogError(null);
+      setDialogScope('employee');
+      setDialogDepartmentId('');
+      setDialogEntryType('usage');
+      const spanDays = countWeekdaysInclusive(start, endInclusive);
+      setDialogAmount(String(spanDays));
+      const firstWd = firstWeekdayInInclusiveRange(start, endInclusive);
+      setDialogEffective((firstWd ?? start).startOf('day'));
+      setDialogNote('');
+      setDialogEmployeeId(filterEmployeeId === '' ? '' : filterEmployeeId);
+      setDialogOpen(true);
+    },
+    [filterEmployeeId],
+  );
 
   const validateDialog = (): string | null => {
     if (dialogScope === 'employee' && dialogEmployeeId === '') {
@@ -739,7 +760,7 @@ export function LeaveManagementView({ onViewTabChange }: LeaveManagementViewProp
                 theme.transitions.create(['opacity', 'visibility'], { duration: 120 }),
             }}
           >
-            <LeaveCalendarTab />
+            <LeaveCalendarTab onSelectDaysForLedger={openDialogFromCalendarRange} />
           </Box>
         </Box>
 

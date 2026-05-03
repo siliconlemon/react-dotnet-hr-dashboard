@@ -108,9 +108,9 @@ export const en = {
     validationAmountAdjustment: 'Adjustment cannot be zero.',
     validationAmountRange: 'Amount is outside the allowed range.',
     createFailed: 'Could not save the entry.',
-    calendarTitle: 'Leave calendar',
+    calendarTitle: 'Leave Calendar',
     calendarHint:
-      'See whether anyone has recorded leave on a given day or in a given week.',
+      'Click a day or drag across days to add a ledger entry with those dates prefilled.',
     calendarLoadError: 'Could not load usage for the calendar. Is the API running?',
     calendarToday: 'Today',
   },

@@ -120,7 +120,7 @@ export const cs = {
     createFailed: 'Záznam se nepodařilo uložit.',
     calendarTitle: 'Kalendář dovolené',
     calendarHint:
-      'Zjistíte, zda má někdo zapsanou dovolenou v daný den nebo v daném týdnu.',
+      'Klikněte na den nebo táhněte přes více dnů pro předvyplnění nového záznamu v knize.',
     calendarLoadError: 'Kalendáři se nepodařilo načíst čerpání. Je spuštěné API?',
     calendarToday: 'Dnes',
   },

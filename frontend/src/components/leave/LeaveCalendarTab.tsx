@@ -1,10 +1,15 @@
 import { Alert, Box, LinearProgress, Paper, Typography } from '@mui/material';
-import { useTheme } from '@mui/material/styles';
+import { alpha, useTheme } from '@mui/material/styles';
 import { EventCalendar, eventCalendarClasses } from '@mui/x-scheduler/event-calendar';
 import type { EventCalendarPreferences, SchedulerEvent } from '@mui/x-scheduler/models';
 import { cs, enUS } from 'date-fns/locale';
+import type { Dayjs } from 'dayjs';
 import dayjs from 'dayjs';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import {
+  LeaveCalendarMonthDragBridge,
+  LEAVE_CALENDAR_MONTH_RANGE_PREVIEW_CLASS,
+} from './LeaveCalendarMonthDragBridge';
 import { fetchPtoLedgerUsageInRange } from '../../api/ptoLedgerApi';
 import type { PtoLedgerEntryReadDto } from '../../api/types';
 import { strings } from '../../i18n';
@@ -39,31 +44,39 @@ function usageRowsToEvents(rows: PtoLedgerEntryReadDto[]): SchedulerEvent[] {
   });
 }
 
-/** Locked calendar chrome: 24h, ISO week numbers, hide weekends; prefs menu hidden via prop + CSS fallback. */
-function sanitizeCalendarPreferences(next: EventCalendarPreferences): EventCalendarPreferences {
+/** Locked calendar chrome: 24h, ISO week numbers, show weekends (weekday-only selection in drag bridge); prefs menu hidden via prop + CSS fallback. */
+function sanitizeCalendarPreferences(next: Partial<EventCalendarPreferences>): EventCalendarPreferences {
   return {
     ...next,
     ampm: false,
-    showWeekends: false,
-    showWeekNumber: true,
+    showWeekends: next.showWeekends ?? true,
+    showWeekNumber: next.showWeekNumber ?? true,
+    isSidePanelOpen: next.isSidePanelOpen ?? false,
+    showEmptyDaysInAgenda: next.showEmptyDaysInAgenda ?? true,
   };
 }
 
 const INITIAL_CALENDAR_PREFERENCES = sanitizeCalendarPreferences({
   ampm: false,
-  showWeekends: false,
+  showWeekends: true,
   showWeekNumber: true,
   isSidePanelOpen: false,
   showEmptyDaysInAgenda: true,
 });
 
-export function LeaveCalendarTab() {
+export type LeaveCalendarTabProps = {
+  /** When set, month view supports click / drag on days to open the ledger dialog with those dates prefilled. */
+  onSelectDaysForLedger?: (range: { start: Dayjs; endInclusive: Dayjs }) => void;
+};
+
+export function LeaveCalendarTab({ onSelectDaysForLedger }: LeaveCalendarTabProps) {
   const theme = useTheme();
   const { locale } = useLocale();
   const dateLocale = locale === 'cs' ? cs : enUS;
+  const calendarMountRef = useRef<HTMLDivElement | null>(null);
 
-  /** Controlled so defaults are not overridden by partial internal merges or remounts. */
-  const [calendarView, setCalendarView] = useState<'day' | 'week' | 'month' | 'agenda'>('month');
+  /** Controlled so defaults are not overridden by partial internal merges or remounts. Day/week hidden — see `views`. */
+  const [calendarView, setCalendarView] = useState<'month' | 'agenda'>('month');
   const [calendarPreferences, setCalendarPreferences] =
     useState<EventCalendarPreferences>(INITIAL_CALENDAR_PREFERENCES);
 
@@ -81,8 +94,11 @@ export function LeaveCalendarTab() {
 
   useEffect(() => {
     const ac = new AbortController();
-    setLoading(true);
-    setLoadError(null);
+    queueMicrotask(() => {
+      if (ac.signal.aborted) return;
+      setLoading(true);
+      setLoadError(null);
+    });
     void (async () => {
       try {
         const rows = await fetchPtoLedgerUsageInRange(fetchWindow.from, fetchWindow.to, ac.signal);
@@ -130,7 +146,14 @@ export function LeaveCalendarTab() {
         }}
       >
         <Box sx={{ flexShrink: 0, mb: 1.5 }}>
-          <Typography variant="h5" component="h2" sx={{ fontWeight: 600 }}>
+          <Typography
+            variant="h5"
+            component="h2"
+            sx={(theme) => ({
+              fontWeight: 600,
+              color: theme.palette.mode === 'dark' ? theme.palette.common.white : theme.palette.common.black,
+            })}
+          >
             {strings.leave.calendarTitle}
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
@@ -147,14 +170,26 @@ export function LeaveCalendarTab() {
         {loading ? <LinearProgress sx={{ mb: 1 }} /> : null}
 
         <Box
-          sx={{
+          ref={calendarMountRef}
+          sx={(theme) => ({
             flex: 1,
             minHeight: 360,
             position: 'relative',
             '& .MuiEventCalendar-root': {
               minHeight: 360,
             },
-          }}
+            /** Match `MuiDataGrid` cell `focus-within` tint in `enterpriseTheme`. */
+            ...(onSelectDaysForLedger
+              ? {
+                  [`& .${eventCalendarClasses.monthViewCell}.${LEAVE_CALENDAR_MONTH_RANGE_PREVIEW_CLASS}`]: {
+                    backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                  },
+                  [`& .${eventCalendarClasses.agendaViewRow}.${LEAVE_CALENDAR_MONTH_RANGE_PREVIEW_CLASS}`]: {
+                    backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                  },
+                }
+              : {}),
+          })}
         >
           <EventCalendar
             sx={{
@@ -168,12 +203,14 @@ export function LeaveCalendarTab() {
                 getEventCalendarToolbarTodayButtonSx(theme),
               [`& .${eventCalendarClasses.viewSwitcherButton}`]:
                 getEventCalendarToolbarOutlinedButtonSx(theme),
+              /** Side panel is empty for our setup (`isSidePanelOpen: false`); toggle still renders — hide it. */
+              [`& .${eventCalendarClasses.headerToolbarSidePanelToggle}`]: { display: 'none' },
               /** `p` + class beats default slot `h6` + bold from the scheduler. */
               [`& p.${eventCalendarClasses.headerToolbarLabel}`]: {
                 ...theme.typography.subtitle1,
                 margin: 0,
                 fontWeight: theme.typography.fontWeightMedium,
-                color: theme.palette.text.secondary,
+                color: theme.palette.text.primary,
                 lineHeight: 1.43,
               },
               '& .MuiEventCalendar-preferencesMenuButton': { display: 'none' },
@@ -184,8 +221,10 @@ export function LeaveCalendarTab() {
             areEventsDraggable={false}
             areEventsResizable={false}
             view={calendarView}
-            onViewChange={(next) => setCalendarView(next)}
-            views={['day', 'week', 'month', 'agenda']}
+            onViewChange={(next) => {
+              if (next === 'month' || next === 'agenda') setCalendarView(next);
+            }}
+            views={['month', 'agenda']}
             dateLocale={dateLocale}
             defaultVisibleDate={new Date()}
             preferences={calendarPreferences}
@@ -194,7 +233,14 @@ export function LeaveCalendarTab() {
             eventColor="teal"
             displayTimezone="default"
             localeText={locale === 'cs' ? { today: strings.leave.calendarToday } : undefined}
-          />
+          >
+            {onSelectDaysForLedger ? (
+              <LeaveCalendarMonthDragBridge
+                containerRef={calendarMountRef}
+                onCommitRange={onSelectDaysForLedger}
+              />
+            ) : null}
+          </EventCalendar>
         </Box>
       </Paper>
     </Box>
