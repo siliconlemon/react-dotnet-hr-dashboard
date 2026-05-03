@@ -90,7 +90,7 @@ export const cs = {
   leave: {
     title: 'Správa dovolené',
     tabLedger: 'Kniha',
-    tabLookup: 'Vyhledávání',
+    tabLookup: 'Přehled',
     ledgerTitle: 'Kniha dovolené (PTO)',
     ledgerSubtitle:
       'Záznamy o změnách stavů na kontech dovolené u jednotlivých zaměstnanců, případně týmů.',
@@ -138,7 +138,7 @@ export const cs = {
     validationAmountAdjustment: 'Úprava nesmí být nulová.',
     validationAmountRange: 'Hodnota je mimo povolený rozsah.',
     createFailed: 'Záznam se nepodařilo uložit.',
-    calendarTitle: 'Docházka – přehled',
+    calendarTitle: 'Přehled nepřítomnosti',
     calendarHintDayGrid:
       'Buňka pro pracovní den ukazuje počet osob s čerpáním. Najetím zobrazíte stručný výpis, kliknutím na nenulovou buňku zobrazíte jména a oddělení.',
     calendarHintWeekGrid:

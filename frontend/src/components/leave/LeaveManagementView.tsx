@@ -53,7 +53,7 @@ import { dayjsPickerDateFormat, strings } from '../../i18n';
 import { useDataGridLocaleText } from '../../i18n/useDataGridLocaleText';
 import { ViewLoadingGate } from '../layout/ViewLoadingGate';
 import { EmployeePickerField } from '../employees/EmployeePickerField';
-import { LeaveCalendarTab } from './LeaveCalendarTab';
+import { LeaveLookupTab } from './LeaveLookupTab';
 import { formatDateOnly, formatDateTime } from '../../utils/formatDate';
 import { formatPtoDays } from '../../utils/formatPto';
 function formatEmployeeNameEmail(row: PtoLedgerEntryReadDto, rosterEmail?: string): string {
@@ -754,7 +754,10 @@ export function LeaveManagementView({ viewTab, onViewTabChange }: LeaveManagemen
               inset: 0,
               display: 'flex',
               flexDirection: 'column',
-              overflow: 'hidden',
+              alignItems: 'stretch',
+              justifyContent: 'flex-start',
+              overflowX: 'hidden',
+              overflowY: 'auto',
               opacity: viewTab === 'lookup' ? 1 : 0,
               visibility: viewTab === 'lookup' ? 'visible' : 'hidden',
               pointerEvents: viewTab === 'lookup' ? 'auto' : 'none',
@@ -763,7 +766,7 @@ export function LeaveManagementView({ viewTab, onViewTabChange }: LeaveManagemen
                 theme.transitions.create(['opacity', 'visibility'], { duration: 120 }),
             }}
           >
-            <LeaveCalendarTab />
+            <LeaveLookupTab />
           </Box>
         </Box>
 

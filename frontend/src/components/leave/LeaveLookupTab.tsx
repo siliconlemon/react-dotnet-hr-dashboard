@@ -32,7 +32,7 @@ import { fetchPtoLedgerUsageInRange } from '../../api/ptoLedgerApi';
 import type { PtoLedgerEntryReadDto } from '../../api/types';
 import { strings } from '../../i18n';
 import { useLocale } from '../../i18n/useLocale';
-import { getDepartmentAccent } from '../../theme/employeeCardPalette';
+import { getDepartmentAccent, type EmployeeCardAccent } from '../../theme/employeeCardPalette';
 import { formatDateOnly } from '../../utils/formatDate';
 import { formatPtoDays } from '../../utils/formatPto';
 
@@ -170,6 +170,37 @@ function formatWeekRangeLabel(weekMonday: Dayjs, localeTag: string): string {
   return `${df.format(weekMonday.toDate())}–${df.format(sun.toDate())}, ${y}`;
 }
 
+/**
+ * Department count badges: match employee card headers — light = pastel fill + deep name tone
+ * (readable on primary heat tints); dark = deep fill + pastel text on `paper`.
+ */
+function departmentLookupChipColors(theme: Theme, accent: EmployeeCardAccent) {
+  if (theme.palette.mode === 'dark') {
+    return { bgcolor: accent.nameColor, color: accent.headerBg };
+  }
+  return { bgcolor: accent.headerBg, color: accent.nameColor };
+}
+
+/** Normalized intensity in [0, 1] from (away / maxAway). */
+function calendarAwayHeatWash(theme: Theme, intensity: number): string {
+  const x = Math.min(1, Math.max(0, intensity));
+  if (theme.palette.mode === 'dark') {
+    const low = 0.14;
+    const high = 0.36;
+    return alpha(theme.palette.primary.main, low + x * (high - low));
+  }
+  const low = 0.06;
+  const high = 0.26;
+  return alpha(theme.palette.primary.main, low + x * (high - low));
+}
+
+/** Spillover days outside the visible month — muted but distinct in both modes. */
+function calendarOutsideMonthWash(theme: Theme): string {
+  return theme.palette.mode === 'dark'
+    ? alpha(theme.palette.primary.light, 0.06)
+    : theme.palette.action.hover;
+}
+
 function weekContainsToday(weekMonday: Dayjs): boolean {
   const today = dayjs().startOf('day');
   const mon = weekMonday.startOf('day');
@@ -190,7 +221,7 @@ function weekAggregateTooltip(groups: EmployeeDayDetail[]): string {
   return `${deptSummaryLine}. ${peopleParts.slice(0, 3).join('; ')} ${strings.leave.calendarTooltipMore(groups.length - 3)}`;
 }
 
-export function LeaveCalendarTab() {
+export function LeaveLookupTab() {
   const theme = useTheme();
   const { locale } = useLocale();
   const localeTag = locale === 'cs' ? 'cs-CZ' : 'en-US';
@@ -339,38 +370,27 @@ export function LeaveCalendarTab() {
   return (
     <Box
       sx={{
-        flex: 1,
-        minHeight: 0,
+        width: '100%',
         minWidth: 0,
         display: 'flex',
         flexDirection: 'column',
-        overflow: 'hidden',
-        height: '100%',
+        alignSelf: 'stretch',
       }}
     >
       <Paper
         variant="outlined"
         sx={{
-          flex: 1,
-          minHeight: 0,
           display: 'flex',
           flexDirection: 'column',
-          overflow: 'hidden',
+          width: '100%',
+          boxSizing: 'border-box',
           px: 2,
           pt: 2,
           pb: 2,
-          boxSizing: 'border-box',
         }}
       >
         <Box sx={{ flexShrink: 0, mb: 1.5 }}>
-          <Typography
-            variant="h5"
-            component="h2"
-            sx={(t) => ({
-              fontWeight: 600,
-              color: t.palette.mode === 'dark' ? t.palette.common.white : t.palette.common.black,
-            })}
-          >
+          <Typography variant="h5" component="h2" sx={{ fontWeight: 600, color: 'text.primary' }}>
             {strings.leave.calendarTitle}
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
@@ -546,8 +566,7 @@ export function LeaveCalendarTab() {
 
         <TableContainer
           sx={{
-            flex: 1,
-            minHeight: 260,
+            width: '100%',
             overflow: 'auto',
             border: (t) => `1px solid ${t.palette.divider}`,
             borderRadius: 1,
@@ -621,14 +640,11 @@ export function LeaveCalendarTab() {
 
                         let bgcolor: string = 'transparent';
                         if (!inMonth) {
-                          bgcolor = theme.palette.action.hover;
+                          bgcolor = calendarOutsideMonthWash(theme);
                         } else if (isWeekendDay) {
                           bgcolor = weekendInMonthWash(theme);
                         } else if (away > 0 && maxAwayOnGrid > 0) {
-                          bgcolor = alpha(
-                            theme.palette.primary.main,
-                            0.06 + (away / maxAwayOnGrid) * 0.2,
-                          );
+                          bgcolor = calendarAwayHeatWash(theme, away / maxAwayOnGrid);
                         }
 
                         const groups = buildEmployeeGroups(dateRows);
@@ -701,10 +717,9 @@ export function LeaveCalendarTab() {
                                       alignItems: 'center',
                                       justifyContent: 'center',
                                       borderRadius: 0.75,
-                                      bgcolor: accent.border,
-                                      color: (t) => t.palette.getContrastText(accent.border),
+                                      ...departmentLookupChipColors(theme, accent),
                                       fontSize: '0.75rem',
-                                      fontWeight: 600,
+                                      fontWeight: theme.typography.fontWeightMedium,
                                       lineHeight: 1,
                                       boxSizing: 'border-box',
                                     }}
@@ -791,10 +806,7 @@ export function LeaveCalendarTab() {
 
                 let bgcolorW: string = 'transparent';
                 if (awayW > 0 && maxAwayWeekGrid > 0) {
-                  bgcolorW = alpha(
-                    theme.palette.primary.main,
-                    0.06 + (awayW / maxAwayWeekGrid) * 0.2,
-                  );
+                  bgcolorW = calendarAwayHeatWash(theme, awayW / maxAwayWeekGrid);
                 }
 
                 const tooltipWeek = awayW > 0 ? weekAggregateTooltip(groupsW) : '';
@@ -849,10 +861,9 @@ export function LeaveCalendarTab() {
                               alignItems: 'center',
                               justifyContent: 'center',
                               borderRadius: 0.75,
-                              bgcolor: accent.border,
-                              color: (t) => t.palette.getContrastText(accent.border),
+                              ...departmentLookupChipColors(theme, accent),
                               fontSize: '0.75rem',
-                              fontWeight: 600,
+                              fontWeight: theme.typography.fontWeightMedium,
                               lineHeight: 1,
                               boxSizing: 'border-box',
                             }}
