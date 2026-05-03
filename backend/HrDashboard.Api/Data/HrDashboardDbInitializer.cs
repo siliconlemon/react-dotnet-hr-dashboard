@@ -33,7 +33,7 @@ public static class HrDashboardDbInitializer
         context.Employees.AddRange(employees);
         context.SaveChanges();
 
-        context.LeaveRequests.AddRange(BuildSampleLeaveRequests(employees, rng, today));
+        context.LeaveRequests.AddRange(BuildSampleLeaveRequests(employees, today));
         context.SaveChanges();
 
         context.PtoLedgerEntries.AddRange(BuildSamplePtoLedgerEntries(employees, today, rng));
@@ -318,94 +318,114 @@ public static class HrDashboardDbInitializer
     }
 
     /// <summary>
-    /// Leave spanning the current calendar year: past approved usage, upcoming approved/pending (visible near "today"),
-    /// and a few rejections for variety.
+    /// Compact demo set: three rows per <see cref="LeaveRequestStatus"/>; every request starts on a weekday.
     /// </summary>
     private static IEnumerable<LeaveRequest> BuildSampleLeaveRequests(
         IReadOnlyList<Employee> employees,
-        Random rng,
         DateOnly today)
     {
         var leaves = new List<LeaveRequest>();
-        var year = today.Year;
-        var yearStart = new DateOnly(year, 1, 1);
-        var pastEnd = today.AddDays(-1);
+        var yearStart = new DateOnly(today.Year, 1, 1);
 
-        // Approved leave already taken this year (before today)
-        if (pastEnd >= yearStart)
+        static DateOnly ClampToYear(DateOnly d, DateOnly low, DateOnly high)
         {
-            var pastPool = DatesOnWeekday(yearStart, pastEnd, DayOfWeek.Wednesday);
-            foreach (var emp in employees)
-            {
-                var n = rng.Next(0, 6);
-                foreach (var d in pastPool.OrderBy(_ => rng.Next()).Take(n))
-                {
-                    leaves.Add(
-                        new LeaveRequest
-                        {
-                            EmployeeId = emp.Id,
-                            StartDate = d,
-                            EndDate = d,
-                            Status = LeaveRequestStatus.Approved
-                        });
-                }
-            }
+            if (d < low)
+                return low;
+            if (d > high)
+                return high;
+            return d;
         }
 
-        // Upcoming approved: staggered over the next ~3 weeks so the matrix shows near-term approved days
-        var upcomingHorizon = today.AddDays(21);
-        for (var i = 0; i < employees.Count; i++)
+        DateOnly PastWeekdayInYear(DateOnly anchor)
         {
-            var d = today.AddDays(i % 22);
-            if (d > upcomingHorizon)
-                d = upcomingHorizon;
+            var d = PreviousWeekday(anchor);
+            if (d < yearStart)
+                d = PreviousWeekday(yearStart.AddDays(6));
+            if (d >= today)
+                d = PreviousWeekday(today.AddDays(-4));
+            return d;
+        }
+
+        // Approved ×3 — mix of past and upcoming; anchors adjusted so StartDate is never Sat/Sun.
+        var approvedStarts = new[]
+        {
+            PreviousWeekday(ClampToYear(today.AddDays(-28), yearStart, today)),
+            PreviousWeekday(ClampToYear(today.AddDays(-14), yearStart, today)),
+            NextWeekday(today.AddDays(5)),
+        };
+        for (var i = 0; i < 3; i++)
+        {
+            var start = approvedStarts[i];
             leaves.Add(
                 new LeaveRequest
                 {
                     EmployeeId = employees[i].Id,
-                    StartDate = d,
-                    EndDate = d,
+                    StartDate = start,
+                    EndDate = start,
                     Status = LeaveRequestStatus.Approved
                 });
         }
 
-        // Upcoming pending: next two weeks, overlapping requests for visibility on pending totals
-        for (var i = 0; i < employees.Count; i++)
-        {
-            var d = today.AddDays((i * 2) % 14);
-            leaves.Add(
-                new LeaveRequest
-                {
-                    EmployeeId = employees[i].Id,
-                    StartDate = d,
-                    EndDate = d.AddDays(1),
-                    Status = LeaveRequestStatus.Pending
-                });
-        }
-
-        // Rejections (past)
-        foreach (var emp in employees.Where(_ => rng.Next(100) < 35))
-        {
-            var d = today.AddDays(-rng.Next(10, 60));
-            if (d >= yearStart && d < today)
+        // Pending ×3 — multi-day spans; start weekdays only.
+        leaves.Add(
+            new LeaveRequest
             {
-                leaves.Add(
-                    new LeaveRequest
-                    {
-                        EmployeeId = emp.Id,
-                        StartDate = d,
-                        EndDate = d,
-                        Status = LeaveRequestStatus.Rejected,
-                        Notes = "Coverage / blackout"
-                    });
-            }
-        }
+                EmployeeId = employees[3].Id,
+                StartDate = NextWeekday(today.AddDays(2)),
+                EndDate = NextWeekday(today.AddDays(2)).AddDays(2),
+                Status = LeaveRequestStatus.Pending
+            });
+        leaves.Add(
+            new LeaveRequest
+            {
+                EmployeeId = employees[4].Id,
+                StartDate = NextWeekday(today.AddDays(10)),
+                EndDate = NextWeekday(today.AddDays(10)).AddDays(1),
+                Status = LeaveRequestStatus.Pending
+            });
+        leaves.Add(
+            new LeaveRequest
+            {
+                EmployeeId = employees[5].Id,
+                StartDate = NextWeekday(today.AddDays(18)),
+                EndDate = NextWeekday(today.AddDays(18)),
+                Status = LeaveRequestStatus.Pending
+            });
+
+        // Rejected ×3 — past only (weekday starts, current calendar year).
+        leaves.Add(
+            new LeaveRequest
+            {
+                EmployeeId = employees[6].Id,
+                StartDate = PastWeekdayInYear(today.AddDays(-45)),
+                EndDate = PastWeekdayInYear(today.AddDays(-45)),
+                Status = LeaveRequestStatus.Rejected,
+                Notes = "Coverage / blackout"
+            });
+        leaves.Add(
+            new LeaveRequest
+            {
+                EmployeeId = employees[7].Id,
+                StartDate = PastWeekdayInYear(today.AddDays(-22)),
+                EndDate = PastWeekdayInYear(today.AddDays(-22)),
+                Status = LeaveRequestStatus.Rejected,
+                Notes = "Coverage / blackout"
+            });
+        leaves.Add(
+            new LeaveRequest
+            {
+                EmployeeId = employees[8].Id,
+                StartDate = PastWeekdayInYear(today.AddDays(-11)),
+                EndDate = PastWeekdayInYear(today.AddDays(-11)),
+                Status = LeaveRequestStatus.Rejected,
+                Notes = "Coverage / blackout"
+            });
 
         return leaves;
     }
 
     /// <summary>
-    /// Ledger accrual (batch), usage on rolling upcoming days (calendar + ledger tab), and adjustments.
+    /// Three demo rows per <see cref="PtoLedgerEntryType"/>; usage lines use weekday effective dates only (leave lookup + calendars).
     /// </summary>
     private static IEnumerable<PtoLedgerEntry> BuildSamplePtoLedgerEntries(
         IReadOnlyList<Employee> employees,
@@ -414,90 +434,97 @@ public static class HrDashboardDbInitializer
     {
         var list = new List<PtoLedgerEntry>();
         var now = DateTimeOffset.UtcNow;
-        var year = today.Year;
-        var yearStart = new DateOnly(year, 1, 1);
-
-        var accrualEffective = today.AddDays(-45);
-        if (accrualEffective < yearStart)
-            accrualEffective = yearStart.AddDays(3);
-        if (accrualEffective > today)
-            accrualEffective = today.AddDays(-10);
+        var yearStart = new DateOnly(today.Year, 1, 1);
 
         var accrualBatch = Guid.NewGuid();
-        foreach (var emp in employees.Where((_, i) => i % 3 == 0))
+        var accrualDates = new[]
         {
+            PreviousWeekday(today.AddDays(-60)),
+            PreviousWeekday(today.AddDays(-40)),
+            PreviousWeekday(today.AddDays(-20)),
+        };
+        for (var i = 0; i < 3; i++)
+        {
+            var d = accrualDates[i] < yearStart ? PreviousWeekday(yearStart.AddDays(5 + i * 4)) : accrualDates[i];
             list.Add(
                 new PtoLedgerEntry
                 {
-                    EmployeeId = emp.Id,
+                    EmployeeId = employees[i].Id,
                     EntryType = PtoLedgerEntryType.Accrual,
                     Amount = 1m,
-                    EffectiveDate = accrualEffective,
+                    EffectiveDate = d,
                     Note = "Policy accrual (demo)",
-                    CreatedAt = now.AddDays(-14),
+                    CreatedAt = now.AddDays(-21 + i),
                     BatchId = accrualBatch
                 });
         }
 
-        // Usage entries: next several weeks so month/agenda calendar views show events starting today
-        const int usageDays = 24;
-        for (var k = 0; k < usageDays; k++)
+        var usageDates = new[]
         {
-            var d = today.AddDays(k);
-            var emp = employees[k % employees.Count];
-            var half = k % 3 != 0;
+            NextWeekday(today),
+            NextWeekday(today.AddDays(4)),
+            NextWeekday(today.AddDays(11)),
+        };
+        var usageAmounts = new decimal[] { 1m, 0.5m, 1m };
+        for (var i = 0; i < 3; i++)
+        {
             list.Add(
                 new PtoLedgerEntry
                 {
-                    EmployeeId = emp.Id,
+                    EmployeeId = employees[3 + i].Id,
                     EntryType = PtoLedgerEntryType.Usage,
-                    Amount = half ? 0.5m : 1m,
-                    EffectiveDate = d,
-                    Note = k % 7 == 0 ? "Scheduled PTO (demo)" : null,
-                    CreatedAt = now.AddMinutes(-k * 13 - rng.Next(120))
+                    Amount = usageAmounts[i],
+                    EffectiveDate = usageDates[i],
+                    Note = i == 0 ? "Scheduled PTO (demo)" : null,
+                    CreatedAt = now.AddMinutes(-i * 37 - rng.Next(90))
                 });
         }
 
-        // Adjustments: mix of past corrections in the current year
-        var adjDate = today.AddDays(-rng.Next(5, 40));
-        if (adjDate < yearStart)
-            adjDate = yearStart.AddDays(10);
         list.Add(
             new PtoLedgerEntry
             {
-                EmployeeId = employees[1].Id,
+                EmployeeId = employees[6].Id,
                 EntryType = PtoLedgerEntryType.Adjustment,
                 Amount = -0.5m,
-                EffectiveDate = adjDate,
+                EffectiveDate = PreviousWeekday(today.AddDays(-15)),
                 Note = "Correction (demo)",
-                CreatedAt = now.AddDays(-3)
+                CreatedAt = now.AddDays(-4)
             });
         list.Add(
             new PtoLedgerEntry
             {
-                EmployeeId = employees[Math.Min(5, employees.Count - 1)].Id,
+                EmployeeId = employees[7].Id,
                 EntryType = PtoLedgerEntryType.Adjustment,
                 Amount = 1m,
-                EffectiveDate = today.AddDays(-2),
+                EffectiveDate = PreviousWeekday(today.AddDays(-7)),
                 Note = "Manual grant (demo)",
+                CreatedAt = now.AddDays(-2)
+            });
+        list.Add(
+            new PtoLedgerEntry
+            {
+                EmployeeId = employees[8].Id,
+                EntryType = PtoLedgerEntryType.Adjustment,
+                Amount = 0.5m,
+                EffectiveDate = PreviousWeekday(today.AddDays(-3)),
+                Note = "Rounding fix (demo)",
                 CreatedAt = now.AddDays(-1)
             });
 
         return list;
     }
 
-    private static List<DateOnly> DatesOnWeekday(DateOnly from, DateOnly to, DayOfWeek weekday)
+    private static DateOnly NextWeekday(DateOnly d)
     {
-        var list = new List<DateOnly>();
-        if (from > to)
-            return list;
+        while (d.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday)
+            d = d.AddDays(1);
+        return d;
+    }
 
-        for (var d = from; d <= to; d = d.AddDays(1))
-        {
-            if (d.DayOfWeek == weekday)
-                list.Add(d);
-        }
-
-        return list;
+    private static DateOnly PreviousWeekday(DateOnly d)
+    {
+        while (d.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday)
+            d = d.AddDays(-1);
+        return d;
     }
 }
