@@ -17,6 +17,9 @@ export const cs = {
   app: {
     documentTitle: 'Smatch HR',
     shellTitle: 'Smatch HR',
+    formatDocumentTitle: (segments: readonly string[]) =>
+      segments.length === 0 ? 'Smatch HR' : `${segments.join(' · ')} – Smatch HR`,
+    skipToContent: 'Přeskočit na hlavní obsah',
   },
   nav: {
     listAriaLabel: 'Hlavní nabídka',

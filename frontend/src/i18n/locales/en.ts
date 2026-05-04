@@ -8,6 +8,10 @@ export const en = {
   app: {
     documentTitle: 'Smatch HR',
     shellTitle: 'Smatch HR',
+    /** Page `<title>`: optional trail segments, then an en dash and the product name. */
+    formatDocumentTitle: (segments: readonly string[]) =>
+      segments.length === 0 ? 'Smatch HR' : `${segments.join(' · ')} – Smatch HR`,
+    skipToContent: 'Skip to main content',
   },
   nav: {
     listAriaLabel: 'Main',

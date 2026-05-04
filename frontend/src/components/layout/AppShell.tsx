@@ -15,6 +15,7 @@ import {
   Divider,
   Drawer,
   IconButton,
+  Link,
   List,
   ListItemButton,
   ListItemIcon,
@@ -379,8 +380,52 @@ export function AppShell({ children, activeNavKey, onNavKeyChange, breadcrumbIte
         flex: 1,
         minHeight: 0,
         width: '100%',
+        position: 'relative',
       }}
     >
+      <Link
+        href="#main-content"
+        onClick={() => {
+          window.setTimeout(() => {
+            document.getElementById('main-content')?.focus();
+          }, 0);
+        }}
+        sx={{
+          position: 'absolute',
+          width: 1,
+          height: 1,
+          p: 0,
+          m: -1,
+          overflow: 'hidden',
+          clip: 'rect(0, 0, 0, 0)',
+          whiteSpace: 'nowrap',
+          border: 0,
+          '&:focus': {
+            position: 'fixed',
+            left: theme.spacing(2),
+            top: theme.spacing(1),
+            zIndex: theme.zIndex.tooltip + 100,
+            width: 'auto',
+            height: 'auto',
+            m: 0,
+            p: theme.spacing(1, 2),
+            clip: 'auto',
+            overflow: 'visible',
+            whiteSpace: 'normal',
+            border: '2px solid',
+            borderColor: 'primary.main',
+            bgcolor: 'background.paper',
+            borderRadius: 1,
+            typography: 'body2',
+            fontWeight: 600,
+            textDecoration: 'none',
+            color: 'primary.main',
+            outline: 'none',
+          },
+        }}
+      >
+        {strings.app.skipToContent}
+      </Link>
       <AppBar
         position="fixed"
         sx={{
@@ -497,7 +542,9 @@ export function AppShell({ children, activeNavKey, onNavKeyChange, breadcrumbIte
       </Box>
 
       <Box
+        id="main-content"
         component="main"
+        tabIndex={-1}
         sx={{
           flexGrow: 1,
           display: 'flex',

@@ -36,7 +36,15 @@ export function ColorModeProvider({ children }: { children: ReactNode }) {
 
   useLayoutEffect(() => {
     applyDocumentColorScheme(mode);
-  }, [mode]);
+    let meta = document.querySelector('meta[name="theme-color"]') as HTMLMetaElement | null;
+    if (!meta) {
+      meta = document.createElement('meta');
+      meta.setAttribute('name', 'theme-color');
+      document.head.appendChild(meta);
+    }
+    const color = mode === 'dark' ? theme.palette.background.default : theme.palette.primary.main;
+    meta.setAttribute('content', color);
+  }, [mode, theme]);
 
   const value = useMemo(() => ({ mode, setMode }), [mode, setMode]);
 

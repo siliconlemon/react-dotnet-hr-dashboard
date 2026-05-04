@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState, type ReactNode } from 'react';
+import { useCallback, useLayoutEffect, useMemo, useState, type ReactNode } from 'react';
 import { applyLocale, messagesByLocale, readStoredLocale, type Locale } from './index';
 import type { EnMessages } from './locales/en';
 import { LocaleContext } from './localeContext';
@@ -17,6 +17,10 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
     () => ({ locale, setLocale, strings }),
     [locale, setLocale, strings],
   );
+
+  useLayoutEffect(() => {
+    document.documentElement.lang = locale === 'cs' ? 'cs' : 'en';
+  }, [locale]);
 
   return <LocaleContext.Provider value={value}>{children}</LocaleContext.Provider>;
 }

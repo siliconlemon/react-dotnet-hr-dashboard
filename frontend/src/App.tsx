@@ -83,8 +83,8 @@ function AuthenticatedApp() {
   }, [pathname, user?.settings.leaveManagementTab]);
 
   useEffect(() => {
-    document.title = strings.app.documentTitle;
-  }, [strings.app.documentTitle]);
+    document.title = strings.app.formatDocumentTitle(breadcrumbItems);
+  }, [strings.app.formatDocumentTitle, breadcrumbItems]);
 
   useEffect(() => {
     if (!user) {
@@ -163,8 +163,15 @@ export default function App() {
   const { strings } = useLocale();
 
   useEffect(() => {
-    document.title = strings.app.documentTitle;
-  }, [strings.app.documentTitle]);
+    if (status === 'authenticated') {
+      return;
+    }
+    if (status === 'loading') {
+      document.title = strings.app.formatDocumentTitle([]);
+      return;
+    }
+    document.title = strings.app.formatDocumentTitle([strings.auth.loginTitle]);
+  }, [status, strings.app.formatDocumentTitle, strings.auth.loginTitle]);
 
   if (status === 'loading') {
     return (
